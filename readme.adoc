@@ -1,0 +1,24 @@
+= stockholm_syndrome
+:experimental:
+:nofooter:
+:source-highlighter: highlightjs
+:sectnums:
+:stem: latexmath
+:toc:
+:xrefstyle: short
+
+== Description
+This repository contains group projects of the CI-0117 course (Parallel and Concurrent Programming) of the University of Costa Rica, completed by the stockholm_syndrome team, in the 1st semester of 2025.
+
+== Repository index
+[%autowidth]
+|=== 
+s|# s|Project s|Description
+|1 |link:projects/project1/web_server_11[Web server] |This project represents a concurrent and distributed web server that works with two apps: prime factorization and Goldbach's sums.
+|===
+
+== Team members
+* Andrey Bejarano <gerardo.bejaranodiaz@ucr.ac.cr>
+* Evan Chen <evan.chen@ucr.ac.cr>
+* Albin Monge <albin.monge@ucr.ac.cr>
+* Axel Rojas Retana <axel.rojas.retana@ucr.ac.cr>
