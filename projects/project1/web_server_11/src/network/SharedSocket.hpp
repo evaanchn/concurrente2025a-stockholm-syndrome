@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include <sstream>
 #include <string>
+#include <cstring>
 
 #include "common.hpp"
 
