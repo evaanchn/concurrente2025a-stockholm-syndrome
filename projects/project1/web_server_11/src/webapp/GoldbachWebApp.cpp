@@ -13,7 +13,7 @@ void GoldbachWebApp::buildResponse(const int64_t value
   std::vector<int64_t> sums;
   int64_t sumsCount = 0;
   GoldbachCalculator myGoldbach;
-  sumsCount = myGoldbach.processNumber(value, sums);
+  sumsCount = myGoldbach.processNumber(std::abs(value), sums);
   // No sums were found for value
   if (sumsCount == 0) {
     // if true for an even number this could demostrate Goldbach strong

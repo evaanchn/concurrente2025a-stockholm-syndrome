@@ -6,8 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "HttpApp.hpp"
+
 #include "CalcWebApp.hpp"
+#include "GoldbachCalculator.hpp"
+#include "HttpApp.hpp"
 
 /**
 @brief A web application that calculates Goldbach sums
