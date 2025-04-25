@@ -1,7 +1,8 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
+
 #include "GoldbachCalculator.hpp"
 
-size_t GoldbachSums::processNumber(int64_t number,
+size_t GoldbachCalculator::processNumber(int64_t number,
     std::vector<int64_t>&goldbachSums) {
   goldbachSums.push_back(number);
   int64_t sumOperands = 1;
@@ -21,7 +22,7 @@ size_t GoldbachSums::processNumber(int64_t number,
 }
 
 
-bool GoldbachSums::strongGoldbach(int64_t number,
+bool GoldbachCalculator::strongGoldbach(int64_t number,
     std::vector<int64_t>&goldbachSums) {
   bool found = false;
   for (int64_t i = 2; i <= number / 2; ++i) {
@@ -33,7 +34,7 @@ bool GoldbachSums::strongGoldbach(int64_t number,
   return found;
 }
 
-bool GoldbachSums::weakGoldbach(int64_t number,
+bool GoldbachCalculator::weakGoldbach(int64_t number,
     std::vector<int64_t>&goldbachSums) {
   bool found = false;
   for (int i = 2; i <= number / 3; ++i) {
@@ -51,7 +52,7 @@ bool GoldbachSums::weakGoldbach(int64_t number,
   return found;
 }
 
-size_t GoldbachSums::getNSums(std::vector<int64_t>&goldbachSums,
+size_t GoldbachCalculator::getNSums(std::vector<int64_t>&goldbachSums,
     int64_t nElements) {
   return (goldbachSums.size() - 1)/nElements;
 }
