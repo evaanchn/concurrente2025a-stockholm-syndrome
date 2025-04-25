@@ -10,7 +10,7 @@
 #include "CalcWebApp.hpp"
 
 /**
-@brief A web application that calculates prime factors
+@brief A web application that calculates Goldbach sums
 */
 class GoldbachWebApp : public CalcWebApp<int64_t> {
   /// Objects of this class cannot be copied
@@ -38,12 +38,6 @@ class GoldbachWebApp : public CalcWebApp<int64_t> {
   /// @param sums results of goldbach sum: {value, sum1val, sum1val, ...}
   /// @param httpResponse The object to answer to the client/user
   void sumsResponse(std::vector<int64_t>& sums, HttpResponse& httpResponse);
-
-#if 0
-
- private:
-  GoldbachCalculator goldbach;
-#endif
 };
 
 #endif  // GOLDBACHWEBAPP_HPP
