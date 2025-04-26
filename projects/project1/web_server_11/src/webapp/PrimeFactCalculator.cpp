@@ -4,12 +4,12 @@
 
 size_t PrimeFactCalculator::processNumber(int64_t number
     , std::vector<int64_t>& primeFactors) {
-  if (number <= 0) return 0;
+  if (number <= 1) return 0;
   int64_t primeFactorsCount = 0;
 
   // Takes care of the only even prime 2 if even, to increment by odds by two
   if (number % 2 == 0) {
-    addPrimeFactor(number, 2, primeFactors);
+    logPrimeFactor(number, 2, primeFactors);
     ++primeFactorsCount;
   }
 
@@ -21,7 +21,7 @@ size_t PrimeFactCalculator::processNumber(int64_t number
       continue;  // No need to add non-factors or non-prime factors
     }  // end if
 
-    addPrimeFactor(number, factor, primeFactors);
+    logPrimeFactor(number, factor, primeFactors);
     ++primeFactorsCount;
   }  // end for
 
@@ -53,7 +53,7 @@ int64_t PrimeFactCalculator::divideWhileDivisible(int64_t& number
   return primeFactorCount;
 }
 
-void PrimeFactCalculator::addPrimeFactor(int64_t& number, int64_t primeFactor
+void PrimeFactCalculator::logPrimeFactor(int64_t& number, int64_t primeFactor
     , std::vector<int64_t>& primeFactors) {
   int64_t primeFactorsCount = divideWhileDivisible(number, primeFactor);
   primeFactors.push_back(primeFactor);
