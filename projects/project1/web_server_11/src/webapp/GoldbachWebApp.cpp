@@ -22,17 +22,17 @@ void GoldbachWebApp::buildResponse(const int64_t value
       << ": no goldbach sums found\n";
     return;
   }
+  httpResponse.body() << "    <li>" << value;
   if (value < 0) {  // get sums count
-    this->sumsCountResponse(std::abs(value), sumsCount, httpResponse);
-  } else {  // get sums list
-    this->sumsResponse(sums, httpResponse);
+    this->sumsCountResponse(sumsCount, httpResponse);
   }
+  // get sums list
+  this->sumsResponse(sums, httpResponse);
 }
 
-void GoldbachWebApp::sumsCountResponse(int64_t value, int64_t sumsCount
+void GoldbachWebApp::sumsCountResponse(int64_t sumsCount
     , HttpResponse& httpResponse) {
-  httpResponse.body()
-    << "    <li>" << value << " has: " << sumsCount << " goldbach sums\n";
+  httpResponse.body() << ": " << sumsCount;
 }
 
 void GoldbachWebApp::sumsResponse(std::vector<int64_t>& sums
@@ -48,7 +48,7 @@ void GoldbachWebApp::sumsResponse(std::vector<int64_t>& sums
   }
   // Sums as bulleted list
   httpResponse.body()
-    << "    <li>" << sums.front() << " sums:\n"
+    << " sums: \n"
     << "      <ul>";
   for (size_t sumIndex = 1; sumIndex <= sums.size() - sumOperands
       ; sumIndex+= sumOperands) {

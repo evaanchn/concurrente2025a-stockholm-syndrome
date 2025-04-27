@@ -33,8 +33,7 @@ class GoldbachWebApp : public CalcWebApp<int64_t> {
   /// @brief Count of possible goldbach sums of value
   /// @param sums results of goldbach sum: {value, sum1val, sum1val, ...}
   /// @param httpResponse The object to answer to the client/user
-  void sumsCountResponse(int64_t value, int64_t sumsCount
-    , HttpResponse& httpResponse);
+  void sumsCountResponse(int64_t sumsCount, HttpResponse& httpResponse);
 
   /// @brief List the possible goldbach sums of value
   /// @param sums results of goldbach sum: {value, sum1val, sum1val, ...}
