@@ -40,3 +40,42 @@ image::images/goldbach_sums.png[]
 Source: https://en.wikipedia.org/wiki/Goldbach%27s_conjecture
 
 Visit https://jeisson.ecci.ucr.ac.cr/concurrente/2022b/tareas/#problem_statement_serial for the source explanation for this part of the project.
+
+== User’s manual
+=== Prerequisites
+1. Clone the GitLab repository.
+2. C++ compiler with c++ 17 (g++, clang)
+
+=== Compilation
+1. Run the _make run_ command in the terminal from the *web_server_11* folder to compile the program.
+
+2. Then, use an execution command similar to the following line in the terminal `$./bin/web_server_11 8080 30 70`, where:
+
+- 8080 can be replaced the port through which the connection with the server will be established, which has to be greater than 1023
+- 30 represents the number of concurrent connections allowed.
+- 70 represents the capacity of the pending connection queue.
+
+3. Verify that the server is running by entering the following URL on your web browser: http://localhost:8080
+
+4. Make your queries to the server about prime factorization and Goldbach sums
+
+=== Input and Output
+You can request for a list of numbers to be processed, separated by commas, either in the input box or specified in the URL following the format: _"http://localhost"_ followed by: _[port][appName]=[num1],[num2],...,[num_n]_. Results for each requested number will be listed on screen.
+
+==== Prime factorization app
+In this application, users will be able to see the prime factorizations for the numbers requested listed in product-exponent form, similar to figure shown in the analysis.
+
+==== Goldbach sums app
+To request the specific sums for a number, enter it as a negative. Alternatively, if only the amount of sums is desired, the number can be written as is (positive). A list of sums or amounts will be shown on screen as a response.
+
+=== Stopping the server
+1. Press Ctrl + C in the terminal where the program is running.
+2. Alternatively, use the kill command to stop the server from running.
+
+=== Concurrency testing
+To test concurrency, follow these steps:
+1. Open two different windows or tabs.
+2. In one, request a heavy or long-lasting calculation.
+3. In the other device, request a quick calculation at the same time.
+4. Verify that the expected fast calculation response arrives without waiting for the heavy one to finish first.
+
