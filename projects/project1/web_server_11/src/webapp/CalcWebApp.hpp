@@ -30,7 +30,7 @@ class CalcWebApp : public HttpApp {
   CalcWebApp(const char* const prefix1, const char* const prefix2
     , std::string title)
   : PREFIX1(prefix1)
-  , PREFIX2(prefix2) 
+  , PREFIX2(prefix2)
   , title(title) {
   }
 
@@ -97,13 +97,14 @@ class CalcWebApp : public HttpApp {
     return httpResponse.send();
   }
 
-  /// @brief Extract comma-separated values to realize them an unary 
+  /// @brief Extract comma-separated values to realize them an unary
   /// calculation, from uri and add their results to the HTTP response
   /// @param uri request URI in form "/PREFIX1=x1,x2,...,xn" or
   /// "/PREFIX2=x1,x2,...,xn"
   /// @param httpResponse The object to answer to the client/user
   void analyzeValueList(const std::string& uri, HttpResponse& httpResponse) {
-    // Numbers were asked in the form "/PREFIX1/123,45,-7899" or "/[PREFIX]?number=13"
+    // Numbers were asked in the form "/PREFIX1/123,45,-7899" or
+    // "/[PREFIX]?number=13"
     // Determine the position where numbers start
     size_t numbersStart = std::strlen(PREFIX1);
     if (uri.rfind(PREFIX2, 0) == 0) {

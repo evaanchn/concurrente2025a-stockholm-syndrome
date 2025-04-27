@@ -38,5 +38,5 @@ class PrimeFactCalculator {
   void logPrimeFactor(int64_t& number, int64_t primeFactor
     , std::vector<int64_t>& primeFactors);
 };
-   
+
 #endif  // PRIMEFACTCALCULATOR_HPP
