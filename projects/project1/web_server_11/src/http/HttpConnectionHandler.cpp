@@ -4,6 +4,15 @@
 
 #include "HttpConnectionHandler.hpp"
 
+HttpConnectionHandler::HttpConnectionHandler
+  (std::vector<HttpApp*>& applications)
+  : applications(applications) {}
+
+int HttpConnectionHandler::run() {
+  this->consumeLoop();
+  return EXIT_SUCCESS;
+}
+
 void HttpConnectionHandler::consume(Socket clientConnection) {
   // While the same client asks for HTTP requests in the same connection
   while (true) {
@@ -63,4 +72,5 @@ bool HttpConnectionHandler::route(HttpRequest& httpRequest
 
   // // Unrecognized request, must be handled by NotFoundWebApp
   // return this->serveNotFound(httpRequest, httpResponse);
+  return true;  // Temporary
 }

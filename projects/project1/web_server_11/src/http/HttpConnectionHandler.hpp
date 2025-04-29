@@ -16,16 +16,19 @@
 class HttpConnectionHandler : public Consumer<Socket> {
  public:
   DISABLE_COPY(HttpConnectionHandler);
+  explicit HttpConnectionHandler(std::vector<HttpApp*>& applications);
+
+  int run() override;
+
+  /// @brief "Consume" socket by attending user requests
+  /// @param clientConnection: Connection with client
+  void consume(Socket clientConnection) override;
 
  private:
   /// Reference to app chain in server
   std::vector<HttpApp*>& applications;
 
  private:
-  /// @brief "Consume" socket by attending user requests
-  /// @param clientConnection: Connection with client
-  void consume(Socket clientConnection) override;
-
   /// @brief Handles a client's request
   /// @param httpRequest The client request
   /// @param httpResponse The response object to prepare
