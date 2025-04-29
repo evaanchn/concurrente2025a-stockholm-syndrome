@@ -21,6 +21,19 @@ const char* const usage =
     DEFAULT_PORT "\n"
   "  handlers     Number of connection handler theads\n";
 
+HttpServer& HttpServer::getInstance() {
+  static HttpServer server;
+  return server;
+}
+
+void HttpServer::handleSignal(int signalID) {
+  if (signalID == SIGINT || signalID == SIGTERM) {
+    std::cout << "Stop: " << ((signalID == SIGINT) ? "SIGINT" : "SIGTERM")
+      << " thread: " << std::this_thread::get_id() << "\n";
+    HttpServer::getInstance().stopListening();
+  }
+}
+
 HttpServer::HttpServer() {
 }
 
@@ -29,6 +42,15 @@ HttpServer::~HttpServer() {
 
 void HttpServer::listenForever(const char* port) {
   return TcpServer::listenForever(port);
+}
+
+void HttpServer::stop() {
+  // Stop listening for incoming client connection requests. When stopListing()
+  // method is called -maybe by a secondary thread-, the web server -running
+  // by the main thread- will stop executing the acceptAllConnections() method.
+  // TODO(you): stopListening must be called from a signal handler, not here
+  // done?
+  this->stopListening();
 }
 
 void HttpServer::chainWebApp(HttpApp* application) {
@@ -44,18 +66,20 @@ int HttpServer::run(int argc, char* argv[]) {
       // Create the objects required to respond to the client
       this->queue = new Queue<Socket>(capacity);
       stopApps = this->startServer();
+      // TODO(us): move to a createHandlers method
+      for(size_t index = 0; index < this->maxConnections; ++index){
+        HttpConnectionHandler* handler = 
+          new HttpConnectionHandler(applications);
+        handler->setConsumingQueue(this->queue);
+        handler->startThread();
+        this->handlers.push_back(handler);
+      }
       // Accept all client connections. The main process will get blocked
       // running this method and will not return. When HttpServer::stopListening
       // is called from another execution thread, an exception will be launched
       // that stops the acceptAllConnections() invocation and enters in the
       // catch below. Then, the main thread can continue stopping apps,
       /// finishing the server and any further cleaning it requires.
-      for(unsigned int i = 0; i < this->maxConnections; i++){
-        HttpConnectionHandler* handler = new HttpConnectionHandler(applications);
-        handler->setConsumingQueue(this->queue);
-        handler->startThread();
-        this->handlers.push_back(handler);
-      }
       this->acceptAllConnections();
     }
   } catch (const std::runtime_error& error) {
@@ -67,6 +91,10 @@ int HttpServer::run(int argc, char* argv[]) {
 }
 
 bool HttpServer::startServer() {
+  // Set signal handler method from HttpConnectionHandler
+  // TODO(any): save previous signal if required
+  signal(SIGINT, HttpServer::handleSignal);
+  signal(SIGTERM, HttpServer::handleSignal);
   // Start the log service
   Log::getInstance().start();
   // Start all web applications
@@ -94,17 +122,16 @@ void HttpServer::stopApps() {
 }
 
 void HttpServer::stopServer(const bool stopApps) {
-  // Stop listening for incoming client connection requests. When stopListing()
-  // method is called -maybe by a secondary thread-, the web server -running
-  // by the main thread- will stop executing the acceptAllConnections() method.
-  // TODO(you): stopListening must be called from a signal handler, not here
-  this->stopListening();
-  for(unsigned int i = 0; i < this->maxConnections; i++){
-    //queue->enqueue(Socket());
+  // Send stop condition
+  for (size_t i = 0; i < this->maxConnections; ++i) {
+    queue->enqueue(Socket());
   }
 
-  for(unsigned int i = 0; i < this->maxConnections; i++){
+  // Join threads
+  for (size_t i = 0; i < this->maxConnections; ++i) {
     handlers[i]->waitToFinish();
+    std::cout << "finished: " << i;
+    delete handlers[i];
   }
 
   // If applications were started

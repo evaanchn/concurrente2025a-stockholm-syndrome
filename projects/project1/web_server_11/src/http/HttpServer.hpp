@@ -3,6 +3,9 @@
 #ifndef HTTPSERVER_H
 #define HTTPSERVER_H
 
+#include <climits>
+#include <csignal>
+#include <mutex>
 #include <vector>
 
 
@@ -12,7 +15,6 @@
 #include "HttpConnectionHandler.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
-#include <climits>
 
 #define DEFAULT_PORT "8080"
 
@@ -79,8 +81,18 @@ class HttpServer : public TcpServer{
   std::vector<HttpConnectionHandler*> handlers;
 
  public:
-  /// Constructor
-  HttpServer();
+  // Unique (singleton pattern) instance of the server
+  static HttpServer& getInstance();
+
+
+  /// @brief Handdles signals assigned by main thread
+  /// @details gets Server instance and call the stop method to close it
+  /// 
+  /// @param signalID macro from csignal library
+  /// SIGINT: ctrl+c executed by the running enviroment
+  /// SIGTERM: kill [PID] executed by a program specifiyng current proccess id
+  static void handleSignal(int signalID);
+
   /// Destructor
   ~HttpServer();
   /// Registers a web application to the chain
@@ -91,8 +103,14 @@ class HttpServer : public TcpServer{
   /// For each accepted connection request, the virtual onConnectionAccepted()
   /// will be called. Inherited classes must override that method
   void listenForever(const char* port);
+  /// @brief To be called by a HttpConnectionHandler that got a signal to 
+  /// close the server
+  /// @details thread safe (mutex)
+  void stop();
 
  protected:
+  /// Constructor (not public for singleton pattern)
+  HttpServer();
   /// Analyze the command line arguments
   /// @return true if program can continue execution, false otherwise
   bool analyzeArguments(int argc, char* argv[]);
