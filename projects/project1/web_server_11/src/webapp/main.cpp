@@ -13,18 +13,18 @@
 
 /// Start the web server
 int main(int argc, char* argv[]) {
-  // Create the web server
-  HttpServer httpServer;
+  
+  
   // Create web applications
   HomeWebApp homeWebApp;
   FactWebApp factWebApp;
   GoldbachWebApp goldbachWebApp;
   // Register the web application(s) with the web server
-  httpServer.chainWebApp(&homeWebApp);
-  httpServer.chainWebApp(&factWebApp);
-  httpServer.chainWebApp(&goldbachWebApp);
+  HttpServer::getInstance().chainWebApp(&homeWebApp);
+  HttpServer::getInstance().chainWebApp(&factWebApp);
+  HttpServer::getInstance().chainWebApp(&goldbachWebApp);
   // Run the web server
-  return httpServer.run(argc, argv);
+  return HttpServer::getInstance().run(argc, argv);
 }
 
 #endif  // WEBSERVER
