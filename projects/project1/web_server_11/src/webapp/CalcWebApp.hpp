@@ -12,13 +12,14 @@
 #include <string>
 #include <vector>
 
+#include "HomeWebApp.hpp"
 #include "HttpApp.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "Util.hpp"
 
 /**
-@brief A web application generic template that calculates prime factors
+@brief A web application generic template for unary calculation
 */
 template <typename ValueType>
 class CalcWebApp : public HttpApp {
@@ -61,21 +62,6 @@ class CalcWebApp : public HttpApp {
   }
 
  protected:
-  /// @brief Utility method to serve the common header for each page
-  void serveHeader(HttpResponse& httpResponse,
-      const std::string& title) {
-    // Set HTTP response metadata (headers)
-    httpResponse.setHeader("Server", "AttoServer v1.0");
-    httpResponse.setHeader("Content-type", "text/html; charset=ascii");
-    // Serve document header and title
-    httpResponse.body() << "<!DOCTYPE html>\n"
-      << "<html lang=en>\n"
-      << "  <meta charset=utf-8>\n"
-      << "  <title>" << title << "</title>\n"
-      << "  <style>body {font-family: monospace} .err {color: red}</style>\n"
-      << "  <h1>" << title << "</h1>\n";
-  }
-
   /// Handle a HTTP request that starts with "/fact"
   /// @return true if the calculation was handled, false if it must be
   /// handled by another application
@@ -83,10 +69,11 @@ class CalcWebApp : public HttpApp {
     // Replace %xx hexadecimal codes by their ASCII symbols
     const std::string& uri = Util::decodeURI(httpRequest.getURI());
     // Build the body of the response
-    this->serveHeader(httpResponse, this->title);
+    // HomeWebApp::serveHeader(httpResponse, this->title);
+    HomeWebApp::serveHeader(httpResponse, this->title);
     httpResponse.body()
       << "  <p>request: " << uri << "</p>\n"
-      << "  <ol>\n";
+      << "  <ol type=""A"">\n";
     this->analyzeValueList(uri, httpResponse);
     httpResponse.body()
       << "  </ol>\n"
@@ -141,7 +128,7 @@ class CalcWebApp : public HttpApp {
  protected:
   const char* const PREFIX1;
   const char* const PREFIX2;
-  std::string title;
+  const std::string title;
 };
 
 #endif  // CALCWEBAPP_HPP
