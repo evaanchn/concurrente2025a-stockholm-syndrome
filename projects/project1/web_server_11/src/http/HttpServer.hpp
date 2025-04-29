@@ -75,9 +75,13 @@ class HttpServer : public TcpServer{
   std::vector<HttpApp*> applications;
 
  private:
+  /// Number of threads to handle connections
   unsigned int maxConnections = std::thread::hardware_concurrency();
+  /// queue default capacity
   uint64_t capacity = SEM_VALUE_MAX;
+  /// socket producing queue
   Queue<Socket>* queue = nullptr;
+  /// socket consumers
   std::vector<HttpConnectionHandler*> handlers;
 
  public:

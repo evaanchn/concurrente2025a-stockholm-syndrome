@@ -14,8 +14,14 @@
 #include "HttpResponse.hpp"
 
 class HttpConnectionHandler : public Consumer<Socket> {
+ private:
+  /// Reference to app chain in server
+  std::vector<HttpApp*>& applications;
+
  public:
   DISABLE_COPY(HttpConnectionHandler);
+
+  /// Constructor
   explicit HttpConnectionHandler(std::vector<HttpApp*>& applications);
 
   int run() override;
@@ -25,15 +31,11 @@ class HttpConnectionHandler : public Consumer<Socket> {
   void consume(Socket clientConnection) override;
 
  private:
-  /// Reference to app chain in server
-  std::vector<HttpApp*>& applications;
-
- private:
   /// @brief Handles a client's request
   /// @param httpRequest The client request
   /// @param httpResponse The response object to prepare
   /// @return true if the request was handled correctly
-  virtual bool handleHttpRequest(HttpRequest& httpRequest,
+  bool handleHttpRequest(HttpRequest& httpRequest,
     HttpResponse& httpResponse);
 
   /// @brief Asks each app to handle the request
