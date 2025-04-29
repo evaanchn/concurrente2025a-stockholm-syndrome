@@ -5,9 +5,14 @@
 
 #include <vector>
 
+
+#include "Queue.hpp"
 #include "TcpServer.hpp"
+#include "Thread.hpp"
+#include "HttpConnectionHandler.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include <climits>
 
 #define DEFAULT_PORT "8080"
 
@@ -54,7 +59,7 @@ repeats the process with the following application in the chain: the pets
 application. If no application manages the request, a 404 Not-found response
 is sent to the client.
 */
-class HttpServer : public TcpServer {
+class HttpServer : public TcpServer{
   DISABLE_COPY(HttpServer);
 
  protected:
@@ -66,6 +71,12 @@ class HttpServer : public TcpServer {
   /// call the httpResponse.send() and the chain stops. If no web app serves
   /// the request, the not found page will be served.
   std::vector<HttpApp*> applications;
+
+ private:
+  unsigned int maxConnections = std::thread::hardware_concurrency();
+  uint64_t capacity = SEM_VALUE_MAX;
+  Queue<Socket>* queue = nullptr;
+  std::vector<HttpConnectionHandler*> handlers;
 
  public:
   /// Constructor
@@ -106,16 +117,10 @@ class HttpServer : public TcpServer {
   /// @return true on success and the server will continue handling further
   /// HTTP requests, or false if server should stop accepting requests from
   /// this client (e.g: HTTP/1.0)
-  virtual bool handleHttpRequest(HttpRequest& httpRequest,
-    HttpResponse& httpResponse);
-  /// Route, that provide an answer according to the URI value
-  /// For example, home page is handled different than a number
-  bool route(HttpRequest& httpRequest, HttpResponse& httpResponse);
   /// Sends a page for a non found resource in this server. This method is
   /// called if none of the registered web applications handled the request.
   /// If you want to override this method, create a web app, e.g NotFoundWebApp
   /// that reacts to all URIs, and chain it as the last web app
-  bool serveNotFound(HttpRequest& httpRequest, HttpResponse& httpResponse);
 };
 
 #endif  // HTTPSERVER_H
