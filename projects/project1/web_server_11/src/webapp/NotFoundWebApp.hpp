@@ -28,10 +28,10 @@ class NotFoundWebApp : public HttpApp {
   ~NotFoundWebApp();
   /// Called by the web server when the web server is started
   void start() override;
-  /// @brief pendiente
-  /// @param httpRequest 
-  /// @param httpResponse 
-  /// @return 
+  /// Sends a page for a non found resource in this server. This method is
+  /// called if none of the registered web applications handled the request.
+  /// If you want to override this method, create a web app, e.g NotFoundWebApp
+  /// that reacts to all URIs, and chain it as the last web app
   static bool serveNotFound(HttpRequest& httpRequest
     , HttpResponse& httpResponse);
   /// Called when the web server stops, in order to allow the web application
