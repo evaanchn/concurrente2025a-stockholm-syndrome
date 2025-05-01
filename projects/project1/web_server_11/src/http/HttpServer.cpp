@@ -38,6 +38,7 @@ HttpServer::HttpServer() {
 }
 
 HttpServer::~HttpServer() {
+  delete queue;
 }
 
 void HttpServer::listenForever(const char* port) {
@@ -155,10 +156,22 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
     this->port = argv[1];
   }
   if (argc >= 3) {
-    maxConnections = std::stoul(argv[2]);  // try catch
+    try{
+      maxConnections = std::stoul(argv[2]);
+    }catch(const std::invalid_argument& error){
+      std::cerr << "Warning: " << error.what() 
+        << " default values ​​were assigned" << std::endl;
+      maxConnections = std::thread::hardware_concurrency();
+    }
   }
   if (argc >= 4) {
-    capacity = std::stoull(argv[3]);
+    try{
+      capacity = std::stoull(argv[3]);
+    }catch(const std::invalid_argument& error){
+      std::cerr << "warning: " << error.what() 
+        << " default values ​​were assigned" << std::endl;
+      capacity = SEM_VALUE_MAX;
+    }
   }
   return true;
 }
