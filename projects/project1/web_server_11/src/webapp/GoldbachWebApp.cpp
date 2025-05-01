@@ -23,16 +23,16 @@ void GoldbachWebApp::buildResponse(const int64_t value
     return;
   }
   httpResponse.body() << "    <li>" << value;
-  if (value < 0) {  // get sums count
-    this->sumsCountResponse(sumsCount, httpResponse);
+  this->sumsCountResponse(sumsCount, httpResponse);
+  if (value < 0) {
+    // get sums list
+    this->sumsResponse(sums, httpResponse);
   }
-  // get sums list
-  this->sumsResponse(sums, httpResponse);
 }
 
 void GoldbachWebApp::sumsCountResponse(int64_t sumsCount
     , HttpResponse& httpResponse) {
-  httpResponse.body() << ": " << sumsCount;
+  httpResponse.body() << ": " << sumsCount << " sums";
 }
 
 void GoldbachWebApp::sumsResponse(std::vector<int64_t>& sums
@@ -48,7 +48,7 @@ void GoldbachWebApp::sumsResponse(std::vector<int64_t>& sums
   }
   // Sums as bulleted list
   httpResponse.body()
-    << " sums: \n"
+    << "\n"
     << "      <ul>";
   for (size_t sumIndex = 1; sumIndex <= sums.size() - sumOperands
       ; sumIndex+= sumOperands) {
