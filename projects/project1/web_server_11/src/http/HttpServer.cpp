@@ -60,15 +60,14 @@ void HttpServer::chainWebApp(HttpApp* application) {
 
 int HttpServer::run(int argc, char* argv[]) {
   bool stopApps = false;
-  
   try {
     if (this->analyzeArguments(argc, argv)) {
       // Create the objects required to respond to the client
       this->queue = new Queue<Socket>(capacity);
       stopApps = this->startServer();
       // TODO(us): move to a createHandlers method
-      for(size_t index = 0; index < this->maxConnections; ++index){
-        HttpConnectionHandler* handler = 
+      for (size_t index = 0; index < this->maxConnections; ++index) {
+        HttpConnectionHandler* handler =
           new HttpConnectionHandler(applications);
         handler->setConsumingQueue(this->queue);
         handler->startThread();
@@ -155,13 +154,12 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
   if (argc >= 2) {
     this->port = argv[1];
   }
-  if(argc >= 3){
-    maxConnections = std::stoul(argv[2]); //try catch
+  if (argc >= 3) {
+    maxConnections = std::stoul(argv[2]);  // try catch
   }
-  if(argc >= 4){
+  if (argc >= 4) {
     capacity = std::stoull(argv[3]);
   }
-
   return true;
 }
 
@@ -170,5 +168,4 @@ void HttpServer::handleClientConnection(Socket& client) {
   // into a collection (e.g thread-safe queue) and stop in web server
 
   queue->enqueue(client);
-
 }

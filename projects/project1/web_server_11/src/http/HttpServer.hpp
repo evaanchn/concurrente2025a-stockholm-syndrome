@@ -8,7 +8,6 @@
 #include <mutex>
 #include <vector>
 
-
 #include "Queue.hpp"
 #include "TcpServer.hpp"
 #include "Thread.hpp"
@@ -91,7 +90,6 @@ class HttpServer : public TcpServer{
 
   /// @brief Handdles signals assigned by main thread
   /// @details gets Server instance and call the stop method to close it
-  /// 
   /// @param signalID macro from csignal library
   /// SIGINT: ctrl+c executed by the running enviroment
   /// SIGTERM: kill [PID] executed by a program specifiyng current proccess id
@@ -107,7 +105,7 @@ class HttpServer : public TcpServer{
   /// For each accepted connection request, the virtual onConnectionAccepted()
   /// will be called. Inherited classes must override that method
   void listenForever(const char* port);
-  /// @brief To be called by a HttpConnectionHandler that got a signal to 
+  /// @brief To be called by a HttpConnectionHandler that got a signal to
   /// close the server
   /// @details thread safe (mutex)
   void stop();

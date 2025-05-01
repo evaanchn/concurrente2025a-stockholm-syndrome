@@ -13,8 +13,6 @@
 
 /// Start the web server
 int main(int argc, char* argv[]) {
-  
-  
   // Create web applications
   HomeWebApp homeWebApp;
   FactWebApp factWebApp;

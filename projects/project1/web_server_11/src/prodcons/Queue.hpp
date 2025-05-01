@@ -34,7 +34,7 @@ class Queue {
   // Explicit tells compiler to not convert queueCapacity into queue to assign
   explicit Queue(const unsigned queueCapacity)
     : canConsume(0)
-    , canProduce(queueCapacity){
+    , canProduce(queueCapacity) {
   }
 
   /// Destructor
