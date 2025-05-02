@@ -72,5 +72,6 @@ bool HttpConnectionHandler::route(HttpRequest& httpRequest
 
   // // Unrecognized request, must be handled by NotFoundWebApp
   // return this->serveNotFound(httpRequest, httpResponse);
-  return true;  // Temporary
+  // TODO: implement notfound
+  return true;
 }

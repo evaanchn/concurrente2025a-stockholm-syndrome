@@ -9,9 +9,8 @@ GoldbachWebApp::GoldbachWebApp()
 void GoldbachWebApp::buildResponse(const int64_t value
   , HttpResponse& httpResponse) {
   std::vector<int64_t> sums;
-  int64_t sumsCount = 0;
   GoldbachCalculator myGoldbach;
-  sumsCount = myGoldbach.processNumber(std::abs(value), sums);
+  const int64_t sumsCount = myGoldbach.processNumber(std::abs(value), sums);
   httpResponse.body()
     << "    <div class='results-container'>\n"
     << "      <h2 class='result-title'>Goldbach Sums Results</h2>\n"

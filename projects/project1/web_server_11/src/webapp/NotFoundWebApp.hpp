@@ -12,8 +12,8 @@
 #include "HttpResponse.hpp"
 
 /// @brief App prefixes
-static const char* const FACT_PREFIX = "/fact";
-static const char* const GOLDBACH_PREFIX = "/goldbach";
+// static const char* const FACT_PREFIX = "/fact";
+// static const char* const GOLDBACH_PREFIX = "/goldbach";
 
 /**
  @brief A home web application to access calculator web apps

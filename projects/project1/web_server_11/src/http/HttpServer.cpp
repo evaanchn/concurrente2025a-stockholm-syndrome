@@ -64,9 +64,10 @@ int HttpServer::run(int argc, char* argv[]) {
   try {
     if (this->analyzeArguments(argc, argv)) {
       // Create the objects required to respond to the client
-      this->queue = new Queue<Socket>(capacity);
+      this->queue = new Queue<Socket>(this->capacity);
       stopApps = this->startServer();
       // TODO(us): move to a createHandlers method
+      this->handlers.resize(this->maxConnections);
       for (size_t index = 0; index < this->maxConnections; ++index) {
         HttpConnectionHandler* handler =
           new HttpConnectionHandler(applications);
@@ -161,7 +162,7 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
     }catch(const std::invalid_argument& error) {
       std::cerr << "Warning: " << error.what()
         << " default values ​​were assigned" << std::endl;
-      maxConnections = std::thread::hardware_concurrency();
+      this->maxConnections = std::thread::hardware_concurrency();
     }
   }
   if (argc >= 4) {
@@ -170,7 +171,7 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
     }catch(const std::invalid_argument& error) {
       std::cerr << "warning: " << error.what()
         << " default values ​​were assigned" << std::endl;
-      capacity = SEM_VALUE_MAX;
+      this->capacity = SEM_VALUE_MAX;
     }
   }
   return true;

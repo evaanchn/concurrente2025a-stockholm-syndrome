@@ -7,6 +7,8 @@
 #include "HomeWebApp.hpp"
 #include "FactWebApp.hpp"
 #include "GoldbachWebApp.hpp"
+#include "NotFoundWebApp.hpp"
+
 
 // TODO(you): Register a signal handler for Ctrl+C and kill, and stop the server
 // TODO(you): Make your signal handler to print the thread id running it
@@ -17,10 +19,12 @@ int main(int argc, char* argv[]) {
   HomeWebApp homeWebApp;
   FactWebApp factWebApp;
   GoldbachWebApp goldbachWebApp;
+  // NotFoundWebApp notFoundWebApp;
   // Register the web application(s) with the web server
   HttpServer::getInstance().chainWebApp(&homeWebApp);
   HttpServer::getInstance().chainWebApp(&factWebApp);
   HttpServer::getInstance().chainWebApp(&goldbachWebApp);
+  // HttpServer::getInstance().chainWebApp(&notFoundWebApp);
   // Run the web server
   return HttpServer::getInstance().run(argc, argv);
 }
