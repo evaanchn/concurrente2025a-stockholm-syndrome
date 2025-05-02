@@ -95,6 +95,10 @@ class HttpServer : public TcpServer{
   /// SIGTERM: kill [PID] executed by a program specifiyng current proccess id
   static void handleSignal(int signalID);
 
+  void createHandlers();
+  void startHandlers();
+  void stopHandlers();
+
   /// Destructor
   ~HttpServer();
   /// Registers a web application to the chain

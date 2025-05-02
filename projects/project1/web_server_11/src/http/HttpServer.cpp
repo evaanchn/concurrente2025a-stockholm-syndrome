@@ -38,7 +38,7 @@ HttpServer::HttpServer() {
 }
 
 HttpServer::~HttpServer() {
-  delete queue;
+  delete this->queue;
 }
 
 void HttpServer::listenForever(const char* port) {
@@ -67,14 +67,8 @@ int HttpServer::run(int argc, char* argv[]) {
       this->queue = new Queue<Socket>(this->capacity);
       stopApps = this->startServer();
       // TODO(us): move to a createHandlers method
-      this->handlers.resize(this->maxConnections);
-      for (size_t index = 0; index < this->maxConnections; ++index) {
-        HttpConnectionHandler* handler =
-          new HttpConnectionHandler(applications);
-        handler->setConsumingQueue(this->queue);
-        handler->startThread();
-        this->handlers.push_back(handler);
-      }
+      this->createHandlers();
+      this->startHandlers();
       // Accept all client connections. The main process will get blocked
       // running this method and will not return. When HttpServer::stopListening
       // is called from another execution thread, an exception will be launched
@@ -125,15 +119,11 @@ void HttpServer::stopApps() {
 void HttpServer::stopServer(const bool stopApps) {
   // Send stop condition
   for (size_t i = 0; i < this->maxConnections; ++i) {
-    queue->enqueue(Socket());
+    this->queue->enqueue(Socket());
   }
 
   // Join threads
-  for (size_t i = 0; i < this->maxConnections; ++i) {
-    handlers[i]->waitToFinish();
-    std::cout << "finished: " << i;
-    delete handlers[i];
-  }
+  this->stopHandlers();
 
   // If applications were started
   if (stopApps) {
@@ -158,7 +148,7 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
   }
   if (argc >= 3) {
     try {
-      maxConnections = std::stoul(argv[2]);
+      this->maxConnections = std::stoul(argv[2]);
     }catch(const std::invalid_argument& error) {
       std::cerr << "Warning: " << error.what()
         << " default values ​​were assigned" << std::endl;
@@ -167,7 +157,7 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
   }
   if (argc >= 4) {
     try {
-      capacity = std::stoull(argv[3]);
+      this->capacity = std::stoull(argv[3]);
     }catch(const std::invalid_argument& error) {
       std::cerr << "warning: " << error.what()
         << " default values ​​were assigned" << std::endl;
@@ -182,4 +172,28 @@ void HttpServer::handleClientConnection(Socket& client) {
   // into a collection (e.g thread-safe queue) and stop in web server
 
   queue->enqueue(client);
+}
+
+void HttpServer::createHandlers(){
+  this->handlers.reserve(this->maxConnections);
+  for (size_t index = 0; index < this->maxConnections; ++index) {
+    HttpConnectionHandler* handler =
+      new HttpConnectionHandler(this->applications);
+    handler->setConsumingQueue(this->queue);
+    this->handlers.push_back(handler);
+  }
+}
+
+void HttpServer::startHandlers() {
+  for (size_t index = 0; index < this->maxConnections; ++index) {
+    this->handlers[index]->startThread();
+  }
+}
+
+void HttpServer::stopHandlers() {
+  for (size_t index = 0; index < this->maxConnections; ++index) {
+    this->handlers[index]->waitToFinish();
+    std::cout << "finished: " << index;
+    delete this->handlers[index];
+  }
 }
