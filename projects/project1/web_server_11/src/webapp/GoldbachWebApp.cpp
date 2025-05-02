@@ -7,63 +7,68 @@ GoldbachWebApp::GoldbachWebApp()
 }
 
 void GoldbachWebApp::buildResponse(const int64_t value
-    , HttpResponse& httpResponse) {
-  // array with the format: {value, sum1val, sum1val, ..., sumNval, sumNval}
-  // sumsResponse is encharged of manage the number of operands for each sum
+  , HttpResponse& httpResponse) {
   std::vector<int64_t> sums;
   int64_t sumsCount = 0;
   GoldbachCalculator myGoldbach;
   sumsCount = myGoldbach.processNumber(std::abs(value), sums);
-  // No sums were found for value
-  if (sumsCount == 0) {
-    // if true for an even number this could demostrate Goldbach strong
-    // conjecture as false.
-    httpResponse.body() << "    <li class=err>" << value
-      << ": no goldbach sums found\n";
-    return;
+  httpResponse.body()
+    << "    <div class='results-container'>\n"
+    << "      <h2 class='result-title'>Goldbach Sums Results</h2>\n"
+    << "      <div class='result-item'>\n"
+    << "        <div class='number-result'>\n"
+    << "          <span class='number-value'>" << value << "</span>: \n"
+    << "          <span class='sums-count'>" << sumsCount << " sums</span>\n"
+    << "        </div>";
+  if (value < 0 && sumsCount > 0) {
+    size_t sumOperands = (sums.front() % 2 == 0) ? 2 : 3;
+    httpResponse.body()
+      << "        <div class='sums-grid'>";
+    for (size_t sumIndex = 1; sumIndex <= sums.size() - sumOperands;
+      sumIndex += sumOperands) {
+      httpResponse.body()
+        << "          <div class='sum-item'>";
+      for (size_t operandIndex = sumIndex;
+        operandIndex < sumOperands + sumIndex; ++operandIndex) {
+        httpResponse.body() << sums.at(operandIndex);
+        if (operandIndex != sumOperands + sumIndex - 1) {
+          httpResponse.body() << " + ";
+        }
+      }
+      httpResponse.body() << "</div>";
+    }
+    httpResponse.body() << "        </div>";
   }
-  httpResponse.body() << "    <li>" << value;
-  this->sumsCountResponse(sumsCount, httpResponse);
-  if (value < 0) {
-    // get sums list
-    this->sumsResponse(sums, httpResponse);
-  }
+  httpResponse.body()
+    << "      </div>\n"
+    << "      <a href='/' class='back-button'>Back</a>\n"
+    << "    </div>\n"
+    << "  </div>\n"
+    << "</body>\n"
+    << "</html>\n";
 }
 
 void GoldbachWebApp::sumsCountResponse(int64_t sumsCount
-    , HttpResponse& httpResponse) {
-  httpResponse.body() << ": " << sumsCount << " sums";
+  , HttpResponse& httpResponse) {
+  httpResponse.body() << ": <span style='color: var(--accent);'>"
+                     << sumsCount << "</span> sums";
 }
 
 void GoldbachWebApp::sumsResponse(std::vector<int64_t>& sums
-    , HttpResponse& httpResponse) {
-  // count of operands for each sum
-  size_t sumOperands = 0;
-  // even
-  if ((sums.front() % 2) == 0) {
-    sumOperands = 2;
-  // odd
-  } else {
-    sumOperands = 3;
-  }
-  // Sums as bulleted list
-  httpResponse.body()
-    << "\n"
-    << "      <ul>";
+  , HttpResponse& httpResponse) {
+  size_t sumOperands = ((sums.front() % 2) == 0) ? 2 : 3;
+
+  httpResponse.body() << "<div class='sums-list'>";
   for (size_t sumIndex = 1; sumIndex <= sums.size() - sumOperands
-      ; sumIndex+= sumOperands) {
-    // sum
-    httpResponse.body() << "        <li>";
+      ; sumIndex += sumOperands) {
+    httpResponse.body() << "<div class='sum-item'>";
     for (size_t operandIndex = sumIndex; operandIndex < sumOperands + sumIndex
-      // operands concatenation
         ; ++operandIndex) {
       httpResponse.body() << sums.at(operandIndex);
       if (operandIndex != sumOperands + sumIndex - 1)
         httpResponse.body() << " + ";
     }
-    httpResponse.body() << "        </li>\n";
+    httpResponse.body() << "</div>";
   }
-  httpResponse.body()
-    << "      </ul>\n"
-    << "    </li>\n";
+  httpResponse.body() << "</div>";
 }

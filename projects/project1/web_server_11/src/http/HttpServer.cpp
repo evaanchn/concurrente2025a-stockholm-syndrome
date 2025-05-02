@@ -156,19 +156,19 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
     this->port = argv[1];
   }
   if (argc >= 3) {
-    try{
+    try {
       maxConnections = std::stoul(argv[2]);
-    }catch(const std::invalid_argument& error){
-      std::cerr << "Warning: " << error.what() 
+    }catch(const std::invalid_argument& error) {
+      std::cerr << "Warning: " << error.what()
         << " default values ​​were assigned" << std::endl;
       maxConnections = std::thread::hardware_concurrency();
     }
   }
   if (argc >= 4) {
-    try{
+    try {
       capacity = std::stoull(argv[3]);
-    }catch(const std::invalid_argument& error){
-      std::cerr << "warning: " << error.what() 
+    }catch(const std::invalid_argument& error) {
+      std::cerr << "warning: " << error.what()
         << " default values ​​were assigned" << std::endl;
       capacity = SEM_VALUE_MAX;
     }

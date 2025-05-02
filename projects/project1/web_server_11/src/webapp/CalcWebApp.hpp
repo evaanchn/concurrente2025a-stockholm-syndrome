@@ -72,13 +72,11 @@ class CalcWebApp : public HttpApp {
     // HomeWebApp::serveHeader(httpResponse, this->title);
     HomeWebApp::serveHeader(httpResponse, this->title);
     httpResponse.body()
-      << "  <p>request: " << uri << "</p>\n"
+      // << "  <p>request: " << uri << "</p>\n"
       << "  <ol type=""A"">\n";
     this->analyzeValueList(uri, httpResponse);
     httpResponse.body()
       << "  </ol>\n"
-      << "  <hr>\n"
-      << "  <p><a href=\"/\">Back</a></p>\n"
       << "</html>\n";
     // Send the response to the client (user agent)
     return httpResponse.send();
