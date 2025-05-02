@@ -15,7 +15,7 @@ size_t PrimeFactCalculator::processNumber(int64_t number
 
   // Evaluate following odd primes
   // for factor from 3 to sqrt(number) step 2 do
-  for (int64_t factor = 3; factor < sqrt(number); factor += 2) {
+  for (int64_t factor = 3; factor <= sqrt(number); factor += 2) {
     //   if mod(number, factor) != 0 or not isPrime(factor) then
     if (number % factor != 0 || !Prime::isPrime(factor)) {
       continue;  // No need to add non-factors or non-prime factors
