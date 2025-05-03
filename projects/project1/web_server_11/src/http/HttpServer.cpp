@@ -174,7 +174,7 @@ void HttpServer::handleClientConnection(Socket& client) {
   this->queue->enqueue(client);
 }
 
-void HttpServer::createHandlers(){
+void HttpServer::createHandlers() {
   this->handlers.reserve(this->maxConnections);
   for (size_t index = 0; index < this->maxConnections; ++index) {
     HttpConnectionHandler* handler =
