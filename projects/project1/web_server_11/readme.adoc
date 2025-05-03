@@ -132,4 +132,4 @@ According to the number of requests that were replied
 [[design]]
 == Design of solution
 
-See the link:design/readme.adoc[design/readme.adoc] folder for an overall design of the solution, including program structure and applied formulas.
+See the link:design/readme.adoc[design/readme.adoc] folder for an overall design of the solution, including program structure.
