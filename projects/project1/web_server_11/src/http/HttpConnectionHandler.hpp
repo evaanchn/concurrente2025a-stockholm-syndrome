@@ -13,6 +13,10 @@
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 
+/**
+ * @class HttpConnectionHandler
+ * @brief Thread object that manages a connection with a client (one socket)
+ */
 class HttpConnectionHandler : public Consumer<Socket> {
  private:
   /// Reference to app chain in server
