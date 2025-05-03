@@ -95,8 +95,20 @@ class HttpServer : public TcpServer{
   /// SIGTERM: kill [PID] executed by a program specifiyng current proccess id
   static void handleSignal(int signalID);
 
+  /// @brief Creates connection handler threads
+  /// @details Reserves space in the handler vector and creates a handler for
+  /// each allowed connection. Each handler is associated with the shared
+  /// socket queue to consume incoming client connections.
   void createHandlers();
+
+  /// @brief Starts all handler threads
+  /// @details Iterates over each connection handler and starts its execution
+  /// using the startThread() method so they begin processing client requests.
   void startHandlers();
+
+  /// @brief Stops all handler threads
+  /// @details Enqueues stop signals in the queue, waits for each handler to
+  /// finish execution using waitToFinish(), and then deallocates their memory.
   void stopHandlers();
 
   /// Destructor

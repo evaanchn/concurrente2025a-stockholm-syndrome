@@ -171,7 +171,7 @@ void HttpServer::handleClientConnection(Socket& client) {
   // TODO(you): Make this method concurrent. Store client connections (sockets)
   // into a collection (e.g thread-safe queue) and stop in web server
 
-  queue->enqueue(client);
+  this->queue->enqueue(client);
 }
 
 void HttpServer::createHandlers(){
