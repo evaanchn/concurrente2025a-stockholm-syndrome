@@ -106,10 +106,14 @@ class HttpServer : public TcpServer{
   /// using the startThread() method so they begin processing client requests.
   void startHandlers();
 
-  /// @brief Stops all handler threads
-  /// @details Enqueues stop signals in the queue, waits for each handler to
-  /// finish execution using waitToFinish(), and then deallocates their memory.
-  void stopHandlers();
+  /// @brief Waits for all handler threads to finish
+  /// @details Iterates over each handler and calls waitToFinish() to ensure
+  /// all threads have completed their execution before proceeding.
+  void joinHandlers();
+
+  /// @brief Deletes all handler objects
+  /// @details Deallocates memory used by each handler
+  void deleteHandlers();
 
   /// Destructor
   ~HttpServer();

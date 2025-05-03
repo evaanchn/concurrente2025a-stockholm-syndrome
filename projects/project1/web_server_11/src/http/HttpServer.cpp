@@ -123,7 +123,10 @@ void HttpServer::stopServer(const bool stopApps) {
   }
 
   // Join threads
-  this->stopHandlers();
+  this->joinHandlers();
+
+  // Delete handlers
+  this->deleteHandlers();
 
   // If applications were started
   if (stopApps) {
@@ -190,10 +193,14 @@ void HttpServer::startHandlers() {
   }
 }
 
-void HttpServer::stopHandlers() {
-  for (size_t index = 0; index < this->maxConnections; ++index) {
-    this->handlers[index]->waitToFinish();
-    std::cout << "finished: " << index;
-    delete this->handlers[index];
+void HttpServer::joinHandlers() {
+  for (size_t i = 0; i < this->handlers.size(); ++i) {
+    this->handlers[i]->waitToFinish();
+  }
+}
+
+void HttpServer::deleteHandlers() {
+  for (HttpConnectionHandler* handler : this->handlers) {
+    delete handler;
   }
 }
