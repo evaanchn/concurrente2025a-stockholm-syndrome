@@ -1,0 +1,46 @@
+= Design of solution
+:experimental:
+:nofooter:
+:source-highlighter: highlightjs
+:stem:
+:toc:
+:xrefstyle: short
+
+[[web_server_design]]
+== Web Server design
+
+The following diagram shows the design for the first version of the concurrent web server, using two clients' requests to show how requests will be responded for both Prime Factorization and Goldbach Sums web apps. Note that inheritances involving new, important classes are attached in the surroundings of the process diagram.
+
+[#web_server_diagram]
+.UML class diagram (click to open original)
+image::webserver11_design.svg[algin="center"]
+
+
+[[calculators_designs]]
+== Calculators designs
+
+In this section, pseudocode for the calculators' algorithms will be presented. Note that both calculators share a common isPrime procedure.
+
+=== Prime factorization
+
+For prime factorization, the selected approach was straightforward: divide the number by prime numbers, from 2 onwards, whilst counting the amount of times this was possible by each one. This process does not stop until the current prime number exceeds the square root of the number's current value.
+
+Note that the processNumber procedure adds each prime factor and its exponent next to each other, continuously, inside a vector. It also returns the amount of prime factors it registered.
+
+[#prime_fact_calc]
+[source,delphi]
+----
+include::PrimeFactCalc.pseudo[]
+----
+
+=== Goldbach sums
+
+Similar to the prime factorization calculator, a processNumber procedure was created for constructing responses for Goldbach Sums requests. The two conjectures were in turn divided into two methods, named after their respective conjecture.
+
+For this version, both methods use a find-the-complement approach with for loops to find the sums of prime numbers. Sums are stored in a vector, that follow after the initial storage of the number. If the number is even, then the sums will come in pairs, if it's odd, in trios. The process number procedure also returns the amount of sums it found for the number. The pseudocode for this calculator can be found below.
+
+[#golbach_calc]
+[source,delphi]
+----
+include::GoldbachCalc.pseudo[]
+----

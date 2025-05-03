@@ -1,0 +1,53 @@
+procedure processNumber(number, goldbachSums)
+  goldbachSums.add(number)
+  my_sumnsOperands := 0
+
+  if (number is even):
+    if (strongGoldbach(number, goldbachSums)):
+      print "No valid sum of two primes was found."
+    else
+      print "No valid sum of three primes was found."
+    end if
+  my_sumnsOperands := 2
+  else
+    if (weakGoldbach(number, goldbachSums)):
+      print "No valid sum of two primes was found."
+    end if
+  my_sumnsOperands := 3
+  end if
+  return my_sumnsOperands
+end procedure
+
+procedure strongGoldbach(number, goldbachSums)
+  my_Found := false
+  for i := 2 to number/2 do
+    if (isPrime(i) and isPrime(number - i)):
+      goldbachSums.add(i)
+      goldbachSums.add(number - i)
+      my_Found := true
+    end if
+  end for
+  return my_Found
+end procedure
+
+procedure weakGoldbach(number, goldbachSums)
+  my_Found := false
+  for i := 2 to number/3:
+    if (not isPrime(i)) continue:
+    for j := i to (number - i)/2:
+      if (not isPrime(j)) continue:
+      my_thirdNumber := number - i - j
+      if (isPrime(my_thirdNumber)):
+        goldbachSums.add(i)
+        goldbachSums.add(j)
+        goldbachSums.add(my_thirdNumber)
+        my_Found := true
+      end if
+    end for
+  end for
+  return my_Found
+end procedure
+
+procedure getNSums(goldbachSums, nElements)
+  return (goldbachSums.size() - 1) / nElements
+end procedure
