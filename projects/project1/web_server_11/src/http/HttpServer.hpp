@@ -3,9 +3,15 @@
 #ifndef HTTPSERVER_H
 #define HTTPSERVER_H
 
+#include <climits>
+#include <csignal>
+#include <mutex>
 #include <vector>
 
+#include "Queue.hpp"
 #include "TcpServer.hpp"
+#include "Thread.hpp"
+#include "HttpConnectionHandler.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 
@@ -54,7 +60,7 @@ repeats the process with the following application in the chain: the pets
 application. If no application manages the request, a 404 Not-found response
 is sent to the client.
 */
-class HttpServer : public TcpServer {
+class HttpServer : public TcpServer{
   DISABLE_COPY(HttpServer);
 
  protected:
@@ -67,9 +73,48 @@ class HttpServer : public TcpServer {
   /// the request, the not found page will be served.
   std::vector<HttpApp*> applications;
 
+ private:
+  /// Number of threads to handle connections
+  unsigned int maxConnections = std::thread::hardware_concurrency();
+  /// queue default capacity
+  uint64_t capacity = SEM_VALUE_MAX;
+  /// socket producing queue
+  Queue<Socket>* queue = nullptr;
+  /// socket consumers
+  std::vector<HttpConnectionHandler*> handlers;
+
  public:
-  /// Constructor
-  HttpServer();
+  // Unique (singleton pattern) instance of the server
+  static HttpServer& getInstance();
+
+
+  /// @brief Handdles signals assigned by main thread
+  /// @details gets Server instance and call the stop method to close it
+  /// @param signalID macro from csignal library
+  /// SIGINT: ctrl+c executed by the running enviroment
+  /// SIGTERM: kill [PID] executed by a program specifiyng current proccess id
+  static void handleSignal(int signalID);
+
+  /// @brief Creates connection handler threads
+  /// @details Reserves space in the handler vector and creates a handler for
+  /// each allowed connection. Each handler is associated with the shared
+  /// socket queue to consume incoming client connections.
+  void createHandlers();
+
+  /// @brief Starts all handler threads
+  /// @details Iterates over each connection handler and starts its execution
+  /// using the startThread() method so they begin processing client requests.
+  void startHandlers();
+
+  /// @brief Waits for all handler threads to finish
+  /// @details Iterates over each handler and calls waitToFinish() to ensure
+  /// all threads have completed their execution before proceeding.
+  void joinHandlers();
+
+  /// @brief Deletes all handler objects
+  /// @details Deallocates memory used by each handler
+  void deleteHandlers();
+
   /// Destructor
   ~HttpServer();
   /// Registers a web application to the chain
@@ -80,8 +125,14 @@ class HttpServer : public TcpServer {
   /// For each accepted connection request, the virtual onConnectionAccepted()
   /// will be called. Inherited classes must override that method
   void listenForever(const char* port);
+  /// @brief To be called by a HttpConnectionHandler that got a signal to
+  /// close the server
+  /// @details thread safe (mutex)
+  void stop();
 
  protected:
+  /// Constructor (not public for singleton pattern)
+  HttpServer();
   /// Analyze the command line arguments
   /// @return true if program can continue execution, false otherwise
   bool analyzeArguments(int argc, char* argv[]);
@@ -106,16 +157,10 @@ class HttpServer : public TcpServer {
   /// @return true on success and the server will continue handling further
   /// HTTP requests, or false if server should stop accepting requests from
   /// this client (e.g: HTTP/1.0)
-  virtual bool handleHttpRequest(HttpRequest& httpRequest,
-    HttpResponse& httpResponse);
-  /// Route, that provide an answer according to the URI value
-  /// For example, home page is handled different than a number
-  bool route(HttpRequest& httpRequest, HttpResponse& httpResponse);
   /// Sends a page for a non found resource in this server. This method is
   /// called if none of the registered web applications handled the request.
   /// If you want to override this method, create a web app, e.g NotFoundWebApp
   /// that reacts to all URIs, and chain it as the last web app
-  bool serveNotFound(HttpRequest& httpRequest, HttpResponse& httpResponse);
 };
 
 #endif  // HTTPSERVER_H

@@ -21,14 +21,37 @@ const char* const usage =
     DEFAULT_PORT "\n"
   "  handlers     Number of connection handler theads\n";
 
+HttpServer& HttpServer::getInstance() {
+  static HttpServer server;
+  return server;
+}
+
+void HttpServer::handleSignal(int signalID) {
+  if (signalID == SIGINT || signalID == SIGTERM) {
+    std::cout << "Stop: " << ((signalID == SIGINT) ? "SIGINT" : "SIGTERM")
+      << " thread: " << std::this_thread::get_id() << "\n";
+    HttpServer::getInstance().stopListening();
+  }
+}
+
 HttpServer::HttpServer() {
 }
 
 HttpServer::~HttpServer() {
+  delete this->queue;
 }
 
 void HttpServer::listenForever(const char* port) {
   return TcpServer::listenForever(port);
+}
+
+void HttpServer::stop() {
+  // Stop listening for incoming client connection requests. When stopListing()
+  // method is called -maybe by a secondary thread-, the web server -running
+  // by the main thread- will stop executing the acceptAllConnections() method.
+  // TODO(you): stopListening must be called from a signal handler, not here
+  // done?
+  this->stopListening();
 }
 
 void HttpServer::chainWebApp(HttpApp* application) {
@@ -41,7 +64,11 @@ int HttpServer::run(int argc, char* argv[]) {
   try {
     if (this->analyzeArguments(argc, argv)) {
       // Create the objects required to respond to the client
+      this->queue = new Queue<Socket>(this->capacity);
       stopApps = this->startServer();
+      // TODO(us): move to a createHandlers method
+      this->createHandlers();
+      this->startHandlers();
       // Accept all client connections. The main process will get blocked
       // running this method and will not return. When HttpServer::stopListening
       // is called from another execution thread, an exception will be launched
@@ -59,6 +86,10 @@ int HttpServer::run(int argc, char* argv[]) {
 }
 
 bool HttpServer::startServer() {
+  // Set signal handler method from HttpConnectionHandler
+  // TODO(any): save previous signal if required
+  signal(SIGINT, HttpServer::handleSignal);
+  signal(SIGTERM, HttpServer::handleSignal);
   // Start the log service
   Log::getInstance().start();
   // Start all web applications
@@ -86,11 +117,16 @@ void HttpServer::stopApps() {
 }
 
 void HttpServer::stopServer(const bool stopApps) {
-  // Stop listening for incoming client connection requests. When stopListing()
-  // method is called -maybe by a secondary thread-, the web server -running
-  // by the main thread- will stop executing the acceptAllConnections() method.
-  // TODO(you): stopListening must be called from a signal handler, not here
-  this->stopListening();
+  // Send stop condition
+  for (size_t i = 0; i < this->maxConnections; ++i) {
+    this->queue->enqueue(Socket());
+  }
+
+  // Join threads
+  this->joinHandlers();
+
+  // Delete handlers
+  this->deleteHandlers();
 
   // If applications were started
   if (stopApps) {
@@ -113,7 +149,24 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
   if (argc >= 2) {
     this->port = argv[1];
   }
-
+  if (argc >= 3) {
+    try {
+      this->maxConnections = std::stoul(argv[2]);
+    }catch(const std::invalid_argument& error) {
+      std::cerr << "Warning: " << error.what()
+        << " default values ​​were assigned" << std::endl;
+      this->maxConnections = std::thread::hardware_concurrency();
+    }
+  }
+  if (argc >= 4) {
+    try {
+      this->capacity = std::stoull(argv[3]);
+    }catch(const std::invalid_argument& error) {
+      std::cerr << "warning: " << error.what()
+        << " default values ​​were assigned" << std::endl;
+      this->capacity = SEM_VALUE_MAX;
+    }
+  }
   return true;
 }
 
@@ -121,97 +174,33 @@ void HttpServer::handleClientConnection(Socket& client) {
   // TODO(you): Make this method concurrent. Store client connections (sockets)
   // into a collection (e.g thread-safe queue) and stop in web server
 
-  // TODO(you): Move following loop to a consumer HttpConnectionHandler class
+  this->queue->enqueue(client);
+}
 
-  // While the same client asks for HTTP requests in the same connection
-  while (true) {
-    // Create an object that parses the HTTP request from the socket
-    HttpRequest httpRequest(client);
-
-    // If the request is not valid or an error happened
-    if (!httpRequest.parse()) {
-      // Non-valid requests are normal after a previous valid request. Do not
-      // close the connection yet, because the valid request may take time to
-      // be processed. Just stop waiting for more requests
-      break;
-    }
-
-    // A complete HTTP client request was received. Create an object for the
-    // server responds to that client's request
-    HttpResponse httpResponse(client);
-
-    // Give subclass a chance to respond the HTTP request
-    const bool handled = this->handleHttpRequest(httpRequest, httpResponse);
-
-    // If subclass did not handle the request or the client used HTTP/1.0
-    if (!handled || httpRequest.getHttpVersion() == "HTTP/1.0") {
-      // The socket will not be more used, close the connection
-      client.close();
-      break;
-    }
-
-    // This version handles just one client request per connection
-    // TODO(you): Remove this break after parallelizing this method
-    break;
+void HttpServer::createHandlers() {
+  this->handlers.reserve(this->maxConnections);
+  for (size_t index = 0; index < this->maxConnections; ++index) {
+    HttpConnectionHandler* handler =
+      new HttpConnectionHandler(this->applications);
+    handler->setConsumingQueue(this->queue);
+    this->handlers.push_back(handler);
   }
 }
 
-// TODO(you): Move the following methods to your HttpConnectionHandler
-
-bool HttpServer::handleHttpRequest(HttpRequest& httpRequest,
-    HttpResponse& httpResponse) {
-  // Print IP and port from client
-  const NetworkAddress& address = httpRequest.getNetworkAddress();
-  Log::append(Log::INFO, "connection",
-    std::string("connection established with client ") + address.getIP()
-    + " port " + std::to_string(address.getPort()));
-
-  // Print HTTP request
-  Log::append(Log::INFO, "request", httpRequest.getMethod()
-    + ' ' + httpRequest.getURI()
-    + ' ' + httpRequest.getHttpVersion());
-
-  return this->route(httpRequest, httpResponse);
-}
-
-// TODO(you): Provide HttpConnectionHandler access to the array of web apps
-
-bool HttpServer::route(HttpRequest& httpRequest, HttpResponse& httpResponse) {
-  // Traverse the chain of applications
-  for (size_t index = 0; index < this->applications.size(); ++index) {
-    // If this application handles the request
-    HttpApp* app = this->applications[index];
-    if (app->handleHttpRequest(httpRequest, httpResponse)) {
-      return true;
-    }
+void HttpServer::startHandlers() {
+  for (size_t index = 0; index < this->maxConnections; ++index) {
+    this->handlers[index]->startThread();
   }
-
-  // Unrecognized request
-  return this->serveNotFound(httpRequest, httpResponse);
 }
 
-bool HttpServer::serveNotFound(HttpRequest& httpRequest
-  , HttpResponse& httpResponse) {
-  (void)httpRequest;
+void HttpServer::joinHandlers() {
+  for (size_t i = 0; i < this->handlers.size(); ++i) {
+    this->handlers[i]->waitToFinish();
+  }
+}
 
-  // TODO(you): 404 not found page should be served by a NotFoundWebApp object
-  // Set HTTP response metadata (headers)
-  httpResponse.setStatusCode(404);
-  httpResponse.setHeader("Server", "AttoServer v1.0");
-  httpResponse.setHeader("Content-type", "text/html; charset=ascii");
-
-  // Build the body of the response
-  std::string title = "Not found";
-  httpResponse.body() << "<!DOCTYPE html>\n"
-    << "<html lang=\"en\">\n"
-    << "  <meta charset=\"ascii\"/>\n"
-    << "  <title>" << title << "</title>\n"
-    << "  <style>body {font-family: monospace} h1 {color: red}</style>\n"
-    << "  <h1>" << title << "</h1>\n"
-    << "  <p>The requested resource was not found on this server.</p>\n"
-    << "  <hr><p><a href=\"/\">Homepage</a></p>\n"
-    << "</html>\n";
-
-  // Send the response to the client (user agent)
-  return httpResponse.send();
+void HttpServer::deleteHandlers() {
+  for (HttpConnectionHandler* handler : this->handlers) {
+    delete handler;
+  }
 }

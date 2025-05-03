@@ -1,0 +1,44 @@
+procedure processNummber(number, primeFactors)
+  if number <= 1 do return 0 end if
+
+  declare primeFactorsCount := 0
+  if mod(number, 2) = 0 do 
+    logPrimeFactor(number, 2, primeFactors)
+    primeFactorsCount := primeFactorsCount + 1
+  end if
+
+  // Evaluate following odd primes
+  for factor from 3 to sqrt(number) step 2 do
+    if mod(number, factor) != 0 or not isPrime(factor) then
+      continue
+    end if
+
+    logPrimeFactor(number, factor, primeFactors)
+    primeFactorsCount := primeFactorsCount + 1
+  end for
+  
+  // If remaining number > 1, it's a prime, and a factor
+  if number > 1 do
+    primeFactors.add(number)
+    primFactors.add(1)
+    primeFactorsCount := primeFactorsCount + 1
+  end if
+
+  return factorsCount
+end procedure
+
+procedure divideWhileDivisible(&number, factor, &primeFactorsCount)
+  primeCount := 0
+  while mod(number, factor) = 0 do
+    number := number / factor
+    primeCount := primeCount + 1
+  end while
+
+  factors[factor] := primeCount
+end procedure
+
+procedure logPrimeFactor(&number, primeFactor, primeFactors)
+  declare primeFactorsCount := divideWhileDivisible(number, primeFactor)
+  primeFactors.add(primeFactor)
+  primeFactors.add(primeFactorsCount)
+end procedure

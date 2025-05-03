@@ -1,0 +1,48 @@
+// Copyright 2021 Jeisson Hidalgo-Cespedes. Universidad de Costa Rica. CC BY 4.0
+
+#ifndef HTTPCONNECTIONHANDLER_HPP
+#define HTTPCONNECTIONHANDLER_HPP
+
+#include <vector>
+
+#include "Consumer.hpp"
+#include "Socket.hpp"
+#include "Log.hpp"
+#include "NetworkAddress.hpp"
+#include "HttpApp.hpp"
+#include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
+
+class HttpConnectionHandler : public Consumer<Socket> {
+ private:
+  /// Reference to app chain in server
+  std::vector<HttpApp*>& applications;
+
+ public:
+  DISABLE_COPY(HttpConnectionHandler);
+
+  /// Constructor
+  explicit HttpConnectionHandler(std::vector<HttpApp*>& applications);
+
+  /// @brief Start consuming loop
+  /// @return EXIT SUCCESS / EXIT FAILURE
+  int run() override;
+
+  /// @brief "Consume" socket by attending user requests
+  /// @param clientConnection: Connection with client
+  void consume(Socket clientConnection) override;
+
+ private:
+  /// @brief Handles a client's request
+  /// @param httpRequest The client request
+  /// @param httpResponse The response object to prepare
+  /// @return true if the request was handled correctly
+  bool handleHttpRequest(HttpRequest& httpRequest,
+    HttpResponse& httpResponse);
+
+  /// @brief Asks each app to handle the request
+  /// @see handleHttpRequest
+  bool route(HttpRequest& httpRequest, HttpResponse& httpResponse);
+};
+
+#endif  // HTTPCONNECTIONHANDLER_HPP
