@@ -19,12 +19,12 @@ int main(int argc, char* argv[]) {
   HomeWebApp homeWebApp;
   FactWebApp factWebApp;
   GoldbachWebApp goldbachWebApp;
-  // NotFoundWebApp notFoundWebApp;
+  NotFoundWebApp notFoundWebApp;
   // Register the web application(s) with the web server
   HttpServer::getInstance().chainWebApp(&homeWebApp);
   HttpServer::getInstance().chainWebApp(&factWebApp);
   HttpServer::getInstance().chainWebApp(&goldbachWebApp);
-  // HttpServer::getInstance().chainWebApp(&notFoundWebApp);
+  HttpServer::getInstance().chainWebApp(&notFoundWebApp);
   // Run the web server
   return HttpServer::getInstance().run(argc, argv);
 }

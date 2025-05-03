@@ -24,6 +24,8 @@ class HttpConnectionHandler : public Consumer<Socket> {
   /// Constructor
   explicit HttpConnectionHandler(std::vector<HttpApp*>& applications);
 
+  /// @brief Start consuming loop
+  /// @return EXIT SUCCESS / EXIT FAILURE
   int run() override;
 
   /// @brief "Consume" socket by attending user requests

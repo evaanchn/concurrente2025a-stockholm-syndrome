@@ -23,11 +23,18 @@ class NotFoundWebApp : public HttpApp {
   /// Objects of this class cannot be copied
   DISABLE_COPY(NotFoundWebApp);
   /// Constructor
-  NotFoundWebApp();
+  NotFoundWebApp() = default;
   /// Destructor
-  ~NotFoundWebApp();
+  ~NotFoundWebApp() = default;
+
   /// Called by the web server when the web server is started
-  void start() override;
+  void start() override {
+  }
+  /// Handle HTTP requests. @see HttpServer::handleHttpRequest()
+  /// @return true If this application handled the request, false otherwise
+  /// and another chained application should handle it
+  bool handleHttpRequest(HttpRequest& httpRequest
+    , HttpResponse& httpResponse) override;
   /// Sends a page for a non found resource in this server. This method is
   /// called if none of the registered web applications handled the request.
   /// If you want to override this method, create a web app, e.g NotFoundWebApp
@@ -36,7 +43,9 @@ class NotFoundWebApp : public HttpApp {
     , HttpResponse& httpResponse);
   /// Called when the web server stops, in order to allow the web application
   /// clean up and finish as well
-  void stop() override;
+
+  void stop() override {
+  }
 };
 
 #endif

@@ -9,6 +9,7 @@ HttpConnectionHandler::HttpConnectionHandler
   : applications(applications) {}
 
 int HttpConnectionHandler::run() {
+  // start consumming sockets
   this->consumeLoop();
   return EXIT_SUCCESS;
 }
@@ -62,7 +63,7 @@ HttpResponse& httpResponse) {
 bool HttpConnectionHandler::route(HttpRequest& httpRequest
     , HttpResponse& httpResponse) {
   // Traverse the chain of applications
-  for (size_t index = 0; index < this->applications.size(); ++index) {
+  for (size_t index = 0; index < this->applications.size() - 1; ++index) {
     // If this application handles the request
     HttpApp* app = this->applications[index];
     if (app->handleHttpRequest(httpRequest, httpResponse)) {
@@ -70,8 +71,8 @@ bool HttpConnectionHandler::route(HttpRequest& httpRequest
     }
   }
 
-  // // Unrecognized request, must be handled by NotFoundWebApp
-  // return this->serveNotFound(httpRequest, httpResponse);
-  // TODO: implement notfound
-  return true;
+  // Unrecognized request, must be handled by NotFoundWebApp
+  // NotFoundWebApp at applications vector last element
+  return this->applications.back()->handleHttpRequest(httpRequest
+    , httpResponse);
 }

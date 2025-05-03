@@ -23,6 +23,14 @@
 */
 template <typename ValueType>
 class CalcWebApp : public HttpApp {
+ protected:
+  // URI prefix to identify each app
+  const char* const PREFIX1;
+  // URI prefix for listing values
+  const char* const PREFIX2;
+  // HTML page title
+  const std::string title;
+
   /// Objects of this class cannot be copied
   DISABLE_COPY(CalcWebApp);
 
@@ -122,11 +130,6 @@ class CalcWebApp : public HttpApp {
   /// @param httpResponse The object to answer to the client/user
   virtual void buildResponse(const ValueType value, HttpResponse& httpResponse)
     = 0;
-
- protected:
-  const char* const PREFIX1;
-  const char* const PREFIX2;
-  const std::string title;
 };
 
 #endif  // CALCWEBAPP_HPP

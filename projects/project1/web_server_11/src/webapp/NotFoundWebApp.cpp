@@ -3,6 +3,11 @@
 
 #include "NotFoundWebApp.hpp"
 
+bool NotFoundWebApp::handleHttpRequest(HttpRequest& httpRequest,
+    HttpResponse& httpResponse) {
+  return this->serveNotFound(httpRequest, httpResponse);
+}
+
 bool NotFoundWebApp::serveNotFound(HttpRequest& httpRequest
     , HttpResponse& httpResponse) {
     (void)httpRequest;
