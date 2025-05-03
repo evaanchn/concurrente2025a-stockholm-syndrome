@@ -9,10 +9,6 @@
 #include "GoldbachWebApp.hpp"
 #include "NotFoundWebApp.hpp"
 
-
-// TODO(you): Register a signal handler for Ctrl+C and kill, and stop the server
-// TODO(you): Make your signal handler to print the thread id running it
-
 /// Start the web server
 int main(int argc, char* argv[]) {
   // Create web applications

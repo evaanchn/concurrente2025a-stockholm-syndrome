@@ -6,7 +6,7 @@ bool Prime::isPrime(int64_t number) {
   if (number <= 1) return false;
   if (number == 2) return true;
   if (number % 2 == 0) return false;
-  for (int index = 3; index * index <= number; index += 2)
-    if (number % index == 0) return false;
+  for (int factor = 3; factor * factor <= number; factor += 2)
+    if (number % factor == 0) return false;
   return true;
 }
