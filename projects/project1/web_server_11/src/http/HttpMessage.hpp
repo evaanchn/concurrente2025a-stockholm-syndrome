@@ -58,9 +58,8 @@ class HttpMessage {
   /// Request. This is the HTTP version that this server uses to answer the
   /// client request. Ideally this server should match the client version.
   /// However, only HTTP 1.0 and 1.1 are supported.
-  /// TODO(you) Handle requests concurrently. Match HTTP version used by client
   /// TODO(any) HTTP/2.0 and newer versions are not supported
-  std::string httpVersion = "HTTP/1.1";
+  std::string httpVersion;
   /// HTTP message headers (pairs key=value)
   Headers headers;
   /// Body contents is a shared buffer for all copies of this message object

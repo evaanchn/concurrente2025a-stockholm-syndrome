@@ -7,8 +7,10 @@
 #include "HttpResponse.hpp"
 #include "Socket.hpp"
 
-HttpResponse::HttpResponse(const Socket& socket)
+HttpResponse::HttpResponse(const Socket& socket
+    , const std::string clientHttpVersion)
   : HttpMessage{socket} {
+  this->httpVersion = clientHttpVersion;
 }
 
 HttpResponse::~HttpResponse() {

@@ -30,7 +30,7 @@ void HttpConnectionHandler::consume(Socket clientConnection) {
 
     // A complete HTTP client request was received. Create an object for the
     // server responds to that client's request
-    HttpResponse httpResponse(clientConnection);
+    HttpResponse httpResponse(clientConnection, httpRequest.getHttpVersion());
 
     // Give subclass a chance to respond the HTTP request
     const bool handled = this->handleHttpRequest(httpRequest, httpResponse);
