@@ -117,9 +117,8 @@ void HttpServer::stopApps() {
 
 void HttpServer::stopServer(const bool stopApps) {
   // Send stop condition
-  Socket stopSocket;
   for (size_t i = 0; i < this->maxConnections; ++i) {
-    this->queue->enqueue(stopSocket);
+    this->queue->enqueue(Socket());
   }
 
   // Join threads
