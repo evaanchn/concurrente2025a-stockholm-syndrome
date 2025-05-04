@@ -33,7 +33,8 @@ class HttpResponse : public HttpMessage {
 
  public:
   /// Constructor
-  explicit HttpResponse(const Socket& socket);
+  explicit HttpResponse(const Socket& socket
+    , const std::string clientHttpVersion);
   /// Destructor
   ~HttpResponse();
   /// Set the status code, and optionally the status text (reason phrase)
