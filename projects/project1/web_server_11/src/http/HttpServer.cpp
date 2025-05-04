@@ -13,13 +13,15 @@
 #include "NetworkAddress.hpp"
 #include "Socket.hpp"
 
-// TODO(you): Implement connection handlers argument
 const char* const usage =
-  "Usage: webserv [port] [handlers]\n"
+  "Usage: webserv [port] [max_connections] [queue_capacity]\n"
   "\n"
   "  port        Network port to listen incoming HTTP requests, default "
     DEFAULT_PORT "\n"
-  "  handlers     Number of connection handler theads\n";
+  "  max_connections  Max amount of connections the server"
+  " can attend concurrently\n"
+  "  conn_queue_capacity  Max amount of connections that"
+  " can be stored in queue\n";
 
 HttpServer& HttpServer::getInstance() {
   static HttpServer server;
@@ -49,8 +51,6 @@ void HttpServer::stop() {
   // Stop listening for incoming client connection requests. When stopListing()
   // method is called -maybe by a secondary thread-, the web server -running
   // by the main thread- will stop executing the acceptAllConnections() method.
-  // TODO(you): stopListening must be called from a signal handler, not here
-  // done?
   this->stopListening();
 }
 
@@ -66,7 +66,6 @@ int HttpServer::run(int argc, char* argv[]) {
       // Create the objects required to respond to the client
       this->queue = new Queue<Socket>(this->capacity);
       stopApps = this->startServer();
-      // TODO(us): move to a createHandlers method
       this->createHandlers();
       this->startHandlers();
       // Accept all client connections. The main process will get blocked
@@ -172,9 +171,6 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
 }
 
 void HttpServer::handleClientConnection(Socket& client) {
-  // TODO(you): Make this method concurrent. Store client connections (sockets)
-  // into a collection (e.g thread-safe queue) and stop in web server
-
   this->queue->enqueue(client);
 }
 
