@@ -18,11 +18,14 @@
 #include "HttpResponse.hpp"
 #include "Util.hpp"
 
+// TODO Add intermediary class for concurrent app
+
 /**
 @brief A web application generic template for unary calculation
 */
 template <typename ValueType>
 class CalcWebApp : public HttpApp {
+  // TODO make prefix1 and prefix2 not in caps. Rename to appPrefix and valuePrefix. Change to string
  protected:
   // URI prefix to identify each app
   const char* const PREFIX1;

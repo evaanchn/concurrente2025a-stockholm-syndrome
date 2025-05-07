@@ -8,7 +8,9 @@
 :xrefstyle: short
 
 == Preview
-
+// TODO Leave Goldbach app only and explain server with the image
+// TODO Move images to Usage so explanations have images
+// TODO Crop images
 .Home Page
 image::images/HomeWebApp.png[]
 
@@ -21,6 +23,7 @@ image::images/GoldbachWebApp.png[]
 .Not Found Page
 image::images/NotFoundWebApp.png[]
 
+// TODO Goldbach should be capitalized
 [[problem_statement]]
 == Problem description (Analysis)
 The following project consists of a concurrent and distributed server that allows users to request the prime factorization or goldbach sums of any given number, through two separate applications. Both of these are integrated into the server, but are not yet implemented as independent processes or threads (a task for future versions). This project involves both task concurrency and data parallelism, as well as a basic approach to networks.
@@ -56,6 +59,7 @@ Source: https://en.wikipedia.org/wiki/Goldbach%27s_conjecture
 Visit https://jeisson.ecci.ucr.ac.cr/concurrente/2022b/tareas/#problem_statement_serial for the source explanation for this part of the project.
 
 == User’s manual
+// TODO add Make and linux/UNIX requirements
 === Prerequisites
 1. Clone the GitLab repository.
 2. C++ compiler with c++ 17 (g++, clang)
@@ -111,7 +115,7 @@ Connection length [replies/conn]: 1.000
 Concurrent (30 threads and 70 queue capacity):
 [source] 
 ----
-$ httperf --server 10.137.1.117 --port 8080 --num-conns 200 --rate 50 --num-call 3 --uri /goldbach?number=922222 --timeout 1
+$ httperf --server 10.137.1.117 --port 8080 --num-conns 200 --rate 50 --num-call 3 --uri /goldbach?number=922222 --timeout 3
 
 Total: conections 200 request 465 replies 385 test-duration 11.118 s
 
@@ -127,7 +131,7 @@ The results show that concurret version could manage more requests in less time 
 According to the number of requests that were replied
 
 - Serial: 49% success
-- Concurrent: 90% success
+- Concurrent: 82% success
 
 [[design]]
 == Design of solution

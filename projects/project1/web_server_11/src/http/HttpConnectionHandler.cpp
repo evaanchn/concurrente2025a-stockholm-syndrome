@@ -62,6 +62,7 @@ HttpResponse& httpResponse) {
 
 bool HttpConnectionHandler::route(HttpRequest& httpRequest
     , HttpResponse& httpResponse) {
+  // TODO Modify for so the whole vector of applications can handle
   // Traverse the chain of applications
   for (size_t index = 0; index < this->applications.size() - 1; ++index) {
     // If this application handles the request
@@ -70,7 +71,7 @@ bool HttpConnectionHandler::route(HttpRequest& httpRequest
       return true;
     }
   }
-
+  // TODO return false and add assert before that, it would be a programmer error that should never happen
   // Unrecognized request, must be handled by NotFoundWebApp
   // NotFoundWebApp at applications vector last element
   return this->applications.back()->handleHttpRequest(httpRequest

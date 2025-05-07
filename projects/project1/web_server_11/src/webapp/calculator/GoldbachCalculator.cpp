@@ -4,6 +4,7 @@
 
 size_t GoldbachCalculator::processNumber(int64_t number,
     std::vector<int64_t>& goldbachSums) {
+  // TODO dont assume printf, throw exceptions
   goldbachSums.push_back(number);
   int64_t sumOperands = 1;
   if (number % 2 == 0) {

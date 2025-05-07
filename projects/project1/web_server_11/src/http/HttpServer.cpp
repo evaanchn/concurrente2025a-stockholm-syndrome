@@ -64,6 +64,9 @@ int HttpServer::run(int argc, char* argv[]) {
   try {
     if (this->analyzeArguments(argc, argv)) {
       // Create the objects required to respond to the client
+      // TODO Add connectQueues method
+      // TODO Rename createHandlers and startHandlers methods to thread related
+      // TODO Reorder methods to appear as they are called
       this->queue = new Queue<Socket>(this->capacity);
       stopApps = this->startServer();
       this->createHandlers();
@@ -116,6 +119,7 @@ void HttpServer::stopApps() {
 }
 
 void HttpServer::stopServer(const bool stopApps) {
+  // TODO Move adding stop conditions to join method
   // Send stop condition
   for (size_t i = 0; i < this->maxConnections; ++i) {
     this->queue->enqueue(Socket());
@@ -195,6 +199,7 @@ void HttpServer::joinHandlers() {
   }
 }
 
+// TODO Move to destructor or add vector clear
 void HttpServer::deleteHandlers() {
   for (HttpConnectionHandler* handler : this->handlers) {
     delete handler;
