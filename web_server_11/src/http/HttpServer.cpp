@@ -23,6 +23,13 @@ const char* const usage =
   "  conn_queue_capacity  Max amount of connections that"
   " can be stored in queue\n";
 
+HttpServer::HttpServer() {
+}
+
+HttpServer::~HttpServer() {
+  delete this->queue;
+}
+
 HttpServer& HttpServer::getInstance() {
   static HttpServer server;
   return server;
@@ -36,24 +43,6 @@ void HttpServer::handleSignal(int signalID) {
   }
 }
 
-HttpServer::HttpServer() {
-}
-
-HttpServer::~HttpServer() {
-  delete this->queue;
-}
-
-void HttpServer::listenForever(const char* port) {
-  return TcpServer::listenForever(port);
-}
-
-void HttpServer::stop() {
-  // Stop listening for incoming client connection requests. When stopListing()
-  // method is called -maybe by a secondary thread-, the web server -running
-  // by the main thread- will stop executing the acceptAllConnections() method.
-  this->stopListening();
-}
-
 void HttpServer::chainWebApp(HttpApp* application) {
   assert(application);
   this->applications.push_back(application);
@@ -63,14 +52,10 @@ int HttpServer::run(int argc, char* argv[]) {
   bool stopApps = false;
   try {
     if (this->analyzeArguments(argc, argv)) {
-      // Create the objects required to respond to the client
-      // TODO Add connectQueues method
-      // TODO Rename createHandlers and startHandlers methods to thread related
-      // TODO Reorder methods to appear as they are called
-      this->queue = new Queue<Socket>(this->capacity);
       stopApps = this->startServer();
-      this->createHandlers();
-      this->startHandlers();
+      this->createThreads();
+      this->connectQueues();
+      this->startThreads();
       // Accept all client connections. The main process will get blocked
       // running this method and will not return. When HttpServer::stopListening
       // is called from another execution thread, an exception will be launched
@@ -87,6 +72,51 @@ int HttpServer::run(int argc, char* argv[]) {
   return EXIT_SUCCESS;
 }
 
+void HttpServer::listenForever(const char* port) {
+  return TcpServer::listenForever(port);
+}
+
+void HttpServer::stop() {
+  // Stop listening for incoming client connection requests. When stopListing()
+  // method is called -maybe by a secondary thread-, the web server -running
+  // by the main thread- will stop executing the acceptAllConnections() method.
+  this->stopListening();
+}
+
+bool HttpServer::analyzeArguments(int argc, char* argv[]) {
+  // Traverse all arguments
+  for (int index = 1; index < argc; ++index) {
+    const std::string argument = argv[index];
+    if (argument.find("help") != std::string::npos) {
+      std::cout << usage;
+      return false;
+    }
+  }
+
+  if (argc >= 2) {
+    this->port = argv[1];
+  }
+  if (argc >= 3) {
+    try {
+      this->maxConnections = std::stoul(argv[2]);
+    } catch(const std::invalid_argument& error) {
+      std::cerr << "Warning: " << error.what()
+        << " default values ​​were assigned" << std::endl;
+      this->maxConnections = std::thread::hardware_concurrency();
+    }
+  }
+  if (argc >= 4) {
+    try {
+      this->capacity = std::stoull(argv[3]);
+    } catch(const std::invalid_argument& error) {
+      std::cerr << "warning: " << error.what()
+        << " default values ​​were assigned" << std::endl;
+      this->capacity = SEM_VALUE_MAX;
+    }
+  }
+  return true;
+}
+
 bool HttpServer::startServer() {
   // Set signal handler method from HttpConnectionHandler
   // TODO(any): save previous signal if required
@@ -97,7 +127,6 @@ bool HttpServer::startServer() {
   // Start all web applications
   this->startApps();
   // Start waiting for connections
-  // TODO(you): Optionally log the main thread id
   this->listenForConnections(this->port);
   const NetworkAddress& address = this->getNetworkAddress();
   Log::append(Log::INFO, "webserver", "Listening on " + address.getIP()
@@ -119,17 +148,11 @@ void HttpServer::stopApps() {
 }
 
 void HttpServer::stopServer(const bool stopApps) {
-  // TODO Move adding stop conditions to join method
-  // Send stop condition
-  for (size_t i = 0; i < this->maxConnections; ++i) {
-    this->queue->enqueue(Socket());
-  }
-
   // Join threads
-  this->joinHandlers();
+  this->joinThreads();
 
   // Delete handlers
-  this->deleteHandlers();
+  this->deleteThreads();
 
   // If applications were started
   if (stopApps) {
@@ -139,69 +162,55 @@ void HttpServer::stopServer(const bool stopApps) {
   Log::getInstance().stop();
 }
 
-bool HttpServer::analyzeArguments(int argc, char* argv[]) {
-  // Traverse all arguments
-  for (int index = 1; index < argc; ++index) {
-    const std::string argument = argv[index];
-    if (argument.find("help") != std::string::npos) {
-      std::cout << usage;
-      return false;
-    }
-  }
-
-  if (argc >= 2) {
-    this->port = argv[1];
-  }
-  if (argc >= 3) {
-    try {
-      this->maxConnections = std::stoul(argv[2]);
-    }catch(const std::invalid_argument& error) {
-      std::cerr << "Warning: " << error.what()
-        << " default values ​​were assigned" << std::endl;
-      this->maxConnections = std::thread::hardware_concurrency();
-    }
-  }
-  if (argc >= 4) {
-    try {
-      this->capacity = std::stoull(argv[3]);
-    }catch(const std::invalid_argument& error) {
-      std::cerr << "warning: " << error.what()
-        << " default values ​​were assigned" << std::endl;
-      this->capacity = SEM_VALUE_MAX;
-    }
-  }
-  return true;
-}
-
 void HttpServer::handleClientConnection(Socket& client) {
   this->queue->enqueue(client);
 }
 
-void HttpServer::createHandlers() {
+void HttpServer::createThreads() {
+  // Reserve space in the handler vector and create a handler for
+  // each allowed connection. Each handler is associated with the shared
+  // socket queue to consume incoming client connections.
   this->handlers.reserve(this->maxConnections);
   for (size_t index = 0; index < this->maxConnections; ++index) {
     HttpConnectionHandler* handler =
       new HttpConnectionHandler(this->applications);
-    handler->setConsumingQueue(this->queue);
     this->handlers.push_back(handler);
   }
 }
 
-void HttpServer::startHandlers() {
+void HttpServer::connectQueues() {
+  // Create the objects required to respond to the client
+  this->queue = new Queue<Socket>(this->capacity);
+
+  // Connection handlers will consume from the server's sockets queue
+  for (size_t index = 0; index < this->maxConnections; ++index) {
+    handlers[index]->setConsumingQueue(this->queue);
+  }
+}
+
+void HttpServer::startThreads() {
+  // Starts the connection handler threads to accept connections
   for (size_t index = 0; index < this->maxConnections; ++index) {
     this->handlers[index]->startThread();
   }
 }
 
-void HttpServer::joinHandlers() {
+void HttpServer::joinThreads() {
+  // Send stop conditions to handlers
+  for (size_t i = 0; i < this->maxConnections; ++i) {
+    this->queue->enqueue(Socket());
+  }
+
+  // Wait for connection handlers to finish
   for (size_t i = 0; i < this->handlers.size(); ++i) {
     this->handlers[i]->waitToFinish();
   }
 }
 
-// TODO Move to destructor or add vector clear
-void HttpServer::deleteHandlers() {
+void HttpServer::deleteThreads() {
+  // Free memory allocated for handler thread objects
   for (HttpConnectionHandler* handler : this->handlers) {
     delete handler;
   }
+  handlers.clear();
 }
