@@ -1,0 +1,4 @@
+@INCLUDE = ../common/Doxyfile
+PROJECT_NAME           = "Concurrent and distributed web server"
+PROJECT_NUMBER         = 1.0.0
+PROJECT_BRIEF          = "<A distributed, concurrent web server that provides concurrent service for multiple applications, including Goldbach summation and prime factorization calculators, running in parallel.>"
