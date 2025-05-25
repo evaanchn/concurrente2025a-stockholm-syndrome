@@ -6,13 +6,11 @@
 :toc:
 :xrefstyle: short
 
-// TODO Add reference to original document
 [[web_server_design]]
 == Web Server design
 
 The following diagram shows the design for the first version of the concurrent web server, using two fake clients to show how requests will be responded for both Prime Factorization and Goldbach Sums web apps. Note that inheritances involving added relevant classes are attached in the surroundings of the process diagram.
 
-// TODO Modify diagram so calcularors are created by the apps
 [#web_server_diagram]
 .Web server diagram
 image::web_server_11_design.png[algin="center"]
@@ -46,4 +44,6 @@ For this version, both methods use a find-the-complement approach with for loops
 ----
 include::GoldbachCalc.pseudo[]
 ----
+
+== Resources
 visit https://jeisson.ecci.ucr.ac.cr/concurrente/2025a/proyectos/webserv/ for more information about the project.

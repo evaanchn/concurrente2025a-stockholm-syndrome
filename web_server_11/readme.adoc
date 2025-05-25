@@ -8,14 +8,10 @@
 :xrefstyle: short
 
 == Preview
-// TODO Leave Goldbach app only and explain server with the image
-// TODO Move images to Usage so explanations have images
-// TODO Crop images
 image::images/GoldbachWebApp.png[]
 
 This is an example of a Goldbach result for a query with three numbers: 72, 44, and -142. If the numbers are positive, the page displays only the number of Goldbach sums for that number; otherwise, a list of all results is displayed.
 
-// TODO Goldbach should be capitalized
 [[problem_statement]]
 == Problem description (Analysis)
 The purpose of this project is to create a distributed, concurrent web server that provides concurrent service for different web applications, such as Goldbach summation and prime factorization calculators, running in parallel. This project addresses task concurrency and data parallelism, as well as a basic approach to networking.
@@ -57,7 +53,6 @@ Source: https://en.wikipedia.org/wiki/Goldbach%27s_conjecture
 Visit https://jeisson.ecci.ucr.ac.cr/concurrente/2022b/tareas/#problem_statement_serial for the source explanation for this part of the project.
 
 == User’s manual
-// TODO add Make and linux/UNIX requirements
 
 === Prerequisites
 
