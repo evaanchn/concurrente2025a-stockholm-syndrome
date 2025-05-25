@@ -15,7 +15,7 @@ The following diagram shows the design for the first version of the concurrent w
 // TODO Modify diagram so calcularors are created by the apps
 [#web_server_diagram]
 .Web server diagram
-image::webserver11_design.svg[algin="center"]
+image::web_server_11_design.png[algin="center"]
 
 
 [[calculators_designs]]
