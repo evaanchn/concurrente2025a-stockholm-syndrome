@@ -4,9 +4,10 @@
 #define GOLDBACHCALCULATOR_HPP
 
 #include <iostream>
+#include <stdexcept>
 #include <vector>
-#include "Prime.hpp"
 
+#include "Prime.hpp"
 /**
  * @class GoldbachCalculator
  * @brief Calculates the Goldbach sums for a given number.
@@ -26,7 +27,7 @@ class GoldbachCalculator {
   * @param goldbachSums A reference to the vector where the results will be stored.
   * @return The total number of sums found.
   */
-  size_t processNumber(int64_t number, std::vector<int64_t>&goldbachSums);
+  int64_t processNumber(int64_t number, std::vector<int64_t>&goldbachSums);
 
  private:
    /**

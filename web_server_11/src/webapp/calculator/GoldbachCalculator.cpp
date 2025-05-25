@@ -2,26 +2,24 @@
 
 #include "GoldbachCalculator.hpp"
 
-size_t GoldbachCalculator::processNumber(int64_t number,
+int64_t GoldbachCalculator::processNumber(int64_t number,
     std::vector<int64_t>& goldbachSums) {
-  // TODO dont assume printf, throw exceptions
-  goldbachSums.push_back(number);
-  int64_t sumOperands = 1;
-  if (number % 2 == 0) {
-    if (!strongGoldbach(number, goldbachSums)) {
-      printf("No valid sum of two primes was found.");
+    goldbachSums.push_back(number);
+    int64_t sumOperands = 1;
+    if (number % 2 == 0) {
+      if (!strongGoldbach(number, goldbachSums)) {
+        throw std::runtime_error("No valid sum of two primes was found");
+      }
+      sumOperands = 2;
+  
+    } else {
+      if (!weakGoldbach(number, goldbachSums)) {
+        throw std::runtime_error("No valid sum of three primes was found");
+      }
+      sumOperands = 3;
     }
-    sumOperands = 2;
-
-  } else {
-    if (!weakGoldbach(number, goldbachSums)) {
-      printf("No valid sum of three primes was found.");
-    }
-    sumOperands = 3;
-  }
-  return getNSums(goldbachSums, sumOperands);
+    return getNSums(goldbachSums, sumOperands);
 }
-
 
 bool GoldbachCalculator::strongGoldbach(int64_t number,
     std::vector<int64_t>&goldbachSums) {
