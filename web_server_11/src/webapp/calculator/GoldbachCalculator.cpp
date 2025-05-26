@@ -11,7 +11,7 @@ int64_t GoldbachCalculator::processNumber(int64_t number,
         throw std::runtime_error("No valid sum of two primes was found");
       }
       sumOperands = 2;
-  
+
     } else {
       if (!weakGoldbach(number, goldbachSums)) {
         throw std::runtime_error("No valid sum of three primes was found");

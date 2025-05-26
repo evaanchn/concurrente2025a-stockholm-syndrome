@@ -18,7 +18,7 @@
 #include "HttpResponse.hpp"
 #include "Util.hpp"
 
-// TODO Add intermediary class for concurrent app
+// TODO(us) Add intermediary class for concurrent app
 
 /**
 @brief A web application generic template for unary calculation
