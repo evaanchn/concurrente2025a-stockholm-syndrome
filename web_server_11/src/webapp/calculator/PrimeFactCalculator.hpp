@@ -7,9 +7,10 @@
 #include <math.h>
 #include <vector>
 
+#include "AppCalculator.hpp"
 #include "Prime.hpp"
 
-class PrimeFactCalculator {
+class PrimeFactCalculator: public AppCalculator{
  public:
   /**
    * Processes a number to find all its prime factors and their exponents.

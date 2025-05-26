@@ -4,10 +4,10 @@
 #define GOLDBACHCALCULATOR_HPP
 
 #include <iostream>
-#include <stdexcept>
 #include <vector>
-
 #include "Prime.hpp"
+#include "AppCalculator.hpp"
+
 /**
  * @class GoldbachCalculator
  * @brief Calculates the Goldbach sums for a given number.
@@ -15,7 +15,7 @@
  * Provides methods to process a number according to Goldbach's conjecture
  * and retrieve the generated sums.
  */
-class GoldbachCalculator {
+class GoldbachCalculator: public AppCalculator{
  public:
   /**
   * @brief Processes a number to find its Goldbach sums.
@@ -27,7 +27,7 @@ class GoldbachCalculator {
   * @param goldbachSums A reference to the vector where the results will be stored.
   * @return The total number of sums found.
   */
-  int64_t processNumber(int64_t number, std::vector<int64_t>&goldbachSums);
+  size_t processNumber(int64_t number, std::vector<int64_t>&goldbachSums);
 
  private:
    /**
@@ -64,4 +64,4 @@ class GoldbachCalculator {
   size_t getNSums(std::vector<int64_t>&goldbachSums, int64_t nElements);
 };
 
-#endif
+#endif  // GOLDBACHCALCULATOR_HPP
