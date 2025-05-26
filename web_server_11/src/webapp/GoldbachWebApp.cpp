@@ -47,8 +47,8 @@ void GoldbachWebApp::buildResponse(const int64_t value
       << "</body>\n"
       << "</html>\n";
   } catch (std::runtime_error& error) {
-    httpResponse.body() 
-      << "    <li class=err>" 
+    httpResponse.body()
+      << "    <li class=err>"
       <<        error.what()
       << "    </li>";
   }
