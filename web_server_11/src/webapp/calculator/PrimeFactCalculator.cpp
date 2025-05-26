@@ -4,6 +4,7 @@
 
 size_t PrimeFactCalculator::processNumber(int64_t number
     , std::vector<int64_t>& primeFactors) {
+  primeFactors.push_back(number);  // Store the original number
   if (number <= 1) return 0;
   int64_t primeFactorsCount = 0;
 

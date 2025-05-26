@@ -12,19 +12,18 @@
 #include <string>
 #include <vector>
 
+#include "ConcurrentApp.hpp"
 #include "HomeWebApp.hpp"
 #include "HttpApp.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "Util.hpp"
 
-// TODO(us) Add intermediary class for concurrent app
+/// @brief Generic web application for unary calculation
+class CalcWebApp : public ConcurrentApp<int64_t, int64_t> {
+  /// Objects of this class cannot be copied
+  DISABLE_COPY(CalcWebApp);
 
-/**
-@brief A web application generic template for unary calculation
-*/
-template <typename ValueType>
-class CalcWebApp : public HttpApp {
  protected:
   // URI prefix to identify each app
   const std::string appPrefix;
@@ -32,9 +31,6 @@ class CalcWebApp : public HttpApp {
   const std::string valuesPrefix;
   // HTML page title
   const std::string title;
-
-  /// Objects of this class cannot be copied
-  DISABLE_COPY(CalcWebApp);
 
  public:
   /// Constructor
@@ -45,93 +41,44 @@ class CalcWebApp : public HttpApp {
   , title(title) {
   }
 
-  /// Destructor
-  ~CalcWebApp() {
-  }
-
   /// Called by the web server when the web server is started
   void start() override {
-  }
-
-  /// Handle HTTP requests. @see HttpServer::handleHttpRequest()
-  /// @return true If this application handled the request, false otherwise
-  /// and another chained application should handle it
-  bool handleHttpRequest(HttpRequest& httpRequest,
-      HttpResponse& httpResponse) override {
-    // If the request starts with appPrefix is for this web app
-    if (httpRequest.getURI().rfind(appPrefix, 0) == 0) {
-      return this->serveCalculation(httpRequest, httpResponse);
-    }
-    // Unrecognized request
-    return false;
   }
 
   /// Called when the web server stops, in order to allow the web application
   /// clean up and finish as well
   void stop() override {
   }
+  /// Check if this application can handle the HTTP request
+  /// @return true If this application handled the request, false otherwise
+  /// and another chained application should handle it
+  bool canHandleHttpRequest(HttpRequest& httpRequest,
+    HttpResponse& httpResponse) override;
 
  protected:
-  /// Handle a HTTP request that starts with "/fact"
-  /// @return true if the calculation was handled, false if it must be
-  /// handled by another application
-  bool serveCalculation(HttpRequest& httpRequest, HttpResponse& httpResponse) {
-    // Replace %xx hexadecimal codes by their ASCII symbols
-    const std::string& uri = Util::decodeURI(httpRequest.getURI());
-    // Build the body of the response
-    // HomeWebApp::serveHeader(httpResponse, this->title);
-    HomeWebApp::serveHeader(httpResponse, this->title);
-    httpResponse.body()
-      // << "  <p>request: " << uri << "</p>\n"
-      << "  <ol type=""A"">\n";
-    this->analyzeValueList(uri, httpResponse);
-    httpResponse.body()
-      << "  </ol>\n"
-      << "</html>\n";
-    // Send the response to the client (user agent)
-    return httpResponse.send();
-  }
-
-  /// @brief Extract comma-separated values to realize them an unary
-  /// calculation, from uri and add their results to the HTTP response
-  /// @param uri request URI in form "/valuesPrefixx1,x2,...,xn" or
-  /// "/valuesPrefixx1,x2,...,xn"
-  /// @param httpResponse The object to answer to the client/user
-  void analyzeValueList(const std::string& uri, HttpResponse& httpResponse) {
-    // Numbers were asked in the form "/appPrefix/123,45,-7899" or
-    // "/[appPrefix]?number=13"
-    // Determine the position where numbers start
-    size_t numbersStart = appPrefix.length();
-    if (uri.rfind(valuesPrefix, 0) == 0) {
-      numbersStart = valuesPrefix.length();
-    }
-    // TODO(you): Use arbitrary precision for numbers larger than int64_t
-    const std::vector<std::string>& texts =
-        Util::split(uri.substr(numbersStart), ",", true);
-    // For each asked number, provide its calculation
-    for (size_t index = 0; index < texts.size(); ++index) {
-      try {
-        // Convert the text to a number. Provide an error message if not
-        size_t end = 0;
-        const ValueType value = std::stoll(texts[index], &end);
-        if (end != texts[index].length()) {
-          throw std::runtime_error("invalid number " + texts[index]);
-        }
-        this->buildResponse(value, httpResponse);
-      } catch (const std::exception& exception) {
-        // Text was not a valid number, report an error to user
-        httpResponse.body() << "    <li class=err>" << texts[index]
-            << ": invalid number\n";
-      }
-    }
-  }
-
+  /// @brief Parse the HTTP request to parse numbers from the URI
+  /// @param httpRequest request to be parsed
+  /// @param httpResponse response to the client
+  /// @param query is the vector to store the parsed numbers
+  void parseRequest(HttpRequest& httpRequest, HttpResponse& httpResponse
+    , std::vector<int64_t>& query) override;
+  /// @brief Format the response with the results of the request
+  /// @details This method is called by the web server to format the response
+  /// with the results of the request. It builds the HTML response body
+  /// with the results of the calculation.
+  /// @param results is the vector of results to be formatted
+  /// @param httpResponse is the response to be sent back to the client
+  /// @remark The results vector contains a vector of int64_t for each
+  /// calculation, where the first element is the original value and the
+  /// rest of the elements are the results of the calculation.
+  void formatResponse(std::vector<std::vector<int64_t>>& results,
+      HttpResponse& httpResponse) override;
   /// @brief Unary calculation response for a given value to be implemented by
   // the subclases
-  /// @param value Data required for the calculation
+  /// @param result vector containing the original value and its result elements
   /// @param httpResponse The object to answer to the client/user
-  virtual void buildResponse(const ValueType value, HttpResponse& httpResponse)
-    = 0;
+  virtual void buildResult(std::vector<int64_t>& result
+    , HttpResponse& httpResponse) = 0;
 };
 
 #endif  // CALCWEBAPP_HPP
