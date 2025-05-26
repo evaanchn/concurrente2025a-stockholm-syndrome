@@ -6,31 +6,33 @@ GoldbachWebApp::GoldbachWebApp()
 : CalcWebApp("/goldbach", "/goldbach?number=", "Goldbach sums") {
 }
 
-void GoldbachWebApp::buildResponse(const int64_t value
-  , HttpResponse& httpResponse) {
-  std::vector<int64_t> sums;
-  GoldbachCalculator myGoldbach;
+void GoldbachWebApp::buildResult(std::vector<int64_t>& result
+    , HttpResponse& httpResponse) {
+  // checks wheter each sum() has two (even value) or three(odd) operands
+  size_t sumOperands = (result.front() % 2 == 0) ? 2 : 3;
+  // result contains the value at the first position and is followed by its
+  // sums
+  size_t sumsCount = (result.size() - 1) / sumOperands;
   try {
-    const int64_t sumsCount = myGoldbach.processNumber(std::abs(value), sums);
     httpResponse.body()
       << "    <div class='results-container'>\n"
       << "      <h2 class='result-title'>Goldbach Sums Results</h2>\n"
       << "      <div class='result-item'>\n"
       << "        <div class='number-result'>\n"
-      << "          <span class='number-value'>" << value << "</span>: \n"
+      << "          <span class='number-value'>" << result.front()
+      << "</span>: \n"
       << "          <span class='sums-count'>" << sumsCount << " sums</span>\n"
       << "        </div>";
-    if (value < 0 && sumsCount > 0) {
-      size_t sumOperands = (sums.front() % 2 == 0) ? 2 : 3;
+    if (result.front() < 0 && sumsCount > 0) {
       httpResponse.body()
         << "        <div class='sums-grid'>";
-      for (size_t sumIndex = 1; sumIndex <= sums.size() - sumOperands;
+      for (size_t sumIndex = 1; sumIndex <= result.size() - sumOperands;
         sumIndex += sumOperands) {
         httpResponse.body()
           << "          <div class='sum-item'>";
         for (size_t operandIndex = sumIndex;
           operandIndex < sumOperands + sumIndex; ++operandIndex) {
-          httpResponse.body() << sums.at(operandIndex);
+          httpResponse.body() << result.at(operandIndex);
           if (operandIndex != sumOperands + sumIndex - 1) {
             httpResponse.body() << " + ";
           }

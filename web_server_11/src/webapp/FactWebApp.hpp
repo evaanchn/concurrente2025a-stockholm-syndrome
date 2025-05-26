@@ -13,7 +13,7 @@
 /**
 @brief A web application that calculates prime factors
 */
-class FactWebApp : public CalcWebApp<int64_t> {
+class FactWebApp : public CalcWebApp {
   /// Objects of this class cannot be copied
   DISABLE_COPY(FactWebApp);
 
@@ -25,9 +25,10 @@ class FactWebApp : public CalcWebApp<int64_t> {
 
  private:
   /// @brief Prime factorization for a given value
-  /// @param value given number
+  /// @param result vector containing the original value and its prime factors
   /// @param httpReponse The object to answer to the client/user
-  void buildResponse(const int64_t value, HttpResponse& httpResponse) override;
+  void buildResult(std::vector<int64_t>& result
+    , HttpResponse& httpResponse) override;
 
   /// @brief Answer with the possible prime factors of a value
   /// @param primeFactors results of prime factorization: {count, fact1,

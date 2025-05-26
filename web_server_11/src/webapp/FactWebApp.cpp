@@ -6,32 +6,31 @@ FactWebApp::FactWebApp()
 : CalcWebApp("/fact", "/fact?number=", "Prime Factorization") {
 }
 
-void FactWebApp::buildResponse(const int64_t value
+void FactWebApp::buildResult(std::vector<int64_t>& result
   , HttpResponse& httpResponse) {
-  std::vector<int64_t> primeFactors;
-  int64_t primeFactorsCount = 0;
-  PrimeFactCalculator myPrimeFact;
-  primeFactorsCount = myPrimeFact.processNumber(std::abs(value), primeFactors);
+  // result contains the value at the first position and is followed by its
+  // factors
+  int64_t primeFactorsCount = result.size() - 1;
 
   httpResponse.body()
     << "    <div class='results-container'>\n"
     << "      <h2 class='result-title'>Prime Factorization Results</h2>\n"
     << "      <div class='result-item'>\n"
     << "        <div class='number-result'>\n"
-    << "          <span class='number-value'>" << value << "</span> = \n"
+    << "          <span class='number-value'>" << result.at(0) << "</span> = \n"
     << "          <span class='factorization'>";
 
   if (primeFactorsCount == 0) {
     httpResponse.body() << "<span class='err'>Invalid number</span>";
   } else {
-    for (int64_t factIndex = 0; factIndex < primeFactorsCount * 2;
+    for (int64_t factIndex = 1; factIndex < primeFactorsCount * 2;
       factIndex += 2) {
       httpResponse.body()
-        << "<span class='factor'>" << primeFactors.at(factIndex) << "</span>";
-      if (primeFactors.at(factIndex + 1) != 1) {
+        << "<span class='factor'>" << result.at(factIndex) << "</span>";
+      if (result.at(factIndex + 1) != 1) {
         httpResponse.body()
           << "<sup class='exponent'>"
-          << primeFactors.at(factIndex + 1)
+          << result.at(factIndex + 1)
           << "</sup>";
       }
       if (factIndex < (primeFactorsCount * 2) - 2) {

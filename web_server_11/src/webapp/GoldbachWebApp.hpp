@@ -14,7 +14,7 @@
 /**
 @brief A web application that calculates Goldbach sums
 */
-class GoldbachWebApp : public CalcWebApp<int64_t> {
+class GoldbachWebApp : public CalcWebApp {
   /// Objects of this class cannot be copied
   DISABLE_COPY(GoldbachWebApp);
 
@@ -25,10 +25,11 @@ class GoldbachWebApp : public CalcWebApp<int64_t> {
   ~GoldbachWebApp() = default;
 
  private:
-  /// @brief Goldbach sums for a given value
-  /// @param value given number
-  /// @param httpResponse The object to answer to the client/user
-  void buildResponse(const int64_t value, HttpResponse& httpResponse) override;
+  /// @brief Prime factorization for a given value
+  /// @param result vector containing the original value and its sums
+  /// @param httpReponse The object to answer to the client/user
+  void buildResult(std::vector<int64_t>& result
+    , HttpResponse& httpResponse) override;
 
   /// @brief Count of possible goldbach sums of value
   /// @param sums results of goldbach sum: {value, sum1val, sum1val, ...}
