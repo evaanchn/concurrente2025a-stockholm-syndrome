@@ -12,6 +12,7 @@
 #include <string>
 #include <vector>
 
+#include "ConcurrentApp.hpp"
 #include "HomeWebApp.hpp"
 #include "HttpApp.hpp"
 #include "HttpRequest.hpp"
@@ -56,7 +57,7 @@ class CalcWebApp : public HttpApp {
   /// Handle HTTP requests. @see HttpServer::handleHttpRequest()
   /// @return true If this application handled the request, false otherwise
   /// and another chained application should handle it
-  bool handleHttpRequest(HttpRequest& httpRequest,
+  bool can(HttpRequest& httpRequest,
       HttpResponse& httpResponse) override {
     // If the request starts with appPrefix is for this web app
     if (httpRequest.getURI().rfind(appPrefix, 0) == 0) {
@@ -132,6 +133,46 @@ class CalcWebApp : public HttpApp {
   /// @param httpResponse The object to answer to the client/user
   virtual void buildResponse(const ValueType value, HttpResponse& httpResponse)
     = 0;
+
+  bool canHandleHttpRequest(HttpRequest& httpRequest,
+      HttpResponse& httpResponse){
+    return false;
+    
+  }
+
+  void parseRequest(HttpRequest& httpRequest,
+    std::vector<int64_t>& query) {
+    // Replace %xx hexadecimal codes by their ASCII symbols
+    const std::string& uri = Util::decodeURI(httpRequest.getURI());
+    // Numbers were asked in the form "/appPrefix/123,45,-7899" or
+    // "/[appPrefix]?number=13"
+    // Determine the position where numbers start
+    size_t numbersStart = appPrefix.length();
+    if (uri.rfind(valuesPrefix, 0) == 0) {
+      numbersStart = valuesPrefix.length();
+    }
+    // TODO(you): Use arbitrary precision for numbers larger than int64_t
+    const std::vector<std::string>& texts =
+        Util::split(uri.substr(numbersStart), ",", true);
+    // For each asked number, provide its calculation
+    for (size_t index = 0; index < texts.size(); ++index) {
+      try {
+        // Convert the text to a number. Provide an error message if not
+        size_t end = 0;
+        const int64_t value = std::stoll(texts[index], &end);
+        if (end != texts[index].length()) {
+          throw std::runtime_error("invalid number " + texts[index]);
+        }
+        query.push_back(value);
+      } catch (const std::exception& exception) {
+        // Text was not a valid number, report an error to user
+        httpResponse.body() << "    <li class=err>" << texts[index]
+            << ": invalid number\n";
+      }
+    }
+  }
 };
+
+
 
 #endif  // CALCWEBAPP_HPP
