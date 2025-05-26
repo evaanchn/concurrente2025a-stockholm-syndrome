@@ -65,13 +65,9 @@ class RequestData {
   std::vector<InputType>& getQuery() {
     return this->query;
   }
-  /// Add a new data unit to the query
-  /// @param dataUnit Input type data
-  /// @return itself
-  RequestData& operator+=(const InputType dataUnit) {
-    this->query.push_back(dataUnit);
-    ++this->pendingQueries;
-    return *this;
+  /// Update pendingQueries according to the query size
+  void updatePending() {
+    this->pendingQueries = this->query.size();
   }
   /// Store a given result
   /// @param newResult list of data from a new result, must be at leat one
