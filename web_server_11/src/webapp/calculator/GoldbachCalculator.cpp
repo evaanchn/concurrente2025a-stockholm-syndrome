@@ -2,7 +2,7 @@
 
 #include "GoldbachCalculator.hpp"
 
-int64_t GoldbachCalculator::processNumber(int64_t number,
+size_t GoldbachCalculator::processNumber(int64_t number,
     std::vector<int64_t>& goldbachSums) {
     goldbachSums.push_back(number);
     int64_t sumOperands = 1;
