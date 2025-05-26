@@ -10,10 +10,10 @@
 #include "HttpApp.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "AppCalculator.hpp"
 
 // TODO(us): delete when class is created
 typedef HttpApp ConcurrentApp;
-typedef void AppCalculator;
 
 /// @brief Generic class to save data from a client request throughout the
 /// concurrent production line
