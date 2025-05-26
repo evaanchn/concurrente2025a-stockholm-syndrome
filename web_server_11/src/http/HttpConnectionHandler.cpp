@@ -62,18 +62,16 @@ HttpResponse& httpResponse) {
 
 bool HttpConnectionHandler::route(HttpRequest& httpRequest
     , HttpResponse& httpResponse) {
-  // TODO Modify for so the whole vector of applications can handle
   // Traverse the chain of applications
-  for (size_t index = 0; index < this->applications.size() - 1; ++index) {
+  for (size_t index = 0; index < this->applications.size(); ++index) {
     // If this application handles the request
     HttpApp* app = this->applications[index];
     if (app->handleHttpRequest(httpRequest, httpResponse)) {
       return true;
     }
   }
-  // TODO return false and add assert before that, it would be a programmer error that should never happen
-  // Unrecognized request, must be handled by NotFoundWebApp
-  // NotFoundWebApp at applications vector last element
-  return this->applications.back()->handleHttpRequest(httpRequest
-    , httpResponse);
+  // NotFoundWebApp should take care of requests that don't belond to any app
+  // Thus this should never happen, so the assert(false) alerts the programmer
+  assert(false);
+  return false;
 }

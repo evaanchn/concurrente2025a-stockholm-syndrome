@@ -1,4 +1,4 @@
-include ../../../common/Makefile
+include ../common/Makefile
 
 # Simulation
 # DEFS += -DSIMULATION

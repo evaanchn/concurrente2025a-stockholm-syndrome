@@ -25,12 +25,11 @@
 */
 template <typename ValueType>
 class CalcWebApp : public HttpApp {
-  // TODO make prefix1 and prefix2 not in caps. Rename to appPrefix and valuePrefix. Change to string
  protected:
   // URI prefix to identify each app
-  const char* const PREFIX1;
+  const std::string appPrefix;
   // URI prefix for listing values
-  const char* const PREFIX2;
+  const std::string valuesPrefix;
   // HTML page title
   const std::string title;
 
@@ -39,10 +38,10 @@ class CalcWebApp : public HttpApp {
 
  public:
   /// Constructor
-  CalcWebApp(const char* const prefix1, const char* const prefix2
+  CalcWebApp(const std::string appPrefix, const std::string valuesPrefix
     , std::string title)
-  : PREFIX1(prefix1)
-  , PREFIX2(prefix2)
+  : appPrefix(appPrefix)
+  , valuesPrefix(valuesPrefix)
   , title(title) {
   }
 
@@ -59,8 +58,8 @@ class CalcWebApp : public HttpApp {
   /// and another chained application should handle it
   bool handleHttpRequest(HttpRequest& httpRequest,
       HttpResponse& httpResponse) override {
-    // If the request starts with PREFIX1 is for this web app
-    if (httpRequest.getURI().rfind(PREFIX1, 0) == 0) {
+    // If the request starts with appPrefix is for this web app
+    if (httpRequest.getURI().rfind(appPrefix, 0) == 0) {
       return this->serveCalculation(httpRequest, httpResponse);
     }
     // Unrecognized request
@@ -95,16 +94,16 @@ class CalcWebApp : public HttpApp {
 
   /// @brief Extract comma-separated values to realize them an unary
   /// calculation, from uri and add their results to the HTTP response
-  /// @param uri request URI in form "/PREFIX1=x1,x2,...,xn" or
-  /// "/PREFIX2=x1,x2,...,xn"
+  /// @param uri request URI in form "/valuesPrefixx1,x2,...,xn" or
+  /// "/valuesPrefixx1,x2,...,xn"
   /// @param httpResponse The object to answer to the client/user
   void analyzeValueList(const std::string& uri, HttpResponse& httpResponse) {
-    // Numbers were asked in the form "/PREFIX1/123,45,-7899" or
-    // "/[PREFIX]?number=13"
+    // Numbers were asked in the form "/appPrefix/123,45,-7899" or
+    // "/[appPrefix]?number=13"
     // Determine the position where numbers start
-    size_t numbersStart = std::strlen(PREFIX1);
-    if (uri.rfind(PREFIX2, 0) == 0) {
-      numbersStart = std::strlen(PREFIX2);
+    size_t numbersStart = appPrefix.length();
+    if (uri.rfind(valuesPrefix, 0) == 0) {
+      numbersStart = valuesPrefix.length();
     }
     // TODO(you): Use arbitrary precision for numbers larger than int64_t
     const std::vector<std::string>& texts =

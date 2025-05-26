@@ -8,25 +8,19 @@
 :xrefstyle: short
 
 == Preview
-// TODO Leave Goldbach app only and explain server with the image
-// TODO Move images to Usage so explanations have images
-// TODO Crop images
-.Home Page
-image::images/HomeWebApp.png[]
-
-.Prime Factorization Page
-image::images/FactWebApp.png[]
-
-.Goldbach Sums Page
 image::images/GoldbachWebApp.png[]
 
-.Not Found Page
-image::images/NotFoundWebApp.png[]
+This is an example of a Goldbach result for a query with three numbers: 72, 44, and -142. If the numbers are positive, the page displays only the number of Goldbach sums for that number; otherwise, a list of all results is displayed.
 
-// TODO Goldbach should be capitalized
 [[problem_statement]]
 == Problem description (Analysis)
-The following project consists of a concurrent and distributed server that allows users to request the prime factorization or goldbach sums of any given number, through two separate applications. Both of these are integrated into the server, but are not yet implemented as independent processes or threads (a task for future versions). This project involves both task concurrency and data parallelism, as well as a basic approach to networks.
+The purpose of this project is to create a distributed, concurrent web server that provides concurrent service for different web applications, such as Goldbach summation and prime factorization calculators, running in parallel. This project addresses task concurrency and data parallelism, as well as a basic approach to networking.
+
+[[structure]]
+== Structure of the project
+The program receives a certain number of requests from server clients, each containing numbers to be evaluated and an identifier indicating the operation to be performed. These requests are placed in a waiting queue to be processed by a group of threads that have access to the server's applications.
+
+Within each web application, the requests are parsed to extract the individual values needed for the calculations. Once all the results have been obtained, they are returned to the client in the same format in which they were received by the server.
 
 The following lines summarize the fundamentals of prime factorization and Goldbach’s conjecture for a better understanding of the program’s use.
 
@@ -59,23 +53,66 @@ Source: https://en.wikipedia.org/wiki/Goldbach%27s_conjecture
 Visit https://jeisson.ecci.ucr.ac.cr/concurrente/2022b/tareas/#problem_statement_serial for the source explanation for this part of the project.
 
 == User’s manual
-// TODO add Make and linux/UNIX requirements
+
 === Prerequisites
-1. Clone the GitLab repository.
-2. C++ compiler with c++ 17 (g++, clang)
+
+*Important:* A Unix/Linux variant is required as the operating system. Ej: debian, fedora.
+
+Clone the GitLab repository.
+
+[source]
+----
+$ git clone https://git.ucr.ac.cr/AXEL.ROJASRETANA/paralela25a-stockholm_syndrome.git
+----
+
+Install a C++ compiler with C++17 support (e.g., g++ or clang).
+
+[source]
+----
+g++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+Copyright (C) 2023 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+----
+
+Install make program
+
+[source]
+----
+$ sudo apt-get install make
+----
 
 === Compilation
-1. Run the _make run_ command in the terminal from the *web_server_11* folder to compile the program.
 
-2. Then, use an execution command similar to the following line in the terminal `$./bin/web_server_11 8080 30 70`, where:
+Compile the program by running the following command inside the *web_server_11* folder:
 
-- 8080 can be replaced the port through which the connection with the server will be established, which has to be greater than 1023
-- 30 represents the number of concurrent connections allowed.
-- 70 represents the capacity of the pending connection queue.
+[source]
+----
+$ make run
+----
 
-3. Verify that the server is running by entering the following URL on your web browser: http://localhost:8080
+Run the server using a command like the following:
 
-4. Make your queries to the server about prime factorization and Goldbach sums
+[source]
+----
+$ ./bin/web_server_11 8080 30 70
+----
+
+Where:
+- `8080` is the port for server connection (must be >1023),
+- `30` is the max number of concurrent connections,
+- `70` is the capacity of the pending connection queue.
+
+Verify the server is running by opening your browser and visiting:
+
+[source]
+----
+http://localhost:8080
+----
+
+image::images/HomeWebApp.png[]
+
+Use the server to make queries about prime factorization and Goldbach sums.
 
 === Input and Output
 You can request for a list of numbers to be processed, separated by commas, either in the input box or specified in the URL following the format: _"http://localhost"_ followed by: _[port][appName]=[num1],[num2],...,[num_n]_. Results for each requested number will be listed on screen.
@@ -83,8 +120,12 @@ You can request for a list of numbers to be processed, separated by commas, eith
 ==== Prime factorization app
 In this application, users will be able to see the prime factorizations for the numbers requested listed in product-exponent form, similar to figure shown in the analysis.
 
+image::images/FactWebApp.png[]
+
 ==== Goldbach sums app
 To request the specific sums for a number, enter it as a negative. Alternatively, if only the amount of sums is desired, the number can be written as is (positive). A list of sums or amounts will be shown on screen as a response.
+
+image::images/GoldbachWebApp.png[]
 
 === Stopping the server
 1. Press Ctrl + C in the terminal where the program is running.

@@ -84,39 +84,16 @@ class HttpServer : public TcpServer{
   std::vector<HttpConnectionHandler*> handlers;
 
  public:
+  /// Destructor
+  ~HttpServer();
   // Unique (singleton pattern) instance of the server
   static HttpServer& getInstance();
-
-
   /// @brief Handdles signals assigned by main thread
   /// @details gets Server instance and call the stop method to close it
   /// @param signalID macro from csignal library
   /// SIGINT: ctrl+c executed by the running enviroment
   /// SIGTERM: kill [PID] executed by a program specifiyng current proccess id
   static void handleSignal(int signalID);
-
-  /// @brief Creates connection handler threads
-  /// @details Reserves space in the handler vector and creates a handler for
-  /// each allowed connection. Each handler is associated with the shared
-  /// socket queue to consume incoming client connections.
-  void createHandlers();
-
-  /// @brief Starts all handler threads
-  /// @details Iterates over each connection handler and starts its execution
-  /// using the startThread() method so they begin processing client requests.
-  void startHandlers();
-
-  /// @brief Waits for all handler threads to finish
-  /// @details Iterates over each handler and calls waitToFinish() to ensure
-  /// all threads have completed their execution before proceeding.
-  void joinHandlers();
-
-  /// @brief Deletes all handler objects
-  /// @details Deallocates memory used by each handler
-  void deleteHandlers();
-
-  /// Destructor
-  ~HttpServer();
   /// Registers a web application to the chain
   void chainWebApp(HttpApp* application);
   /// Start the web server for listening client connections and HTTP requests
@@ -161,6 +138,18 @@ class HttpServer : public TcpServer{
   /// called if none of the registered web applications handled the request.
   /// If you want to override this method, create a web app, e.g NotFoundWebApp
   /// that reacts to all URIs, and chain it as the last web app
+
+ private:
+  /// @brief Creates thread objects
+  void createThreads();
+  /// @brief Connects producer-consumer queues
+  void connectQueues();
+  /// @brief Starts all thread objects
+  void startThreads();
+  /// @brief Waits for all threads to finish
+  void joinThreads();
+  /// @brief Deletes all thread objects
+  void deleteThreads();
 };
 
 #endif  // HTTPSERVER_H
