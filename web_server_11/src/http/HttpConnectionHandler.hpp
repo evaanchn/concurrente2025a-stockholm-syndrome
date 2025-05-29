@@ -5,19 +5,21 @@
 
 #include <vector>
 
-#include "Consumer.hpp"
+#include "Assembler.hpp"
 #include "Socket.hpp"
 #include "Log.hpp"
 #include "NetworkAddress.hpp"
 #include "HttpApp.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
+#include "ConcurrentApp.hpp"
+#include "RequestData.hpp"
 
 /**
  * @class HttpConnectionHandler
  * @brief Thread object that manages a connection with a client (one socket)
  */
-class HttpConnectionHandler : public Consumer<Socket> {
+class HttpConnectionHandler : public Assembler<Socket, RequestData*> {
  private:
   /// Reference to app chain in server
   std::vector<HttpApp*>& applications;

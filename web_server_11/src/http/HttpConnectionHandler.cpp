@@ -9,8 +9,11 @@ HttpConnectionHandler::HttpConnectionHandler
   : applications(applications) {}
 
 int HttpConnectionHandler::run() {
-  // start consumming sockets
+  // Start consuming sockets from queue and enqueue request data if
+  // request is from concurrent app
   this->consumeLoop();
+  // Produce a stop condition for consumer of producing queue, after stopping
+  this->produce(nullptr);
   return EXIT_SUCCESS;
 }
 
@@ -67,10 +70,18 @@ bool HttpConnectionHandler::route(HttpRequest& httpRequest
     // If this application handles the request
     HttpApp* app = this->applications[index];
     if (app->handleHttpRequest(httpRequest, httpResponse)) {
+      // If handleHttpRequest returned true, it could be a concurrent app
+      ConcurrentApp* concurrentApp = dynamic_cast<ConcurrentApp*>(app);
+      // If it is concurrent (dynamic cast successful)
+      if (concurrentApp) {
+        // Create request data
+        RequestData* request = concurrentApp->createRequestData(httpRequest);
+        this->produce(request);
+      }
       return true;
     }
   }
-  // NotFoundWebApp should take care of requests that don't belond to any app
+  // NotFoundWebApp should take care of requests that don't belong to any app
   // Thus this should never happen, so the assert(false) alerts the programmer
   assert(false);
   return false;
