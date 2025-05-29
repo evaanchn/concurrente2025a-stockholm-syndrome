@@ -29,7 +29,7 @@ class GoldbachWebApp : public CalcWebApp {
   /// @param result vector containing the original value and its sums
   /// @param httpReponse The object to answer to the client/user
   void buildResult(std::vector<int64_t>& result
-    , HttpResponse& httpResponse) override;
+    , HttpResponse& httpResponse);
 
   /// @brief Count of possible goldbach sums of value
   /// @param sums results of goldbach sum: {value, sum1val, sum1val, ...}
@@ -40,6 +40,12 @@ class GoldbachWebApp : public CalcWebApp {
   /// @param sums results of goldbach sum: {value, sum1val, sum1val, ...}
   /// @param httpResponse The object to answer to the client/user
   void sumsResponse(std::vector<int64_t>& sums, HttpResponse& httpResponse);
+
+    /// @brief Create a RequestData object to store the request data
+  /// @param httpRequest is the request to be handled
+  /// @param httpResponse is the response to be sent back to the client
+  /// @return a pointer to the created RequestData object
+  RequestData* createRequestData(HttpRequest& httpRequest) override;
 };
 
 #endif  // GOLDBACHWEBAPP_HPP
