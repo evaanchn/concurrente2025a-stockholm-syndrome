@@ -6,16 +6,11 @@ int Calculator::run() {
   this->consumeLoop();
   return EXIT_SUCCESS;
 }
-void Calculator::consume(RequestUnit<int64_t, int64_t> *unit) {
+
+void Calculator::consume(RequestUnit *unit) {
   // Get the request data
-  RequestData<int64_t, int64_t>* requestData = unit->getRequestData();
-  // Get the input data
-  int64_t number = unit->getData();
-  std::vector<int64_t> result;
-  // getCalculator() returns a pointer to the AppCalculator
-  AppCalculator* calculator = requestData->getCalculator();
-  // Process the number using the calculator
-  calculator->processNumber(number, result);
-  requestData->saveResult(result, unit->getResultIndex());
+  RequestData* requestData = unit->requestData;
+  // Process the number using the AppCalculator
+  requestData->processQuery(unit->resultIndex);
   this->produce(unit);
 }

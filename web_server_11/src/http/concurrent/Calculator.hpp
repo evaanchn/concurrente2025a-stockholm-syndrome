@@ -8,15 +8,14 @@
 #include "RequestUnit.hpp"
 #include "AppCalculator.hpp"
 
-class Calculator : public Assembler<RequestUnit<int64_t, int64_t>*,
-    RequestUnit<int64_t, int64_t>*> {
+class Calculator : public Assembler<RequestUnit*, RequestUnit*> {
  public:
   Calculator() = default;
   /// @brief  Consume a RequestUnit containing an integer to be processed
   /// @param data Pointer to the RequestUnit containing the data to be processed
   /// @details This method processes the input data and produces a result
   /// by calling the AppCalculator's processNumber method.
-  void consume(RequestUnit<int64_t, int64_t> *data) override;
+  void consume(RequestUnit *data) override;
 
   /// @brief Start consuming loop
   /// @return EXIT SUCCESS / EXIT FAILURE
