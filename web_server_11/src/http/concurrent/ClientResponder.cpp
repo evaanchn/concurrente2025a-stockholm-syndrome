@@ -14,7 +14,8 @@ int ClientResponder::run() {
 
 void ClientResponder::consume(RequestData* requestData) {
   assert(requestData);
-  // 
-  requestData->respond();  
+  // format the response and send it to the client
+  requestData->respond();
+  // delete the request data since It is no longer needed
   delete requestData;
 }

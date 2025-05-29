@@ -9,7 +9,15 @@ ResponseAssembler::ResponseAssembler(size_t pendingStopConditions
 }
 
 int ResponseAssembler::run() {
-  this->consumeLoop();
+  // Start consuming from own queue
+  while (this->pendingStopConditions > 0) {
+    this->consumeLoop();
+    --this->pendingStopConditions;
+  }
+
+  for (size_t i = 0; i < this->stopConditionsToSend; ++i) {
+    this->produce(nullptr);
+  }
   return EXIT_SUCCESS;
 }
 
