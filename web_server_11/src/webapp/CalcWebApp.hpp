@@ -19,8 +19,8 @@
 #include "HttpResponse.hpp"
 #include "Util.hpp"
 
-/// @brief Generic web application for unary calculation
-class CalcWebApp : public ConcurrentApp<int64_t, int64_t> {
+/// @brief CalcWebApp is a base class for web applications that handle
+class CalcWebApp : public ConcurrentApp {
   /// Objects of this class cannot be copied
   DISABLE_COPY(CalcWebApp);
 
@@ -55,13 +55,13 @@ class CalcWebApp : public ConcurrentApp<int64_t, int64_t> {
   bool canHandleHttpRequest(HttpRequest& httpRequest,
     HttpResponse& httpResponse) override;
 
- protected:
+ public:
   /// @brief Parse the HTTP request to parse numbers from the URI
   /// @param httpRequest request to be parsed
   /// @param httpResponse response to the client
-  /// @param query is the vector to store the parsed numbers
+  /// @param queries is the vector to store the parsed numbers
   void parseRequest(HttpRequest& httpRequest, HttpResponse& httpResponse
-    , std::vector<int64_t>& query) override;
+    , std::vector<int64_t>& queries);
   /// @brief Format the response with the results of the request
   /// @details This method is called by the web server to format the response
   /// with the results of the request. It builds the HTML response body
@@ -72,13 +72,13 @@ class CalcWebApp : public ConcurrentApp<int64_t, int64_t> {
   /// calculation, where the first element is the original value and the
   /// rest of the elements are the results of the calculation.
   void formatResponse(std::vector<std::vector<int64_t>>& results,
-      HttpResponse& httpResponse) override;
+      HttpResponse& httpResponse);
   /// @brief Unary calculation response for a given value to be implemented by
   // the subclases
   /// @param result vector containing the original value and its result elements
   /// @param httpResponse The object to answer to the client/user
-  virtual void buildResult(std::vector<int64_t>& result
-    , HttpResponse& httpResponse) = 0;
+  virtual void buildResult(std::vector<int64_t>& result) = 0;
+
 };
 
 #endif  // CALCWEBAPP_HPP

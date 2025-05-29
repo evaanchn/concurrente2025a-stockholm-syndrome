@@ -6,11 +6,6 @@ bool CalcWebApp::canHandleHttpRequest(HttpRequest& httpRequest,
       HttpResponse& httpResponse) {
   // If the request starts with appPrefix is for this web app
   if (httpRequest.getURI().rfind(appPrefix, 0) == 0) {
-    // Serve header of the html
-    HomeWebApp::serveHeader(httpResponse, this->title);
-    // start ordered list of results
-    httpResponse.body()
-      << "  <ol type=""A"">\n";
     return true;
   }
   // Unrecognized request
@@ -18,7 +13,13 @@ bool CalcWebApp::canHandleHttpRequest(HttpRequest& httpRequest,
 }
 
 void CalcWebApp::parseRequest(HttpRequest& httpRequest,
-    HttpResponse& httpResponse, std::vector<int64_t>& query) {
+    HttpResponse& httpResponse, std::vector<int64_t>& queries) {
+  /**HtppRespond body list is started in case of invalid numbers*/
+  // Serve header of the html
+  HomeWebApp::serveHeader(httpResponse, this->title);
+  // start ordered list of results
+  httpResponse.body()
+    << "  <ol type=""A"">\n";
   // Replace %xx hexadecimal codes by their ASCII symbols
   const std::string& uri = Util::decodeURI(httpRequest.getURI());
   // Numbers were asked in the form "/appPrefix/123,45,-7899" or
@@ -40,7 +41,7 @@ void CalcWebApp::parseRequest(HttpRequest& httpRequest,
       if (end != texts[index].length()) {
         throw std::runtime_error("invalid number " + texts[index]);
       }
-      query.push_back(value);
+      queries.push_back(value);
     } catch (const std::exception& exception) {
       // Text was not a valid number, report an error to user
       httpResponse.body() << "    <li class=err>" << texts[index]
@@ -53,7 +54,7 @@ void CalcWebApp::formatResponse(
     std::vector<std::vector<int64_t>>& results, HttpResponse& httpResponse) {
   // For each result, build the response
   for (auto& result : results) {
-    this->buildResult(result, httpResponse);
+    this->buildResult(result);
   }
   // End ordered list of results
   httpResponse.body()

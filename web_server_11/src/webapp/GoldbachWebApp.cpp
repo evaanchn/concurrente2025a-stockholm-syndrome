@@ -1,6 +1,7 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
 #include "GoldbachWebApp.hpp"
+#include "GoldbachRequestData.hpp"
 
 GoldbachWebApp::GoldbachWebApp()
 : CalcWebApp("/goldbach", "/goldbach?number=", "Goldbach sums") {
@@ -79,4 +80,14 @@ void GoldbachWebApp::sumsResponse(std::vector<int64_t>& sums
     httpResponse.body() << "</div>";
   }
   httpResponse.body() << "</div>";
+}
+
+RequestData* GoldbachWebApp::createRequestData(HttpRequest& httpRequest) {
+  GoldbachRequestData* requestData = new GoldbachRequestData(httpRequest, this);
+  if (requestData) {
+    this->parseRequest(httpRequest, requestData->getHttpResponse(),
+      requestData->getQueries());
+  }
+  requestData->updatePending();
+  return requestData;
 }
