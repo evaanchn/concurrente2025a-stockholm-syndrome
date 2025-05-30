@@ -1,7 +1,7 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
-#ifndef RESPONSEASSEMBLER_HPP
-#define RESPONSEASSEMBLER_HPP
+#ifndef CLIENTRESPONDER_HPP
+#define CLIENTRESPONDER_HPP
 
 #include <cstdlib>
 
@@ -14,7 +14,7 @@
 class ClientResponder : public Consumer<RequestData*> {
   DISABLE_COPY(ClientResponder);
 
-private:
+ private:
   /// @brief Number of pending stop conditions to consume
   size_t pendingStopConditions = 0;
 
@@ -34,4 +34,4 @@ private:
   void consume(RequestData* data) override;
 };
 
-#endif  // RESPONSEASSEMBLER_HPP
+#endif  // CLIENTRESPONDER_HPP

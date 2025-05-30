@@ -12,7 +12,7 @@
 class ResponseAssembler : public Assembler<RequestUnit, RequestData*> {
   DISABLE_COPY(ResponseAssembler);
 
-private:
+ private:
   size_t pendingStopConditions = 0;
   size_t stopConditionsToSend = 0;
 
@@ -27,8 +27,8 @@ private:
   /// @brief starts to consume all the pending request
   int run() override;
 
-  /// @brief 
-  /// @param 
+  /// @brief Consuming procedure
+  /// @param unit Request unit
   void consume(RequestUnit unit) override;
 };
 

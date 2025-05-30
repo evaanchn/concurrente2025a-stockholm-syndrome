@@ -2,13 +2,16 @@
 
 #include "ClientResponder.hpp"
 
-ClientResponder::ClientResponder(size_t pendingStopConditions) 
+ClientResponder::ClientResponder(size_t pendingStopConditions)
     : pendingStopConditions(pendingStopConditions) {
 }
 
 int ClientResponder::run() {
-  //
-  this->consumeLoop();
+  // Consume from own queue and send responses until receiving stop conditions
+  while (pendingStopConditions > 0) {
+    this->consumeLoop();
+    --pendingStopConditions;  // Mark one stop condition consumed
+  }
   return EXIT_SUCCESS;
 }
 

@@ -3,9 +3,9 @@
 #include "ResponseAssembler.hpp"
 
 ResponseAssembler::ResponseAssembler(size_t pendingStopConditions
-    , size_t stopConditionsToSend) 
+    , size_t stopConditionsToSend)
     : pendingStopConditions(pendingStopConditions)
-    , stopConditionsToSend(stopConditionsToSend){
+    , stopConditionsToSend(stopConditionsToSend) {
 }
 
 int ResponseAssembler::run() {
@@ -14,7 +14,7 @@ int ResponseAssembler::run() {
     this->consumeLoop();
     --this->pendingStopConditions;
   }
-
+  // Produce stop conditions for the client responders
   for (size_t i = 0; i < this->stopConditionsToSend; ++i) {
     this->produce(nullptr);
   }
@@ -24,6 +24,7 @@ int ResponseAssembler::run() {
 void ResponseAssembler::consume(RequestUnit unit) {
   RequestData* requestData = unit.requestData;
   requestData->signalUnitReady();
+  // Check if data for response is complete, if so, enqueue
   if (requestData->isReady()) {
     this->produce(requestData);
   }
