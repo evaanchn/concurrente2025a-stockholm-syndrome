@@ -21,7 +21,7 @@ class CalcRequestData : public RequestData {
 
  public:
   /// Constructor
-  CalcRequestData(HttpRequest& httpRequest, ConcurrentApp* concurrentApp);
+  CalcRequestData(HttpRequest& httpRequest);
   DISABLE_COPY(CalcRequestData);
   // Destructor
   virtual ~CalcRequestData() = default;
@@ -31,6 +31,23 @@ class CalcRequestData : public RequestData {
   /// store results
   /// @remark to be called after queries are set
   void updatePending();
+  /// @brief Format the response with the results of the request
+  /// @details This method is called by the web server to format the response
+  /// with the results of the request. It builds the HTML response body
+  /// with the results of the calculation.
+  /// @param results is the vector of results to be formatted
+  /// @param httpResponse is the response to be sent back to the client
+  /// @remark The results vector contains a vector of int64_t for each
+  /// calculation, where the first element is the original value and the
+  /// rest of the elements are the results of the calculation.
+  void formatResponse(std::vector<std::vector<int64_t>>& results,
+    HttpResponse& httpResponse);
+  /// @brief Unary calculation response for a given value to be implemented by
+  // the subclases
+  /// @param result vector containing the original value and its result elements
+  /// @param httpResponse The object to answer to the client/user
+  virtual void buildResult(std::vector<int64_t>& result
+    , HttpResponse& httpResponse) = 0;
   /// Decompose the queries into RequestUnits
   /// @return a vector of RequestUnits, each containing an index to save results
   std::vector<RequestUnit> decompose() override;

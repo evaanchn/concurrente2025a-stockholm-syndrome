@@ -8,8 +8,7 @@
 #include "HttpApp.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
-
-class RequestData;
+#include "RequestData.hpp"
 
 /// @brief ConcurrentApp is a base class for web applications that handle
 /// @details This class is designed

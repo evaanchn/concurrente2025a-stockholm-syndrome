@@ -22,7 +22,7 @@ void CalcWebApp::parseRequest(HttpRequest& httpRequest,
   // start ordered list of results
   httpResponse.body()
     << "    <div class='results-container'>\n"
-    << "      <h2 class='result-title'>" << this->title << "</h2>\n"
+    // << "      <h2 class='result-title'>" << this->title << "</h2>\n"
     << "      <div class='result-item'>\n";
   // Replace %xx hexadecimal codes by their ASCII symbols
   const std::string& uri = Util::decodeURI(httpRequest.getURI());
@@ -52,20 +52,4 @@ void CalcWebApp::parseRequest(HttpRequest& httpRequest,
           << ": invalid number\n";
     }
   }
-}
-
-void CalcWebApp::formatResponse(
-    std::vector<std::vector<int64_t>>& results, HttpResponse& httpResponse) {
-  // For each result, build the response
-  for (auto& result : results) {
-    this->buildResult(result, httpResponse);
-  }
-  // End ordered list of results
-  httpResponse.body()
-    << "      </div>\n"
-    << "      <a href='/' class='back-button'>Back</a>\n"
-    << "    </div>\n"
-    << "  </div>\n"
-    << "</body>\n"
-    << "</html>\n";
 }

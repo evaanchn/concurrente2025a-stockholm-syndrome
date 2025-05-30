@@ -17,13 +17,16 @@ class FactRequestData : public CalcRequestData {
   /// @brief Constructor
   /// @param httpRequest is the request to be handled
   /// @param concurrentApp is the application that will handle the request
-  FactRequestData(HttpRequest& httpRequest, ConcurrentApp* concurrentApp)
-  : CalcRequestData(httpRequest, concurrentApp) {
+  FactRequestData(HttpRequest& httpRequest): CalcRequestData(httpRequest) {
   }
-
   /// @brief Process a queries for prime factorization
   /// @param index index of the queries to process
   void processQuery(size_t index) override;
+  /// @brief Prime factorization for a given value
+  /// @param result vector containing the original value and its prime factors
+  /// @param httpResponse The object to answer to the client/user
+  void buildResult(std::vector<int64_t>& result, HttpResponse& httpResponse)
+    override;
 };
 
 #endif  // FACT_REQUESTDATA_HPP

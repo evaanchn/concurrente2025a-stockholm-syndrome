@@ -24,11 +24,6 @@ class FactWebApp : public CalcWebApp {
   ~FactWebApp() = default;
 
  private:
-  /// @brief Prime factorization for a given value
-  /// @param result vector containing the original value and its prime factors
-  /// @param httpResponse The object to answer to the client/user
-  void buildResult(std::vector<int64_t>& result, HttpResponse& httpResponse)
-    override;
   /// @brief Create a RequestData object to store the request data
   /// @param httpRequest is the request to be handled
   /// @return a pointer to the created RequestData object

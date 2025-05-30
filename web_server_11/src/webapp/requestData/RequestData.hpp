@@ -6,7 +6,6 @@
 #include <iostream>
 #include <vector>
 
-#include "ConcurrentApp.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "RequestUnit.hpp"
@@ -19,19 +18,14 @@ class RequestData {
   size_t pendingQueries;
   /// Response containing the client socket to return the requested result
   HttpResponse httpResponse;
-  /// Pointer to the assigned app to manage the request
-  ConcurrentApp* concurrentApp = nullptr;
 
  public:
   /// Constructor
-  explicit RequestData(HttpRequest& httpRequest
-      , ConcurrentApp* concurrentApp = nullptr);
+  explicit RequestData(HttpRequest& httpRequest);
   /// Destructor
   virtual ~RequestData() = default;
   /// Access to the corresponding httpResponse from the request
   HttpResponse& getHttpResponse();
-  /// Access to the corresponding app from the request
-  ConcurrentApp* getConcurrentApp();
   /// Decompose the queries into RequestUnits
   /// @return a vector of RequestUnits, each containing an index to save results
   virtual std::vector<RequestUnit> decompose() = 0;

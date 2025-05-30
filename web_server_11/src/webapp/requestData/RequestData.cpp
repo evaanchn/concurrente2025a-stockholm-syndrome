@@ -2,18 +2,13 @@
 
 #include "RequestData.hpp"
 
-RequestData::RequestData(HttpRequest& httpRequest, ConcurrentApp* concurrentApp)
+RequestData::RequestData(HttpRequest& httpRequest)
   : pendingQueries(0)
-  , httpResponse(httpRequest.getSocket(), httpRequest.getHttpVersion())
-  , concurrentApp(concurrentApp) {
+  , httpResponse(httpRequest.getSocket(), httpRequest.getHttpVersion()) {
 }
 
 HttpResponse& RequestData::getHttpResponse() {
   return this->httpResponse;
-}
-
-ConcurrentApp* RequestData::getConcurrentApp() {
-  return this->concurrentApp;
 }
 
 void RequestData::signalUnitReady() {
