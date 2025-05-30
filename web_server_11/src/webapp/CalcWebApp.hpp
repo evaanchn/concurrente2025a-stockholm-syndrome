@@ -52,8 +52,7 @@ class CalcWebApp : public ConcurrentApp {
   /// Check if this application can handle the HTTP request
   /// @return true If this application handled the request, false otherwise
   /// and another chained application should handle it
-  bool canHandleHttpRequest(HttpRequest& httpRequest,
-    HttpResponse& httpResponse) override;
+  bool canHandleHttpRequest(HttpRequest& httpRequest) override;
 
  public:
   /// @brief Parse the HTTP request to parse numbers from the URI
@@ -77,8 +76,8 @@ class CalcWebApp : public ConcurrentApp {
   // the subclases
   /// @param result vector containing the original value and its result elements
   /// @param httpResponse The object to answer to the client/user
-  virtual void buildResult(std::vector<int64_t>& result) = 0;
-
+  virtual void buildResult(std::vector<int64_t>& result
+      , HttpResponse& httpResponse) = 0;
 };
 
 #endif  // CALCWEBAPP_HPP

@@ -1,10 +1,13 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#include <vector>
+
 #include "GoldbachCalculator.hpp"
 
 size_t GoldbachCalculator::processNumber(int64_t number,
     std::vector<int64_t>& goldbachSums) {
     goldbachSums.push_back(number);
+    number = std::abs(number);  // Ensure the number is positive
     int64_t sumOperands = 1;
     if (number % 2 == 0) {
       if (!strongGoldbach(number, goldbachSums)) {

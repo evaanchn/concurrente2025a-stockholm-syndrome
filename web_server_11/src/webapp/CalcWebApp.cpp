@@ -1,9 +1,11 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#include <string>
+#include <vector>
+
 #include "CalcWebApp.hpp"
 
-bool CalcWebApp::canHandleHttpRequest(HttpRequest& httpRequest,
-      HttpResponse& httpResponse) {
+bool CalcWebApp::canHandleHttpRequest(HttpRequest& httpRequest) {
   // If the request starts with appPrefix is for this web app
   if (httpRequest.getURI().rfind(appPrefix, 0) == 0) {
     return true;
@@ -19,7 +21,9 @@ void CalcWebApp::parseRequest(HttpRequest& httpRequest,
   HomeWebApp::serveHeader(httpResponse, this->title);
   // start ordered list of results
   httpResponse.body()
-    << "  <ol type=""A"">\n";
+    << "    <div class='results-container'>\n"
+    << "      <h2 class='result-title'>" << this->title << "</h2>\n"
+    << "      <div class='result-item'>\n";
   // Replace %xx hexadecimal codes by their ASCII symbols
   const std::string& uri = Util::decodeURI(httpRequest.getURI());
   // Numbers were asked in the form "/appPrefix/123,45,-7899" or
@@ -54,10 +58,14 @@ void CalcWebApp::formatResponse(
     std::vector<std::vector<int64_t>>& results, HttpResponse& httpResponse) {
   // For each result, build the response
   for (auto& result : results) {
-    this->buildResult(result);
+    this->buildResult(result, httpResponse);
   }
   // End ordered list of results
   httpResponse.body()
-    << "  </ol>\n"
+    << "      </div>\n"
+    << "      <a href='/' class='back-button'>Back</a>\n"
+    << "    </div>\n"
+    << "  </div>\n"
+    << "</body>\n"
     << "</html>\n";
 }

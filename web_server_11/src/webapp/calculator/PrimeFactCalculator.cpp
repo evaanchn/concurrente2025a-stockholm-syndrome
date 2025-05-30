@@ -1,11 +1,13 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#include <vector>
+
 #include "PrimeFactCalculator.hpp"
 
 size_t PrimeFactCalculator::processNumber(int64_t number
     , std::vector<int64_t>& primeFactors) {
-  primeFactors.push_back(number);  // Store the original number
   if (number <= 1) return 0;
+  primeFactors.push_back(number);  // Store the original number
   int64_t primeFactorsCount = 0;
 
   // Takes care of the only even prime 2 if even, to increment by odds by two

@@ -14,72 +14,36 @@ void GoldbachWebApp::buildResult(std::vector<int64_t>& result
   // result contains the value at the first position and is followed by its
   // sums
   size_t sumsCount = (result.size() - 1) / sumOperands;
-  try {
-    httpResponse.body()
-      << "    <div class='results-container'>\n"
-      << "      <h2 class='result-title'>Goldbach Sums Results</h2>\n"
-      << "      <div class='result-item'>\n"
-      << "        <div class='number-result'>\n"
-      << "          <span class='number-value'>" << result.front()
-      << "</span>: \n"
-      << "          <span class='sums-count'>" << sumsCount << " sums</span>\n"
-      << "        </div>";
-    if (result.front() < 0 && sumsCount > 0) {
-      httpResponse.body()
-        << "        <div class='sums-grid'>";
-      for (size_t sumIndex = 1; sumIndex <= result.size() - sumOperands;
-        sumIndex += sumOperands) {
-        httpResponse.body()
-          << "          <div class='sum-item'>";
-        for (size_t operandIndex = sumIndex;
-          operandIndex < sumOperands + sumIndex; ++operandIndex) {
-          httpResponse.body() << result.at(operandIndex);
-          if (operandIndex != sumOperands + sumIndex - 1) {
-            httpResponse.body() << " + ";
-          }
-        }
-        httpResponse.body() << "</div>";
-      }
-      httpResponse.body() << "        </div>";
-    }
-    httpResponse.body()
-      << "      </div>\n"
-      << "      <a href='/' class='back-button'>Back</a>\n"
-      << "    </div>\n"
-      << "  </div>\n"
-      << "</body>\n"
-      << "</html>\n";
-  } catch (std::runtime_error& error) {
-    httpResponse.body()
-      << "    <li class=err>"
-      <<        error.what()
-      << "    </li>";
+  httpResponse.body()
+    << "        <div class='number-result'>\n"
+    << "          <span class='number-value'>" << result.front()
+    << "</span>: \n"
+    << "          <span class='sums-count'>" << sumsCount << " sums</span>\n"
+    << "        </div>";
+  if (result.front() < 0 && sumsCount > 0) {
+    this->sumsResponse(result, httpResponse);
   }
 }
 
-void GoldbachWebApp::sumsCountResponse(int64_t sumsCount
+void GoldbachWebApp::sumsResponse(std::vector<int64_t>& result
   , HttpResponse& httpResponse) {
-  httpResponse.body() << ": <span style='color: var(--accent);'>"
-                     << sumsCount << "</span> sums";
-}
-
-void GoldbachWebApp::sumsResponse(std::vector<int64_t>& sums
-  , HttpResponse& httpResponse) {
-  size_t sumOperands = ((sums.front() % 2) == 0) ? 2 : 3;
-
-  httpResponse.body() << "<div class='sums-list'>";
-  for (size_t sumIndex = 1; sumIndex <= sums.size() - sumOperands
-      ; sumIndex += sumOperands) {
-    httpResponse.body() << "<div class='sum-item'>";
-    for (size_t operandIndex = sumIndex; operandIndex < sumOperands + sumIndex
-        ; ++operandIndex) {
-      httpResponse.body() << sums.at(operandIndex);
-      if (operandIndex != sumOperands + sumIndex - 1)
+  size_t sumOperands = ((result.front() % 2) == 0) ? 2 : 3;
+  httpResponse.body()
+    << "        <div class='sums-grid'>";
+  for (size_t sumIndex = 1; sumIndex <= result.size() - sumOperands;
+    sumIndex += sumOperands) {
+    httpResponse.body()
+      << "          <div class='sum-item'>";
+    for (size_t operandIndex = sumIndex;
+      operandIndex < sumOperands + sumIndex; ++operandIndex) {
+      httpResponse.body() << result.at(operandIndex);
+      if (operandIndex != sumOperands + sumIndex - 1) {
         httpResponse.body() << " + ";
+      }
     }
-    httpResponse.body() << "</div>";
+    httpResponse.body() << "          </div>";
   }
-  httpResponse.body() << "</div>";
+  httpResponse.body() << "        </div>";
 }
 
 RequestData* GoldbachWebApp::createRequestData(HttpRequest& httpRequest) {
