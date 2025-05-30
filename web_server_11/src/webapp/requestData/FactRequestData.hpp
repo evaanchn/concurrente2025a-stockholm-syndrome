@@ -14,14 +14,16 @@
 /// concurrent production line
 class FactRequestData : public CalcRequestData {
  public:
-  
   /// @brief Constructor
   /// @param httpRequest is the request to be handled
   /// @param concurrentApp is the application that will handle the request
-  FactRequestData(HttpRequest& httpRequest, ConcurrentApp* concurrentApp) 
+  FactRequestData(HttpRequest& httpRequest, ConcurrentApp* concurrentApp)
   : CalcRequestData(httpRequest, concurrentApp) {
-    this->appCalculator = new PrimeFactCalculator();
   }
+
+  /// @brief Process a queries for prime factorization
+  /// @param index index of the queries to process
+  void processQuery(size_t index) override;
 };
 
 #endif  // FACT_REQUESTDATA_HPP

@@ -4,7 +4,6 @@
 #define GOLDBACH_REQUESTDATA_HPP
 
 #include <iostream>
-#include <vector>
 
 #include "GoldbachCalculator.hpp"
 #include "ConcurrentApp.hpp"
@@ -15,10 +14,12 @@
 class GoldbachRequestData : public CalcRequestData {
  public:
   /// Constructor
-  GoldbachRequestData(HttpRequest& httpRequest, ConcurrentApp* concurrentApp) 
+  GoldbachRequestData(HttpRequest& httpRequest, ConcurrentApp* concurrentApp)
   : CalcRequestData(httpRequest, concurrentApp) {
-    this->appCalculator = new GoldbachCalculator();
   }
+  /// @brief Process a query for goldbach sums
+  /// @param index index of the queries to process
+  void processQuery(size_t index) override;
 };
 
 #endif  // GOLDBACH_REQUESTDATA_HPP

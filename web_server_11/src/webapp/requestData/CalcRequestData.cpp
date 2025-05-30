@@ -1,16 +1,13 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#include <iostream>
+#include <vector>
+
 #include "CalcRequestData.hpp"
 #include "CalcWebApp.hpp"
 
 CalcRequestData::CalcRequestData(HttpRequest& httpRequest
-  , ConcurrentApp* concurrentApp) : RequestData(httpRequest, concurrentApp) 
-  , appCalculator(nullptr) {
-}
-
-CalcRequestData::~CalcRequestData() {
-  delete this->appCalculator;
-  this->appCalculator = nullptr;
+  , ConcurrentApp* concurrentApp) : RequestData(httpRequest, concurrentApp) {
 }
 
 std::vector<int64_t>& CalcRequestData::getQueries() {
@@ -18,6 +15,7 @@ std::vector<int64_t>& CalcRequestData::getQueries() {
 }
 
 void CalcRequestData::updatePending() {
+  // Update pending queries count and allocate results vector
   this->pendingQueries = this->queries.size();
   this->results.resize(this->queries.size());
 }
@@ -25,21 +23,12 @@ void CalcRequestData::updatePending() {
 std::vector<RequestUnit> CalcRequestData::decompose() {
   std::vector<RequestUnit> requestUnits;
   size_t index = 0;
-  for (const auto& queries : this->queries) {
+  // Fill request units vector
+  for (size_t i = 0; i < this->pendingQueries; ++i) {
     requestUnits.push_back(RequestUnit(this, index));
     ++index;
   }
   return requestUnits;
-}
-
-void CalcRequestData::processQuery(size_t index) {
-  if (this->appCalculator) {
-    // processNumber(query, resultsVector)
-    this->appCalculator->processNumber(this->queries[index],
-        this->results[index]);
-  } else {
-    throw std::runtime_error("AppCalculator is not set.");
-  }
 }
 
 void CalcRequestData::respond() {

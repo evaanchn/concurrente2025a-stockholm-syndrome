@@ -3,23 +3,23 @@
 #include "RequestData.hpp"
 
 RequestData::RequestData(HttpRequest& httpRequest, ConcurrentApp* concurrentApp)
-: pendingQueries(0)
-, httpResponse(httpRequest.getSocket(), httpRequest.getHttpVersion())
-, concurrentApp(concurrentApp) {
+  : pendingQueries(0)
+  , httpResponse(httpRequest.getSocket(), httpRequest.getHttpVersion())
+  , concurrentApp(concurrentApp) {
 }
 
 HttpResponse& RequestData::getHttpResponse() {
   return this->httpResponse;
 }
 
-ConcurrentApp* RequestData::getConcurrentApp() {   
+ConcurrentApp* RequestData::getConcurrentApp() {
   return this->concurrentApp;
 }
 
-inline void RequestData::signalUnitReady() {
+void RequestData::signalUnitReady() {
   if (pendingQueries > 0) --pendingQueries;
 }
 
-inline bool RequestData::isReady() {
+bool RequestData::isReady() {
   return (pendingQueries == 0);
 }

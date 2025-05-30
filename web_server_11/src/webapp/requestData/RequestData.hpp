@@ -11,7 +11,6 @@
 #include "HttpResponse.hpp"
 #include "RequestUnit.hpp"
 
-
 /// @brief Base class to save data from a client request throughout the
 /// concurrent production line
 class RequestData {
@@ -21,11 +20,14 @@ class RequestData {
   /// Response containing the client socket to return the requested result
   HttpResponse httpResponse;
   /// Pointer to the assigned app to manage the request
-  ConcurrentApp* concurrentApp;
+  ConcurrentApp* concurrentApp = nullptr;
 
  public:
   /// Constructor
-  RequestData(HttpRequest& httpRequest, ConcurrentApp* concurrentApp);
+  explicit RequestData(HttpRequest& httpRequest
+      , ConcurrentApp* concurrentApp = nullptr);
+  /// Destructor
+  virtual ~RequestData() = default;
   /// Access to the corresponding httpResponse from the request
   HttpResponse& getHttpResponse();
   /// Access to the corresponding app from the request
@@ -39,11 +41,11 @@ class RequestData {
   /// Indicate that an answered request unit was recieved and is ready to be
   /// part of the response
   /// @remark to be called only by a ResponseAssembler (single thread)
-  inline void signalUnitReady();
+  void signalUnitReady();
   /// Ask if all request units where completed and so the response can be
   /// created
   /// @return true if pendingQueries is 0, false otherwise
-  inline bool isReady();
+  bool isReady();
   /// Take the results and format them into the httpResponse, then send it
   virtual void respond() = 0;
 };
