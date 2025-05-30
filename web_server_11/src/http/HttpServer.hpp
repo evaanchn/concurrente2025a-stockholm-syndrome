@@ -15,6 +15,11 @@
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 
+#include "Decomposer.hpp"
+#include "Calculator.hpp"
+#include "ResponseAssembler.hpp"
+#include "ClientResponder.hpp"
+
 #define DEFAULT_PORT "8080"
 
 class HttpApp;
@@ -74,14 +79,28 @@ class HttpServer : public TcpServer{
   std::vector<HttpApp*> applications;
 
  private:
-  /// Number of threads to handle connections
+  /// Max amount of accepted client connections
   unsigned int maxConnections = std::thread::hardware_concurrency();
   /// queue default capacity
   uint64_t capacity = SEM_VALUE_MAX;
+  /// Numer of calculator threads in the server
+  unsigned int calculatorsAmount = std::thread::hardware_concurrency();
+
   /// socket producing queue
-  Queue<Socket>* queue = nullptr;
-  /// socket consumers
+  Queue<Socket>* socketsQueue = nullptr;
+  /// Connection Handlers: socket consumers, request data producers
   std::vector<HttpConnectionHandler*> handlers;
+  // Decomposer: request data pointers consumer, request units producer
+  Decomposer* decomposer = nullptr;
+  // Request Units queue
+  Queue<RequestUnit>* requestUnitsQueue = nullptr;
+  // Calculators: consumers and producers of request units
+  std::vector<Calculator*> calculators;
+  // Response assembler: consumer of request units 
+  // and producer of request data pointers
+  ResponseAssembler* responseAssembler = nullptr;
+  // Client responder: consumer of request data pointers, responds back
+  ClientResponder* clientResponder = nullptr;
 
  public:
   /// Destructor
