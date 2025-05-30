@@ -46,9 +46,17 @@ void FactWebApp::buildResult(std::vector<int64_t>& result
 RequestData* FactWebApp::createRequestData(HttpRequest& httpRequest) {
   FactRequestData* requestData = new FactRequestData(httpRequest, this);
   if (requestData) {
+    // Parse the request to extract queries
     this->parseRequest(httpRequest, requestData->getHttpResponse(),
       requestData->getQueries());
+    // If no queries were parsed, send response and delete requestData
+    if (requestData->getQueries().empty()) {
+      requestData->respond();
+      // deallocate requestData
+      delete requestData;
+      return nullptr;
+    }
+    requestData->updatePending();
   }
-  requestData->updatePending();
   return requestData;
 }

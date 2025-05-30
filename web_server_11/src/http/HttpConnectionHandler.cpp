@@ -76,7 +76,11 @@ bool HttpConnectionHandler::route(HttpRequest& httpRequest
       if (concurrentApp) {
         // Create request data
         RequestData* request = concurrentApp->createRequestData(httpRequest);
-        this->produce(request);
+        // Ensure request was created successfully
+        if (request) {
+          // Enqueue request data to be processed by the concurrent app
+          this->produce(request);
+        }
       }
       return true;
     }

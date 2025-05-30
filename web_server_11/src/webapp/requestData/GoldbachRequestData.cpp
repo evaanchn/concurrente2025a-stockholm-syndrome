@@ -13,7 +13,7 @@ void GoldbachRequestData::processQuery(size_t index) {
     // respond that no goldbach sums where found for the given number
     this->httpResponse.body()
       << "    <li class=err>"
-      <<        error.what()
+      << this->queries[index] << ": " << error.what()
       << "    </li>";
   }
 }
