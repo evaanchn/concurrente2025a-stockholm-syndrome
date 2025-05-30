@@ -7,8 +7,9 @@ FactWebApp::FactWebApp()
 : CalcWebApp("/fact", "/fact?number=", "Prime Factorization") {
 }
 
-RequestData* FactWebApp::createRequestData(HttpRequest& httpRequest) {
-  FactRequestData* requestData = new FactRequestData(httpRequest);
+RequestData* FactWebApp::createRequestData(HttpRequest& httpRequest
+    , HttpResponse& httpResponse) {
+  FactRequestData* requestData = new FactRequestData(httpRequest, httpResponse);
   if (requestData) {
     // Parse the request to extract queries
     this->parseRequest(httpRequest, requestData->getHttpResponse(),

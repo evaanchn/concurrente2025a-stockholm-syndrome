@@ -21,7 +21,7 @@ class CalcRequestData : public RequestData {
 
  public:
   /// Constructor
-  CalcRequestData(HttpRequest& httpRequest);
+  CalcRequestData(HttpRequest& httpRequest, HttpResponse& httpResponse);
   DISABLE_COPY(CalcRequestData);
   // Destructor
   virtual ~CalcRequestData() = default;

@@ -6,8 +6,9 @@
 #include "CalcRequestData.hpp"
 #include "CalcWebApp.hpp"
 
-CalcRequestData::CalcRequestData(HttpRequest& httpRequest) 
-    : RequestData(httpRequest) {
+CalcRequestData::CalcRequestData(HttpRequest& httpRequest
+    , HttpResponse& httpResponse)
+    : RequestData(httpRequest, httpResponse)  {
 }
 
 std::vector<int64_t>& CalcRequestData::getQueries() {

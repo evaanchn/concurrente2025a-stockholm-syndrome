@@ -75,7 +75,8 @@ bool HttpConnectionHandler::route(HttpRequest& httpRequest
       // If it is concurrent (dynamic cast successful)
       if (concurrentApp) {
         // Create request data
-        RequestData* request = concurrentApp->createRequestData(httpRequest);
+        RequestData* request = concurrentApp->createRequestData(httpRequest
+            , httpResponse);
         // Ensure request was created successfully
         if (request) {
           // Enqueue request data to be processed by the concurrent app

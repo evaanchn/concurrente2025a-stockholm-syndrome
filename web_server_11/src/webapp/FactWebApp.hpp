@@ -26,8 +26,10 @@ class FactWebApp : public CalcWebApp {
  private:
   /// @brief Create a RequestData object to store the request data
   /// @param httpRequest is the request to be handled
+  /// @param httpResponse is the response to be handled
   /// @return a pointer to the created RequestData object
-  RequestData* createRequestData(HttpRequest& httpRequest) override;
+  RequestData* createRequestData(HttpRequest& httpRequest
+      , HttpResponse& httpResponse) override;
 };
 
 #endif  // FACTWEBAPP_HPP

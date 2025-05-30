@@ -7,8 +7,10 @@ GoldbachWebApp::GoldbachWebApp()
 : CalcWebApp("/goldbach", "/goldbach?number=", "Goldbach sums") {
 }
 
-RequestData* GoldbachWebApp::createRequestData(HttpRequest& httpRequest) {
-  GoldbachRequestData* requestData = new GoldbachRequestData(httpRequest);
+RequestData* GoldbachWebApp::createRequestData(HttpRequest& httpRequest
+    , HttpResponse& httpResponse) {
+  GoldbachRequestData* requestData = new GoldbachRequestData(httpRequest
+      , httpResponse);
   if (requestData) {
     // Parse the request to extract queries
     this->parseRequest(httpRequest, requestData->getHttpResponse(),

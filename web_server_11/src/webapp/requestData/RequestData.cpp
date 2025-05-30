@@ -2,9 +2,10 @@
 
 #include "RequestData.hpp"
 
-RequestData::RequestData(HttpRequest& httpRequest)
+RequestData::RequestData(HttpRequest& httpRequest, HttpResponse& httpResponse)
   : pendingQueries(0)
-  , httpResponse(httpRequest.getSocket(), httpRequest.getHttpVersion()) {
+  , httpRequest(httpRequest)
+  , httpResponse(httpResponse) {
 }
 
 HttpResponse& RequestData::getHttpResponse() {

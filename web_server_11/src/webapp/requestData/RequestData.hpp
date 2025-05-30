@@ -16,12 +16,14 @@ class RequestData {
  protected:
   /// Control whether the request is ready to be answered or not
   size_t pendingQueries;
+  /// Request containing the client request to be processed
+  HttpRequest httpRequest;
   /// Response containing the client socket to return the requested result
   HttpResponse httpResponse;
 
  public:
   /// Constructor
-  explicit RequestData(HttpRequest& httpRequest);
+  explicit RequestData(HttpRequest& httpRequest, HttpResponse& httpResponse);
   /// Destructor
   virtual ~RequestData() = default;
   /// Access to the corresponding httpResponse from the request
