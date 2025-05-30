@@ -46,8 +46,12 @@ class HttpConnectionHandler : public Assembler<Socket, RequestData*> {
   bool handleHttpRequest(HttpRequest& httpRequest,
     HttpResponse& httpResponse);
 
-  /// @brief Asks each app to handle the request
-  /// @see handleHttpRequest
+  /// Called each time an HTTP request is received. HttpConnectionHandler should
+  ///  analyze the request object and assemble a response with the response
+  /// object. Finally send the response calling the httpResponse.send() method.
+  /// @param httpRequest The request object to analyze
+  /// @param httpResponse The response object to prepare
+  /// @return true if the request was handled correctly
   bool route(HttpRequest& httpRequest, HttpResponse& httpResponse);
 };
 

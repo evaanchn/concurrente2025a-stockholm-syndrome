@@ -96,7 +96,7 @@ class HttpServer : public TcpServer{
   Queue<RequestUnit>* requestUnitsQueue = nullptr;
   // Calculators: consumers and producers of request units
   std::vector<Calculator*> calculators;
-  // Response assembler: consumer of request units 
+  // Response assembler: consumer of request units
   // and producer of request data pointers
   ResponseAssembler* responseAssembler = nullptr;
   // Client responder: consumer of request data pointers, responds back
@@ -147,16 +147,6 @@ class HttpServer : public TcpServer{
   void stopApps();
   /// This method is called each time a client connection request is accepted.
   void handleClientConnection(Socket& client) override;
-  /// Called each time an HTTP request is received. Web server should analyze
-  /// the request object and assemble a response with the response object.
-  /// Finally send the response calling the httpResponse.send() method.
-  /// @return true on success and the server will continue handling further
-  /// HTTP requests, or false if server should stop accepting requests from
-  /// this client (e.g: HTTP/1.0)
-  /// Sends a page for a non found resource in this server. This method is
-  /// called if none of the registered web applications handled the request.
-  /// If you want to override this method, create a web app, e.g NotFoundWebApp
-  /// that reacts to all URIs, and chain it as the last web app
 
  private:
   /// @brief Creates thread objects
