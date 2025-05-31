@@ -7,52 +7,45 @@
 void GoldbachRequestData::processQuery(size_t index) {
   GoldbachCalculator calculator;
   // processNumber(query, resultsVector)
-  try {
-    calculator.processNumber(this->queries[index], this->results[index]);
-  } catch(const std::exception& error) {
-    // respond that no goldbach sums where found for the given number
-    this->httpResponse.body()
-      << "    <li class=err>"
-      << this->queries[index] << ": " << error.what()
-      << "    </li>";
-  }
+  calculator.processNumber(this->queries[index], this->results[index]);
 }
 
-void GoldbachRequestData::buildResult(std::vector<int64_t>& result
-  , HttpResponse& httpResponse) {
+void GoldbachRequestData::buildResult(int64_t value
+  , std::vector<int64_t>& result) {
   // checks wheter each sum() has two (even value) or three(odd) operands
-  size_t sumOperands = (result.front() % 2 == 0) ? 2 : 3;
-  // result contains the value at the first position and is followed by its
-  // sums
-  size_t sumsCount = (result.size() - 1) / sumOperands;
-  httpResponse.body()
+  size_t sumOperands = ((std::abs(value) % 2 == 0) ? 2 : 3);
+  // result contains each sum operands adjacent to each other
+  // e.g: {sum1val, sum1val, sum2val, sum2val, ...}
+  size_t sumsCount = (result.size()) / sumOperands;
+  this->httpResponse.body()
     << "        <div class='number-result'>\n"
-    << "          <span class='number-value'>" << result.front()
+    << "          <span class='number-value'>" << value
     << "</span>: \n"
     << "          <span class='sums-count'>" << sumsCount << " sums</span>\n"
     << "        </div>";
-  if (result.front() < 0 && sumsCount > 0) {
-    this->sumsResponse(result, httpResponse);
+  if (value < 0 && sumsCount > 0) {
+    this->sumsResponse(sumOperands, result);
   }
 }
 
-void GoldbachRequestData::sumsResponse(std::vector<int64_t>& result
-  , HttpResponse& httpResponse) {
-  size_t sumOperands = ((result.front() % 2) == 0) ? 2 : 3;
-  httpResponse.body()
+void GoldbachRequestData::sumsResponse(size_t sumOperands
+    , std::vector<int64_t>& result) {
+  this->httpResponse.body()
     << "        <div class='sums-grid'>";
-  for (size_t sumIndex = 1; sumIndex <= result.size() - sumOperands;
+  // Sums are grouped by two or three operands
+  for (size_t sumIndex = 0; sumIndex <= result.size() - sumOperands;
     sumIndex += sumOperands) {
-    httpResponse.body()
+    this->httpResponse.body()
       << "          <div class='sum-item'>";
+    // Sum operands
     for (size_t operandIndex = sumIndex;
       operandIndex < sumOperands + sumIndex; ++operandIndex) {
-      httpResponse.body() << result.at(operandIndex);
+      this->httpResponse.body() << result.at(operandIndex);
       if (operandIndex != sumOperands + sumIndex - 1) {
-        httpResponse.body() << " + ";
+        this->httpResponse.body() << " + ";
       }
     }
-    httpResponse.body() << "          </div>";
+    this->httpResponse.body() << "          </div>";
   }
-  httpResponse.body() << "        </div>";
+  this->httpResponse.body() << "        </div>";
 }

@@ -22,14 +22,14 @@ class GoldbachRequestData : public CalcRequestData {
   /// @param index index of the queries to process
   void processQuery(size_t index) override;
   /// @brief Goldbach sums for a given value
-  /// @param result vector containing the original value and its sums
-  /// @param httpResponse The object to answer to the client/user
-  void buildResult(std::vector<int64_t>& result
-    , HttpResponse& httpResponse) override;
+  /// @param value the original calculation value
+  /// @param result vector containing the result elements
+  void buildResult(int64_t value, std::vector<int64_t>& result)
+    override;
   /// @brief List the possible goldbach sums of value
-  /// @param result results of goldbach sum: {value, sum1val, sum1val, ...}
-  /// @param httpResponse The object to answer to the client/user
-  void sumsResponse(std::vector<int64_t>& result, HttpResponse& httpResponse);
+  /// @param sumOperands number of operands for each goldbach sum
+  /// @param result results of goldbach sum: {sum1val, sum1val, ...}
+  void sumsResponse(size_t sumOperands, std::vector<int64_t>& result);
 };
 
 #endif  // GOLDBACH_REQUESTDATA_HPP

@@ -17,7 +17,6 @@ class FactRequestData : public CalcRequestData {
   /// @brief Constructor
   /// @param httpRequest is the request to be handled
   /// @param httpResponse is the response to be handled
-  /// @param concurrentApp is the application that will handle the request
   FactRequestData(HttpRequest& httpRequest, HttpResponse& httpResponse)
       : CalcRequestData(httpRequest, httpResponse) {
   }
@@ -25,9 +24,9 @@ class FactRequestData : public CalcRequestData {
   /// @param index index of the queries to process
   void processQuery(size_t index) override;
   /// @brief Prime factorization for a given value
-  /// @param result vector containing the original value and its prime factors
-  /// @param httpResponse The object to answer to the client/user
-  void buildResult(std::vector<int64_t>& result, HttpResponse& httpResponse)
+  /// @param value the original calculation value
+  /// @param result vector containing the result elements
+  void buildResult(int64_t value, std::vector<int64_t>& result)
     override;
 };
 

@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "ConcurrentApp.hpp"
-#include "HomeWebApp.hpp"
 #include "HttpApp.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
@@ -57,10 +56,8 @@ class CalcWebApp : public ConcurrentApp {
  public:
   /// @brief Parse the HTTP request to parse numbers from the URI
   /// @param httpRequest request to be parsed
-  /// @param httpResponse response to the client
   /// @param queries is the vector to store the parsed numbers
-  void parseRequest(HttpRequest& httpRequest, HttpResponse& httpResponse
-    , std::vector<int64_t>& queries);
+  void parseRequest(HttpRequest& httpRequest, std::vector<int64_t>& queries);
 };
 
 #endif  // CALCWEBAPP_HPP

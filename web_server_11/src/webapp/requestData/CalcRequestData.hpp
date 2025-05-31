@@ -4,6 +4,7 @@
 #define CALC_REQUESTDATA_HPP
 
 #include <iostream>
+#include <string>
 #include <vector>
 
 #include "ConcurrentApp.hpp"
@@ -25,6 +26,9 @@ class CalcRequestData : public RequestData {
   DISABLE_COPY(CalcRequestData);
   // Destructor
   virtual ~CalcRequestData() = default;
+  /// @brief Obtain list of values from the httpRequest URI
+  /// @return a vector of strings with the values from the URI
+  const std::vector<std::string> getURIValues();
   /// @brief obtain request queries
   std::vector<int64_t>& getQueries();
   /// Update pendingQueries according to the queries size and reserve space to
@@ -35,19 +39,15 @@ class CalcRequestData : public RequestData {
   /// @details This method is called by the web server to format the response
   /// with the results of the request. It builds the HTML response body
   /// with the results of the calculation.
-  /// @param results is the vector of results to be formatted
-  /// @param httpResponse is the response to be sent back to the client
   /// @remark The results vector contains a vector of int64_t for each
   /// calculation, where the first element is the original value and the
   /// rest of the elements are the results of the calculation.
-  void formatResponse(std::vector<std::vector<int64_t>>& results,
-    HttpResponse& httpResponse);
+  void formatResponse();
   /// @brief Unary calculation response for a given value to be implemented by
   // the subclases
-  /// @param result vector containing the original value and its result elements
-  /// @param httpResponse The object to answer to the client/user
-  virtual void buildResult(std::vector<int64_t>& result
-    , HttpResponse& httpResponse) = 0;
+  /// @param value the original calculation value
+  /// @param result vector containing the result elements
+  virtual void buildResult(int64_t value, std::vector<int64_t>& result) = 0;
   /// Decompose the queries into RequestUnits
   /// @return a vector of RequestUnits, each containing an index to save results
   std::vector<RequestUnit> decompose() override;

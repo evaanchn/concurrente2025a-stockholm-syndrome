@@ -9,7 +9,7 @@
 
 #include "CalcWebApp.hpp"
 #include "GoldbachCalculator.hpp"
-#include "HttpApp.hpp"
+#include "HomeWebApp.hpp"
 
 /**
 @brief A web application that calculates Goldbach sums

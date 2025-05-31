@@ -14,29 +14,26 @@ bool CalcWebApp::canHandleHttpRequest(HttpRequest& httpRequest) {
   return false;
 }
 
-void CalcWebApp::parseRequest(HttpRequest& httpRequest,
-    HttpResponse& httpResponse, std::vector<int64_t>& queries) {
-  /**HtppRespond body list is started in case of invalid numbers*/
-  // Serve header of the html
-  HomeWebApp::serveHeader(httpResponse, this->title);
-  // start ordered list of results
-  httpResponse.body()
-    << "    <div class='results-container'>\n"
-    // << "      <h2 class='result-title'>" << this->title << "</h2>\n"
-    << "      <div class='result-item'>\n";
+void CalcWebApp::parseRequest(HttpRequest& httpRequest
+    , std::vector<int64_t>& queries) {
   // Replace %xx hexadecimal codes by their ASCII symbols
   const std::string& uri = Util::decodeURI(httpRequest.getURI());
   // Numbers were asked in the form "/appPrefix/123,45,-7899" or
   // "/[appPrefix]?number=13"
   // Determine the position where numbers start
-  size_t numbersStart = appPrefix.length();
-  if (uri.rfind(valuesPrefix, 0) == 0) {
-    numbersStart = valuesPrefix.length();
+  // Find the position of '=' in the URI, if it exists
+  // This is the start of the query string, e.g: "?number=123,456"
+  // If no '=' is found, we assume the numbers start after the last '/'
+  size_t numbersStart = uri.find('=');  // Start after '='
+  if (numbersStart == std::string::npos) {
+    // start after last '/'
+    numbersStart = uri.rfind('/');
   }
+  ++numbersStart;  // Move to the next character after '=' or '/'
   // TODO(you): Use arbitrary precision for numbers larger than int64_t
   const std::vector<std::string>& texts =
       Util::split(uri.substr(numbersStart), ",", true);
-  // For each asked number, provide its calculation
+  // convert each query text into number
   for (size_t index = 0; index < texts.size(); ++index) {
     try {
       // Convert the text to a number. Provide an error message if not
@@ -47,9 +44,8 @@ void CalcWebApp::parseRequest(HttpRequest& httpRequest,
       }
       queries.push_back(value);
     } catch (const std::exception& exception) {
-      // Text was not a valid number, report an error to user
-      httpResponse.body() << "    <li class=err>" << texts[index]
-          << ": invalid number\n";
+      // ignore invalid imputs
+      continue;
     }
   }
 }

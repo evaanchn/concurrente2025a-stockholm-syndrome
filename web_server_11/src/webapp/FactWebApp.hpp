@@ -8,7 +8,7 @@
 
 #include "CalcWebApp.hpp"
 #include "FactRequestData.hpp"
-#include "HttpApp.hpp"
+#include "HomeWebApp.hpp"
 
 /**
 @brief A web application that calculates prime factors

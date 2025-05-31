@@ -8,38 +8,37 @@ void FactRequestData::processQuery(size_t index) {
   calculator.processNumber(this->queries[index], this->results[index]);
 }
 
-void FactRequestData::buildResult(std::vector<int64_t>& result
-  , HttpResponse& httpResponse) {
-  // result contains the value at the first position and is followed by its
-  // factors, in "factor, amount" form
-  int64_t primeFactorsCount = (result.size() - 1) / 2;
-  int64_t lastFactor = result.size() - 2;
-  httpResponse.body()
+void FactRequestData::buildResult(int64_t value
+  , std::vector<int64_t>& result) {
+  // result contains each prime factor and its exponent
+  // e.g: {prime1, exponent1, prime2, exponent2, ...}
+  size_t primeFactorsCount = result.size() / 2;
+  this->httpResponse.body()
     << "        <div class='number-result'>\n"
-    << "          <span class='number-value'>" << result.at(0) << "</span> = \n"
+    << "          <span class='number-value'>" << value << "</span> = \n"
     << "          <span class='factorization'>";
-
   if (primeFactorsCount == 0) {
-    httpResponse.body() << "<span class='err'>Invalid number</span>";
+    this->httpResponse.body() << "<span class='err'>Invalid number</span>";
   } else {
-    for (int64_t factIndex = 1; factIndex < primeFactorsCount * 2 + 1;
+    size_t lastFactor = result.size() - 2;
+    for (size_t factIndex = 0; factIndex < primeFactorsCount * 2;
         factIndex += 2) {
-      httpResponse.body()
+      this->httpResponse.body()
         << "<span class='factor'>" << result.at(factIndex) << "</span>";
       if (result.at(factIndex + 1) != 1) {
-        httpResponse.body()
+        this->httpResponse.body()
           << "<sup class='exponent'>"
           << result.at(factIndex + 1)
           << "</sup>";
       }
       // Avoid printing a multiplication symbol after last prime factor
       if (factIndex < lastFactor) {
-        httpResponse.body() << " × ";
+        this->httpResponse.body() << " × ";
       }
     }
   }
 
-  httpResponse.body()
+  this->httpResponse.body()
     << "          </span>\n"
     << "        </div>\n";
 }

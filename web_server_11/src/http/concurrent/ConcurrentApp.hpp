@@ -41,7 +41,6 @@ class ConcurrentApp : public HttpApp {
 
   /// @brief Check if this application can handle the HTTP request
   /// @param httpRequest request to be handled
-  /// @param httpResponse response to be handled
   /// @return true if this application can handle the request,
   virtual bool canHandleHttpRequest(HttpRequest& httpRequest) = 0;
   /// @brief Parse the HTTP request to parse numbers from the URI
