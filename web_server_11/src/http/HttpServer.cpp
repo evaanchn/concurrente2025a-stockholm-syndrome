@@ -21,7 +21,8 @@ const char* const usage =
   "  max_connections  Max amount of connections the server"
   " can attend concurrently\n"
   "  conn_queue_capacity  Max amount of connections that"
-  " can be stored in queue\n";
+  " can be stored in queue\n"
+  "  requests_queue_capacity Max amount of requests enqueued to process\n";
 
 HttpServer::HttpServer() {
 }
@@ -117,11 +118,11 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
   }
   if (argc >= 5) {
     try {
-      this->threadQueuesCapacity = std::stoull(argv[4]);
+      this->requestUnitsQueueCapacity = std::stoull(argv[4]);
     } catch(const std::invalid_argument& error) {
       std::cerr << "warning: " << error.what()
         << " default values ​​were assigned" << std::endl;
-      this->threadQueuesCapacity = SEM_VALUE_MAX;
+      this->requestUnitsQueueCapacity = SEM_VALUE_MAX;
     }
   }
   return true;
@@ -193,9 +194,10 @@ void HttpServer::createThreads() {
   this->decomposer = new Decomposer(/*pendindStopConditions*/ maxConnections
       , /*stopConditionsToSend*/ calculatorsAmount);
   // Decomposer consumes from its own queue
-  this->decomposer->createOwnQueue(this->threadQueuesCapacity);
+  this->decomposer->createOwnQueue(SEM_VALUE_MAX);
   // Create queue between decomposers and handlers of request units
-  this->requestUnitsQueue = new Queue<RequestUnit>(this->threadQueuesCapacity);
+  this->requestUnitsQueue
+      = new Queue<RequestUnit>(this->requestUnitsQueueCapacity);
 
   // Reserve enough space for calculators
   this->calculators.reserve(this->calculatorsAmount);
@@ -209,11 +211,11 @@ void HttpServer::createThreads() {
   this->responseAssembler = new ResponseAssembler(/*pendingStopConditions*/
       calculatorsAmount);
   // Response assembler has its own queue
-  this->responseAssembler->createOwnQueue(this->threadQueuesCapacity);
+  this->responseAssembler->createOwnQueue(SEM_VALUE_MAX);
 
   // Create client responder with its own queue
   this->clientResponder = new ClientResponder();
-  this->clientResponder->createOwnQueue(this->threadQueuesCapacity);
+  this->clientResponder->createOwnQueue(SEM_VALUE_MAX);
 }
 
 void HttpServer::connectQueues() {
