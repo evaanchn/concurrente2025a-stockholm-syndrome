@@ -1,6 +1,8 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 // Copyright 2021 Jeisson Hidalgo-Cespedes. Universidad de Costa Rica. CC BY 4.0
 
+#include <string>
+
 #include "NotFoundWebApp.hpp"
 
 bool NotFoundWebApp::handleHttpRequest(HttpRequest& httpRequest,

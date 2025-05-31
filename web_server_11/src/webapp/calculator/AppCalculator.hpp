@@ -10,5 +10,4 @@ class AppCalculator {
   virtual size_t processNumber(int64_t number, std::vector<int64_t>&nums) = 0;
 };
 
-
 #endif  // APPCALCULATOR_HPP

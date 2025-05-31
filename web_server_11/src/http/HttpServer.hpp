@@ -15,6 +15,11 @@
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 
+#include "Decomposer.hpp"
+#include "Calculator.hpp"
+#include "ResponseAssembler.hpp"
+#include "ClientResponder.hpp"
+
 #define DEFAULT_PORT "8080"
 
 class HttpApp;
@@ -74,14 +79,30 @@ class HttpServer : public TcpServer{
   std::vector<HttpApp*> applications;
 
  private:
-  /// Number of threads to handle connections
+  /// Max amount of accepted client connections
   unsigned int maxConnections = std::thread::hardware_concurrency();
-  /// queue default capacity
-  uint64_t capacity = SEM_VALUE_MAX;
+  /// Socket's queue default capacity
+  uint64_t socketsQueueCapacity = SEM_VALUE_MAX;
+  /// Max capacity for request unit's queue
+  unsigned int requestUnitsQueueCapacity = SEM_VALUE_MAX;
+  /// Numer of calculator threads in the server
+  unsigned int calculatorsAmount = std::thread::hardware_concurrency();
+
   /// socket producing queue
-  Queue<Socket>* queue = nullptr;
-  /// socket consumers
+  Queue<Socket>* socketsQueue = nullptr;
+  /// Connection Handlers: socket consumers, request data producers
   std::vector<HttpConnectionHandler*> handlers;
+  // Decomposer: request data pointers consumer, request units producer
+  Decomposer* decomposer = nullptr;
+  // Request Units queue
+  Queue<RequestUnit>* requestUnitsQueue = nullptr;
+  // Calculators: consumers and producers of request units
+  std::vector<Calculator*> calculators;
+  // Response assembler: consumer of request units
+  // and producer of request data pointers
+  ResponseAssembler* responseAssembler = nullptr;
+  // Client responder: consumer of request data pointers, responds back
+  ClientResponder* clientResponder = nullptr;
 
  public:
   /// Destructor
@@ -128,16 +149,6 @@ class HttpServer : public TcpServer{
   void stopApps();
   /// This method is called each time a client connection request is accepted.
   void handleClientConnection(Socket& client) override;
-  /// Called each time an HTTP request is received. Web server should analyze
-  /// the request object and assemble a response with the response object.
-  /// Finally send the response calling the httpResponse.send() method.
-  /// @return true on success and the server will continue handling further
-  /// HTTP requests, or false if server should stop accepting requests from
-  /// this client (e.g: HTTP/1.0)
-  /// Sends a page for a non found resource in this server. This method is
-  /// called if none of the registered web applications handled the request.
-  /// If you want to override this method, create a web app, e.g NotFoundWebApp
-  /// that reacts to all URIs, and chain it as the last web app
 
  private:
   /// @brief Creates thread objects

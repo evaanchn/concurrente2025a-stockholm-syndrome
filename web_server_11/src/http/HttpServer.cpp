@@ -21,13 +21,15 @@ const char* const usage =
   "  max_connections  Max amount of connections the server"
   " can attend concurrently\n"
   "  conn_queue_capacity  Max amount of connections that"
-  " can be stored in queue\n";
+  " can be stored in queue\n"
+  "  requests_queue_capacity Max amount of requests enqueued to process\n";
 
 HttpServer::HttpServer() {
 }
 
 HttpServer::~HttpServer() {
-  delete this->queue;
+  delete this->socketsQueue;
+  delete this->requestUnitsQueue;
 }
 
 HttpServer& HttpServer::getInstance() {
@@ -107,11 +109,20 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
   }
   if (argc >= 4) {
     try {
-      this->capacity = std::stoull(argv[3]);
+      this->socketsQueueCapacity = std::stoull(argv[3]);
     } catch(const std::invalid_argument& error) {
       std::cerr << "warning: " << error.what()
         << " default values ​​were assigned" << std::endl;
-      this->capacity = SEM_VALUE_MAX;
+      this->socketsQueueCapacity = SEM_VALUE_MAX;
+    }
+  }
+  if (argc >= 5) {
+    try {
+      this->requestUnitsQueueCapacity = std::stoull(argv[4]);
+    } catch(const std::invalid_argument& error) {
+      std::cerr << "warning: " << error.what()
+        << " default values ​​were assigned" << std::endl;
+      this->requestUnitsQueueCapacity = SEM_VALUE_MAX;
     }
   }
   return true;
@@ -163,7 +174,7 @@ void HttpServer::stopServer(const bool stopApps) {
 }
 
 void HttpServer::handleClientConnection(Socket& client) {
-  this->queue->enqueue(client);
+  this->socketsQueue->enqueue(client);
 }
 
 void HttpServer::createThreads() {
@@ -176,16 +187,62 @@ void HttpServer::createThreads() {
       new HttpConnectionHandler(this->applications);
     this->handlers.push_back(handler);
   }
+
+  // Create decomposer, which requires all handlers to stop before halting
+  // After stopping, it notifies each calculator it must stop through
+  // enqueued stop conditions in their queue
+  this->decomposer = new Decomposer(/*pendindStopConditions*/ maxConnections
+      , /*stopConditionsToSend*/ calculatorsAmount);
+  // Decomposer consumes from its own queue
+  this->decomposer->createOwnQueue(SEM_VALUE_MAX);
+  // Create queue between decomposers and handlers of request units
+  this->requestUnitsQueue
+      = new Queue<RequestUnit>(this->requestUnitsQueueCapacity);
+
+  // Reserve enough space for calculators
+  this->calculators.reserve(this->calculatorsAmount);
+  // Create each calculator and add to calculators vector
+  for (size_t index = 0; index < this->calculatorsAmount; ++index) {
+    Calculator* calculator = new Calculator();
+    this->calculators.push_back(calculator);
+  }
+
+  // Response assembler must wait for all calculators to finish
+  this->responseAssembler = new ResponseAssembler(/*pendingStopConditions*/
+      calculatorsAmount);
+  // Response assembler has its own queue
+  this->responseAssembler->createOwnQueue(SEM_VALUE_MAX);
+
+  // Create client responder with its own queue
+  this->clientResponder = new ClientResponder();
+  this->clientResponder->createOwnQueue(SEM_VALUE_MAX);
 }
 
 void HttpServer::connectQueues() {
   // Create the objects required to respond to the client
-  this->queue = new Queue<Socket>(this->capacity);
+  this->socketsQueue = new Queue<Socket>(this->socketsQueueCapacity);
 
   // Connection handlers will consume from the server's sockets queue
+  // and produce to the decomposer's queue
   for (size_t index = 0; index < this->maxConnections; ++index) {
-    handlers[index]->setConsumingQueue(this->queue);
+    handlers[index]->setConsumingQueue(this->socketsQueue);
+    handlers[index]->setProducingQueue(this->decomposer->getConsumingQueue());
   }
+
+  // Decomposer produces to the request unit's queue
+  this->decomposer->setProducingQueue(this->requestUnitsQueue);
+
+  // Each calculator consumes from the request units queue
+  // And produces to the response assembler's queue
+  for (size_t index = 0; index < this->calculatorsAmount; ++index) {
+    this->calculators[index]->setConsumingQueue(this->requestUnitsQueue);
+    this->calculators[index]->
+        setProducingQueue(this->responseAssembler->getConsumingQueue());
+  }
+
+  // Response assembler produces to client responder's queue
+  this->responseAssembler->setProducingQueue(this->clientResponder->
+      getConsumingQueue());
 }
 
 void HttpServer::startThreads() {
@@ -193,18 +250,37 @@ void HttpServer::startThreads() {
   for (size_t index = 0; index < this->maxConnections; ++index) {
     this->handlers[index]->startThread();
   }
+  // Decomposer starts to wait for request data to decompose
+  this->decomposer->startThread();
+  // Calculators start to wait for request units to process
+  for (size_t index = 0; index < this->calculatorsAmount; ++index) {
+    this->calculators[index]->startThread();
+  }
+  // Response assembler starts to wait for units done
+  this->responseAssembler->startThread();
+  // Client responder starts to wait for request data done
+  this->clientResponder->startThread();
 }
 
 void HttpServer::joinThreads() {
   // Send stop conditions to handlers
   for (size_t i = 0; i < this->maxConnections; ++i) {
-    this->queue->enqueue(Socket());
+    this->socketsQueue->enqueue(Socket());
   }
 
-  // Wait for connection handlers to finish
-  for (size_t i = 0; i < this->handlers.size(); ++i) {
-    this->handlers[i]->waitToFinish();
+  // Wait for thread objects to finish and join
+  for (size_t index = 0; index < this->handlers.size(); ++index) {
+    this->handlers[index]->waitToFinish();
   }
+
+  this->decomposer->waitToFinish();
+
+  for (size_t index = 0; index < this->calculatorsAmount; ++index) {
+    this->calculators[index]->waitToFinish();
+  }
+
+  this->responseAssembler->waitToFinish();
+  this->clientResponder->waitToFinish();
 }
 
 void HttpServer::deleteThreads() {
@@ -212,5 +288,19 @@ void HttpServer::deleteThreads() {
   for (HttpConnectionHandler* handler : this->handlers) {
     delete handler;
   }
-  handlers.clear();
+  this->handlers.clear();  // Clear pointers stored
+
+  delete this->decomposer;
+  this->decomposer = nullptr;
+
+  for (Calculator* calculator : this->calculators) {
+    delete calculator;
+  }
+  this->calculators.clear();  // Clear pointers stored
+
+  delete this->responseAssembler;
+  this->responseAssembler = nullptr;
+
+  delete this->clientResponder;
+  this->clientResponder = nullptr;
 }

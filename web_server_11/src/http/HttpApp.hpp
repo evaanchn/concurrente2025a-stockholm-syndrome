@@ -4,6 +4,7 @@
 #define HTTPAPP_H
 
 #include "common.hpp"
+#include "RequestData.hpp"
 
 class HttpRequest;
 class HttpResponse;
@@ -24,6 +25,9 @@ class HttpApp {
   ~HttpApp() = default;
   /// Called by the web server when the web server is started
   virtual void start();
+  /// @brief Parse the HTTP request and create request data
+  virtual RequestData* createRequestData(HttpRequest& httpRequest
+      , HttpResponse& httpResponse);
   /// Handle HTTP requests. @see HttpServer::handleHttpRequest()
   /// @return true If this application handled the request, false otherwise
   /// and another chained application should handle it

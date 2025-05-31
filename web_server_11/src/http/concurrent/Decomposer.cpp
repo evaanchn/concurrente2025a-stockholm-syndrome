@@ -1,5 +1,7 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#include <vector>
+
 #include "Decomposer.hpp"
 
 Decomposer::Decomposer(size_t pendingStopConditions

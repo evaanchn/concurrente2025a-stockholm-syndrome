@@ -10,7 +10,8 @@
 #include "RequestData.hpp"
 #include "RequestUnit.hpp"
 
-class Decomposer : Assembler<RequestData*, RequestUnit> {
+/// @brief Decomposes a RequestData into RequestUnits
+class Decomposer : public Assembler<RequestData*, RequestUnit> {
   DISABLE_COPY(Decomposer);
 
  private:

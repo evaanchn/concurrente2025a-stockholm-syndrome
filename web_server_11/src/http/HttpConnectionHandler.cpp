@@ -71,11 +71,11 @@ bool HttpConnectionHandler::route(HttpRequest& httpRequest
     HttpApp* app = this->applications[index];
     if (app->handleHttpRequest(httpRequest, httpResponse)) {
       // If handleHttpRequest returned true, it could be a concurrent app
-      ConcurrentApp* concurrentApp = dynamic_cast<ConcurrentApp*>(app);
-      // If it is concurrent (dynamic cast successful)
-      if (concurrentApp) {
-        // Create request data
-        RequestData* request = concurrentApp->createRequestData(httpRequest);
+      RequestData* request = app->createRequestData(httpRequest
+          , httpResponse);
+      // If a request was created, enqueue it
+      if (request) {
+        // Enqueue request data to be processed by the concurrent app
         this->produce(request);
       }
       return true;

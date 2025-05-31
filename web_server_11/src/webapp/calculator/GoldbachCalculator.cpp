@@ -1,21 +1,19 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#include <vector>
+
 #include "GoldbachCalculator.hpp"
 
 size_t GoldbachCalculator::processNumber(int64_t number,
     std::vector<int64_t>& goldbachSums) {
-    goldbachSums.push_back(number);
+    number = std::abs(number);  // Ensure the number is positive
     int64_t sumOperands = 1;
     if (number % 2 == 0) {
-      if (!strongGoldbach(number, goldbachSums)) {
-        throw std::runtime_error("No valid sum of two primes was found");
-      }
+      this->strongGoldbach(number, goldbachSums);
       sumOperands = 2;
 
     } else {
-      if (!weakGoldbach(number, goldbachSums)) {
-        throw std::runtime_error("No valid sum of three primes was found");
-      }
+      this->weakGoldbach(number, goldbachSums);
       sumOperands = 3;
     }
     return getNSums(goldbachSums, sumOperands);
@@ -53,5 +51,5 @@ bool GoldbachCalculator::weakGoldbach(int64_t number,
 
 size_t GoldbachCalculator::getNSums(std::vector<int64_t>&goldbachSums,
     int64_t nElements) {
-  return (goldbachSums.size() - 1)/nElements;
+  return (goldbachSums.size())/nElements;
 }

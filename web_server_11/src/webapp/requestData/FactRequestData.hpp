@@ -14,14 +14,20 @@
 /// concurrent production line
 class FactRequestData : public CalcRequestData {
  public:
-  
   /// @brief Constructor
   /// @param httpRequest is the request to be handled
-  /// @param concurrentApp is the application that will handle the request
-  FactRequestData(HttpRequest& httpRequest, ConcurrentApp* concurrentApp) 
-  : CalcRequestData(httpRequest, concurrentApp) {
-    this->appCalculator = new PrimeFactCalculator();
+  /// @param httpResponse is the response to be handled
+  FactRequestData(HttpRequest& httpRequest, HttpResponse& httpResponse)
+      : CalcRequestData(httpRequest, httpResponse) {
   }
+  /// @brief Process a queries for prime factorization
+  /// @param index index of the queries to process
+  void processQuery(size_t index) override;
+  /// @brief Prime factorization for a given value
+  /// @param value the original calculation value
+  /// @param result vector containing the result elements
+  void buildResult(int64_t value, std::vector<int64_t>& result)
+    override;
 };
 
 #endif  // FACT_REQUESTDATA_HPP

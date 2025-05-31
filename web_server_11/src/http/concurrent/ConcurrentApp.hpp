@@ -10,7 +10,7 @@
 #include "HttpResponse.hpp"
 #include "RequestData.hpp"
 
-/// @brief ConcurrentApp is a base class for web applications that handle 
+/// @brief ConcurrentApp is a base class for web applications that handle
 /// @details This class is designed
 /// to handle HTTP requests in a concurrent environment, allowing for
 /// efficient processing of multiple requests simultaneously.
@@ -21,7 +21,7 @@ class ConcurrentApp : public HttpApp {
   /// Constructor
   ConcurrentApp() = default;
   /// Objects of this class cannot be copied
-  DISABLE_COPY(ConcurrentApp);  
+  DISABLE_COPY(ConcurrentApp);
   ~ConcurrentApp() = default;
   /// @brief Handle HTTP requests.
   /// @details This method is called by the web server to handle HTTP requests.
@@ -32,7 +32,8 @@ class ConcurrentApp : public HttpApp {
   /// @return true if this application can handle the request, false otherwise
   bool handleHttpRequest(HttpRequest& httpRequest,
       HttpResponse& httpResponse) override {
-    if (this->canHandleHttpRequest(httpRequest, httpResponse)) {
+    (void)httpResponse;  // parameter is not required
+    if (this->canHandleHttpRequest(httpRequest)) {
       return true;
     }
     return false;
@@ -40,13 +41,11 @@ class ConcurrentApp : public HttpApp {
 
   /// @brief Check if this application can handle the HTTP request
   /// @param httpRequest request to be handled
-  /// @param httpResponse response to be sent back to the client
   /// @return true if this application can handle the request,
-  virtual bool canHandleHttpRequest(HttpRequest& httpRequest,
-      HttpResponse& httpResponse) = 0;
-  
+  virtual bool canHandleHttpRequest(HttpRequest& httpRequest) = 0;
   /// @brief Parse the HTTP request to parse numbers from the URI
-  virtual RequestData* createRequestData(HttpRequest& httpRequest) = 0;
+  RequestData* createRequestData(HttpRequest& httpRequest
+      , HttpResponse& httpResponse) override = 0;
 };
 
 #endif  // CONCURRENTAPP_HPP

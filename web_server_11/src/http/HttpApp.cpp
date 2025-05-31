@@ -9,3 +9,10 @@ void HttpApp::start() {
 void HttpApp::stop() {
   // Default base class implementation does nothing
 }
+
+RequestData* HttpApp::createRequestData(HttpRequest& httpRequest
+    , HttpResponse& httpResponse) {
+  (void) httpRequest;
+  (void) httpResponse;
+  return nullptr;
+}
