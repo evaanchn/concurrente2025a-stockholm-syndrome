@@ -108,11 +108,20 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
   }
   if (argc >= 4) {
     try {
-      this->capacity = std::stoull(argv[3]);
+      this->socketsQueueCapacity = std::stoull(argv[3]);
     } catch(const std::invalid_argument& error) {
       std::cerr << "warning: " << error.what()
         << " default values ​​were assigned" << std::endl;
-      this->capacity = SEM_VALUE_MAX;
+      this->socketsQueueCapacity = SEM_VALUE_MAX;
+    }
+  }
+  if (argc >= 5) {
+    try {
+      this->threadQueuesCapacity = std::stoull(argv[4]);
+    } catch(const std::invalid_argument& error) {
+      std::cerr << "warning: " << error.what()
+        << " default values ​​were assigned" << std::endl;
+      this->threadQueuesCapacity = SEM_VALUE_MAX;
     }
   }
   return true;
@@ -183,7 +192,10 @@ void HttpServer::createThreads() {
   // enqueued stop conditions in their queue
   this->decomposer = new Decomposer(/*pendindStopConditions*/ maxConnections
       , /*stopConditionsToSend*/ calculatorsAmount);
-  this->decomposer->createOwnQueue(SEM_VALUE_MAX);
+  // Decomposer consumes from its own queue
+  this->decomposer->createOwnQueue(this->threadQueuesCapacity);
+  // Create queue between decomposers and handlers of request units
+  this->requestUnitsQueue = new Queue<RequestUnit>(this->threadQueuesCapacity);
 
   // Reserve enough space for calculators
   this->calculators.reserve(this->calculatorsAmount);
@@ -196,32 +208,37 @@ void HttpServer::createThreads() {
   // Response assembler must wait for all calculators to finish
   this->responseAssembler = new ResponseAssembler(/*pendingStopConditions*/
       calculatorsAmount);
-  this->responseAssembler->createOwnQueue(SEM_VALUE_MAX);
+  // Response assembler has its own queue
+  this->responseAssembler->createOwnQueue(this->threadQueuesCapacity);
 
+  // Create client responder with its own queue
   this->clientResponder = new ClientResponder();
-  this->clientResponder->createOwnQueue(SEM_VALUE_MAX);
+  this->clientResponder->createOwnQueue(this->threadQueuesCapacity);
 }
 
 void HttpServer::connectQueues() {
   // Create the objects required to respond to the client
-  this->socketsQueue = new Queue<Socket>(this->capacity);
+  this->socketsQueue = new Queue<Socket>(this->socketsQueueCapacity);
 
   // Connection handlers will consume from the server's sockets queue
+  // and produce to the decomposer's queue
   for (size_t index = 0; index < this->maxConnections; ++index) {
     handlers[index]->setConsumingQueue(this->socketsQueue);
     handlers[index]->setProducingQueue(this->decomposer->getConsumingQueue());
   }
 
-  this->requestUnitsQueue = new Queue<RequestUnit>(SEM_VALUE_MAX);
-
+  // Decomposer produces to the request unit's queue
   this->decomposer->setProducingQueue(this->requestUnitsQueue);
 
+  // Each calculator consumes from the request units queue
+  // And produces to the response assembler's queue
   for (size_t index = 0; index < this->calculatorsAmount; ++index) {
     this->calculators[index]->setConsumingQueue(this->requestUnitsQueue);
     this->calculators[index]->
         setProducingQueue(this->responseAssembler->getConsumingQueue());
   }
 
+  // Response assembler produces to client responder's queue
   this->responseAssembler->setProducingQueue(this->clientResponder->
       getConsumingQueue());
 }
@@ -231,11 +248,15 @@ void HttpServer::startThreads() {
   for (size_t index = 0; index < this->maxConnections; ++index) {
     this->handlers[index]->startThread();
   }
+  // Decomposer starts to wait for request data to decompose
   this->decomposer->startThread();
+  // Calculators start to wait for request units to process
   for (size_t index = 0; index < this->calculatorsAmount; ++index) {
     this->calculators[index]->startThread();
   }
+  // Response assembler starts to wait for units done
   this->responseAssembler->startThread();
+  // Client responder starts to wait for request data done
   this->clientResponder->startThread();
 }
 

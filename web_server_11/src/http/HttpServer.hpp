@@ -81,8 +81,10 @@ class HttpServer : public TcpServer{
  private:
   /// Max amount of accepted client connections
   unsigned int maxConnections = std::thread::hardware_concurrency();
-  /// queue default capacity
-  uint64_t capacity = SEM_VALUE_MAX;
+  /// Socket's queue default capacity
+  uint64_t socketsQueueCapacity = SEM_VALUE_MAX;
+  /// Max capacity of queues of other thread objects' queues
+  unsigned int threadQueuesCapacity = SEM_VALUE_MAX;
   /// Numer of calculator threads in the server
   unsigned int calculatorsAmount = std::thread::hardware_concurrency();
 
