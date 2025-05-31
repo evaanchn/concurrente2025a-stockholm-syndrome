@@ -44,8 +44,8 @@ class ConcurrentApp : public HttpApp {
   /// @return true if this application can handle the request,
   virtual bool canHandleHttpRequest(HttpRequest& httpRequest) = 0;
   /// @brief Parse the HTTP request to parse numbers from the URI
-  virtual RequestData* createRequestData(HttpRequest& httpRequest
-      , HttpResponse& httpResponse) = 0;
+  RequestData* createRequestData(HttpRequest& httpRequest
+      , HttpResponse& httpResponse) override = 0;
 };
 
 #endif  // CONCURRENTAPP_HPP
