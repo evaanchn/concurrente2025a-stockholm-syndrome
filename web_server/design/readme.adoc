@@ -61,7 +61,7 @@ image::web_server_12_design.svg[algin="center"]
 - Gathers all `RequestUnit`s belonging to the same original request.
 - Send completed `RequestData` object to the ClientResponder.
 
-=== ClientRespond (Consumer)
+=== ClientResponder (Consumer)
 
 **Role**: Builds the response and sends it to the client.
 
