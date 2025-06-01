@@ -8,13 +8,14 @@
 :xrefstyle: short
 
 == Preview
+[.text-center]
 image::images/GoldbachWebApp.png[]
 
 This is an example of a Goldbach result for a query with three numbers: 72, 44, and -142. If the numbers are positive, the page displays only the number of Goldbach sums for that number; otherwise, a list of all results is displayed.
 
 [[problem_statement]]
 == Problem description (Analysis)
-The purpose of this project is to create a distributed, concurrent web server that provides concurrent service for different web applications, such as Goldbach summation and prime factorization calculators, running in parallel. This project addresses task concurrency and data parallelism, as well as a basic approach to networking.
+The purpose of this project is to create a distributed, concurrent web server that provides service for serial and concurrent web applications, such as Goldbach summation and prime factorization calculators. This project addresses task concurrency and data parallelism, as well as a basic approach to networking.
 
 [[structure]]
 == Structure of the project
@@ -95,13 +96,15 @@ Run the server using a command like the following:
 
 [source]
 ----
-$ ./bin/web_server_11 8080 30 70
+$ ./bin/web_server_11 8080 30 70 40
 ----
 
 Where:
-- `8080` is the port for server connection (must be >1023),
-- `30` is the max number of concurrent connections,
+
+- `8080` is the port for server connection (must be >1023).
+- `30` is the max number of concurrent connections.
 - `70` is the capacity of the pending connection queue.
+- `40` is the number of queue capacity for the calculator threads.
 
 Verify the server is running by opening your browser and visiting:
 
@@ -120,11 +123,14 @@ You can request for a list of numbers to be processed, separated by commas, eith
 ==== Prime factorization app
 In this application, users will be able to see the prime factorizations for the numbers requested listed in product-exponent form, similar to figure shown in the analysis.
 
+[.text-center]
 image::images/FactWebApp.png[]
+
 
 ==== Goldbach sums app
 To request the specific sums for a number, enter it as a negative. Alternatively, if only the amount of sums is desired, the number can be written as is (positive). A list of sums or amounts will be shown on screen as a response.
 
+[.text-center]
 image::images/GoldbachWebApp.png[]
 
 === Stopping the server
@@ -133,46 +139,47 @@ image::images/GoldbachWebApp.png[]
 
 === Concurrency testing (httperf)
 To test concurrency, follow these steps:
+
 1. Open two different windows or tabs.
 2. In one, request a heavy or long-lasting calculation.
 3. In the other device, request a quick calculation at the same time.
 4. Verify that the expected fast calculation response arrives without waiting for the heavy one to finish first.
 
-*Diferences between serial and concurrent version:*
+*Diferences between handling multiple connections version and concurrent apps version:*
 
-Serial (1 thread):
+Handling multiple connections version(30 threads and 70 queue capacity):
 [source] 
 ----
-$ httperf --server 10.137.1.117 --port 8080 --num-conns 200 --rate 50 --num-call 3 --uri /goldbach?number=922222 --timeout 1
+$ httperf --server 192.168.100.8 --port 8080 --num-conns 200 --rate 50 --num-call 3 --uri /goldbach?number=922222 --timeout 2
 
-Total: conections 200 request 369 replies 179 test-duration 12.319 s
+Total: connections 200 requests 472 replies 408 test-duration 6.419 s
 
-Connection rate: 16.2 conn/s (61.6 ms/conn, <=139 concurrent connections)
-Connection time [ms]: min 93.6 avg 3816.0 max 9598.2 median 3768.5 stddev 2993.8
-Connection time [ms]: connect 3017.6
-Connection length [replies/conn]: 1.000
+Connection rate: 31.2 conn/s (32.1 ms/conn, <=113 concurrent connections)
+Connection time [ms]: min 370.8 avg 1897.4 max 3815.7 median 1923.5 stddev 772.1
+Connection time [ms]: connect 23.1
+Connection length [replies/conn]: 3.000
 ----
 
-Concurrent (30 threads and 70 queue capacity):
+Concurrent apps version(30 threads and 70 queue capacity):
 [source] 
 ----
-$ httperf --server 10.137.1.117 --port 8080 --num-conns 200 --rate 50 --num-call 3 --uri /goldbach?number=922222 --timeout 3
+$ httperf --server 192.168.100.8 --port 8080 --num-conns 200 --rate 50 --num-call 3 --uri /goldbach?number=922222 --timeout 2
 
-Total: conections 200 request 465 replies 385 test-duration 11.118 s
+Total: connections 200 requests 478 replies 417 test-duration 6.288 s
 
-Connection rate: 18.0 conn/s (55.6 ms/conn, <=170 concurrent connections)
-Connection time [ms]: min 1928.0 avg 5590.0 max 8817.2 median 5853.5 stddev 2185.9
-Connection time [ms]: connect 1311.0
-Connection length [replies/conn]: 2.810
+Connection rate: 31.8 conn/s (31.4 ms/conn, <=110 concurrent connections)
+Connection time [ms]: min 268.4 avg 1721.7 max 3022.0 median 1808.5 stddev 722.1
+Connection time [ms]: connect 3.2
+Connection length [replies/conn]: 3.000
 ----
 
-The results show that concurret version could manage more requests in less time *for the same number*
+These results indicate that the second version of the server has improved both in efficiency and responsiveness. *for the same number*
 
 *Success rate:*
 According to the number of requests that were replied
 
-- Serial: 49% success
-- Concurrent: 82% success
+- Handling multiple connections version: 86% success
+- Concurrent apps version: 87% success
 
 [[design]]
 == Design of solution

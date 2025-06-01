@@ -13,8 +13,62 @@ The following diagram shows the design for the first version of the concurrent w
 
 [#web_server_diagram]
 .Web server diagram
-image::web_server_11_design.png[algin="center"]
+image::web_server_12_design.svg[algin="center"]
 
+== Web server production line
+
+=== HttpConnectionHandler (Assembler)
+
+**Role**: Initial assembler and entry point for incoming HTTP requests.
+
+**Functionality**:
+
+- Accepts connections from clients.
+- Ask applications to parses the `HttpRequest`.
+- For concurrent apps, wraps it into an internal request object and enqueues it in the system.
+- `RequestData` contains shared memory for future stages.
+- Each `RequestData` includes:
+- Original `HttpRequest`.
+- Original `HttpResponse`.
+- A pendingQueries that indicates the pending queries to be processed.
+
+=== Decomposer (Assembler)
+**Role**: Split request.
+
+**Functionality**:
+
+- Decomposes each received request into smaller, independent processing units called `RequestUnit`.
+- Each `RequestUnit` includes:
+- A pointer to a shared `RequestData`. 
+- Index to store the results of the operation.
+
+=== Calculator (Assembler)
+
+**Role**: Operation processor.
+
+**Functionality**:
+
+- Takes individual `RequestUnit`s and performs the required computation.
+- Stores the results in the corresponding result vector of the unit.
+- Send the processed `RequestUnit` to the `RepliesAssembler`.
+
+=== RepliesAssembler (Assembler)
+
+**Role**: Reassembles the initial query.
+
+**Functionality**:
+
+- Gathers all `RequestUnit`s belonging to the same original request.
+- Send completed `RequestData` object to the ClientResponder.
+
+=== ClientRespond (Consumer)
+
+**Role**: Builds the response and sends it to the client.
+
+**Functionality**:
+
+- Build response with the `RequestData` object and sends it back to the client.
+- Delete de `RequestData` object to free memory.
 
 [[calculators_designs]]
 == Calculators designs
@@ -44,6 +98,7 @@ For this version, both methods use a find-the-complement approach with for loops
 ----
 include::GoldbachCalc.pseudo[]
 ----
-
 == Resources
-visit https://jeisson.ecci.ucr.ac.cr/concurrente/2025a/proyectos/webserv/ for more information about the project.
+Visit https://jeisson.ecci.ucr.ac.cr/concurrente/2025a/proyectos/webserv/ for more information about the project.
+
+Visit https://drive.google.com/file/d/16KxjAQ0D0jIqLfzJsC4BZYRnn1Ba-Wyk/view?usp=sharing for full diagram resolution.
