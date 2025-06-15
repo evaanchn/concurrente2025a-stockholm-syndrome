@@ -18,6 +18,7 @@
 /**
  * @class HttpConnectionHandler
  * @brief Thread object that manages a connection with a client (one socket)
+ * and attends to http requests that can be sent
  */
 class HttpConnectionHandler : public Assembler<Socket, RequestData*> {
  private:

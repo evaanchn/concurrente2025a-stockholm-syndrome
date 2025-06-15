@@ -6,7 +6,8 @@
 
 HttpConnectionHandler::HttpConnectionHandler
   (std::vector<HttpApp*>& applications)
-  : applications(applications) {}
+  : applications(applications) {
+}
 
 int HttpConnectionHandler::run() {
   // Start consuming sockets from queue and enqueue request data if

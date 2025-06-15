@@ -65,7 +65,7 @@ repeats the process with the following application in the chain: the pets
 application. If no application manages the request, a 404 Not-found response
 is sent to the client.
 */
-class HttpServer : public TcpServer{
+class HttpServer : public TcpServer {
   DISABLE_COPY(HttpServer);
 
  protected:
@@ -81,10 +81,8 @@ class HttpServer : public TcpServer{
  private:
   /// Max amount of accepted client connections
   unsigned int maxConnections = std::thread::hardware_concurrency();
-  /// Socket's queue default capacity
-  uint64_t socketsQueueCapacity = SEM_VALUE_MAX;
-  /// Max capacity for request unit's queue
-  unsigned int requestUnitsQueueCapacity = SEM_VALUE_MAX;
+  /// Queue's default capacity
+  unsigned int queuesCapacity = SEM_VALUE_MAX;
   /// Numer of calculator threads in the server
   unsigned int calculatorsAmount = std::thread::hardware_concurrency();
 
