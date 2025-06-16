@@ -13,13 +13,13 @@ class ResponseAssembler : public Assembler<RequestUnit, RequestData*> {
   DISABLE_COPY(ResponseAssembler);
 
  private:
+  /// Amount of stop conds needed from request units handlers
+  /// to stop operating (no request units left to assemble and send)
   size_t pendingStopConditions = 0;
-  size_t stopConditionsToSend = 0;
 
  public:
   /// @brief Constructor of the class
-  ResponseAssembler(size_t pendingStopConditions,
-      size_t stopConditionsToSend = 1);
+  explicit ResponseAssembler(size_t pendingStopConditions);
 
   /// @brief Destructor of the class
   ~ResponseAssembler() = default;

@@ -14,13 +14,9 @@
 class ClientResponder : public Consumer<RequestData*> {
   DISABLE_COPY(ClientResponder);
 
- private:
-  /// @brief Number of pending stop conditions to consume
-  size_t pendingStopConditions = 0;
-
  public:
   /// @brief Constructor of the class
-  explicit ClientResponder(size_t pendingStopConditions = 1);
+  explicit ClientResponder();
 
   /// @brief Destructor of the class
   ~ClientResponder() = default;
