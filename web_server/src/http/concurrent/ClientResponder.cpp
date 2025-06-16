@@ -1,7 +1,7 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
 #include "ClientResponder.hpp"
-#include "RequestData.hpp"
+#include "ConcurrentData.hpp"
 
 ClientResponder::ClientResponder() {
 }
@@ -13,10 +13,10 @@ int ClientResponder::run() {
   return EXIT_SUCCESS;
 }
 
-void ClientResponder::consume(RequestData* requestData) {
-  assert(requestData);
+void ClientResponder::consume(ConcurrentData* concurrentData) {
+  assert(concurrentData);
   // format the response and send it to the client
-  requestData->respond();
-  // delete the request data since It is no longer needed
-  delete requestData;
+  concurrentData->respond();
+  // delete the concurrent data since It is no longer needed
+  delete concurrentData;
 }

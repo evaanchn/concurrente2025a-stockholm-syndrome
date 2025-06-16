@@ -5,7 +5,7 @@
 
 #include <vector>
 #include <cstddef>
-#include <inttypes.h>
+#include <cinttypes>
 
 #include "AppCalculator.hpp"
 

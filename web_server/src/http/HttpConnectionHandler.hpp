@@ -12,7 +12,7 @@
 
 // forward declaration
 class HttpApp;
-class RequestData;
+class ConcurrentData;
 class HttpResponse;
 class HttpRequest;
 
@@ -21,7 +21,7 @@ class HttpRequest;
  * @brief Thread object that manages a connection with a client (one socket)
  * and attends to http requests that can be sent
  */
-class HttpConnectionHandler : public Assembler<Socket, RequestData*> {
+class HttpConnectionHandler : public Assembler<Socket, ConcurrentData*> {
  private:
   /// Reference to app chain in server
   std::vector<HttpApp*>& applications;

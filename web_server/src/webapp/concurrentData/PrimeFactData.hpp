@@ -1,22 +1,22 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
-#ifndef FACT_REQUESTDATA_HPP
-#define FACT_REQUESTDATA_HPP
+#ifndef PRIMEFACTDATA_HPP
+#define PRIMEFACTDATA_HPP
 
 #include <iostream>
 #include <vector>
 
-#include "CalcRequestData.hpp"
+#include "CalcData.hpp"
 
 /// @brief Store and process data for Fact app
 /// concurrent production line
-class FactRequestData : public CalcRequestData {
+class PrimeFactData : public CalcData {
  public:
   /// @brief Constructor
   /// @param httpRequest is the request to be handled
   /// @param httpResponse is the response to be handled
-  FactRequestData(HttpRequest& httpRequest, HttpResponse& httpResponse)
-      : CalcRequestData(httpRequest, httpResponse) {
+  PrimeFactData(HttpRequest& httpRequest, HttpResponse& httpResponse)
+      : CalcData(httpRequest, httpResponse) {
   }
   /// @brief Process a queries for prime factorization
   /// @param index index of the queries to process
@@ -28,4 +28,4 @@ class FactRequestData : public CalcRequestData {
     override;
 };
 
-#endif  // FACT_REQUESTDATA_HPP
+#endif  // PRIMEFACTDATA_HPP

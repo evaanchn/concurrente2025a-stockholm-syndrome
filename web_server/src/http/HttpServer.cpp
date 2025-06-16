@@ -34,7 +34,7 @@ HttpServer::HttpServer() {
 
 HttpServer::~HttpServer() {
   delete this->socketsQueue;
-  delete this->requestUnitsQueue;
+  delete this->dataUnitsQueue;
 }
 
 HttpServer& HttpServer::getInstance() {
@@ -181,9 +181,9 @@ void HttpServer::connectQueues() {
   this->socketsQueue = new Queue<Socket>(this->queuesCapacity);
   // Decomposer consumes from its own queue
   this->decomposer->createOwnQueue(SEM_VALUE_MAX);
-  // Create queue between decomposers and request units handlers
-  this->requestUnitsQueue
-      = new Queue<RequestUnit>(this->queuesCapacity);
+  // Create queue between decomposers and data units handlers
+  this->dataUnitsQueue
+      = new Queue<DataUnit>(this->queuesCapacity);
   // Response assembler and client responder have their own queue
   this->responseAssembler->createOwnQueue(SEM_VALUE_MAX);
   this->clientResponder->createOwnQueue(SEM_VALUE_MAX);
@@ -195,13 +195,13 @@ void HttpServer::connectQueues() {
     handlers[index]->setProducingQueue(this->decomposer->getConsumingQueue());
   }
 
-  // Decomposer produces to the request unit's queue
-  this->decomposer->setProducingQueue(this->requestUnitsQueue);
+  // Decomposer produces to the unit's queue
+  this->decomposer->setProducingQueue(this->dataUnitsQueue);
 
-  // Each calculator consumes from the request units queue
+  // Each calculator consumes from the data units queue
   // And produces to the response assembler's queue
   for (size_t index = 0; index < this->calculatorsAmount; ++index) {
-    this->calculators[index]->setConsumingQueue(this->requestUnitsQueue);
+    this->calculators[index]->setConsumingQueue(this->dataUnitsQueue);
     this->calculators[index]->
         setProducingQueue(this->responseAssembler->getConsumingQueue());
   }
@@ -216,15 +216,15 @@ void HttpServer::startThreads() {
   for (size_t index = 0; index < this->maxConnections; ++index) {
     this->handlers[index]->startThread();
   }
-  // Decomposer starts to wait for request data to decompose
+  // Decomposer starts to wait for concurrent data to decompose
   this->decomposer->startThread();
-  // Calculators start to wait for request units to process
+  // Calculators start to wait for concurrent units to process
   for (size_t index = 0; index < this->calculatorsAmount; ++index) {
     this->calculators[index]->startThread();
   }
   // Response assembler starts to wait for units done
   this->responseAssembler->startThread();
-  // Client responder starts to wait for request data done
+  // Client responder starts to wait for concurrent data to be done
   this->clientResponder->startThread();
 }
 

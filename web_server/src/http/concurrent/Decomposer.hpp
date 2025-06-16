@@ -4,13 +4,13 @@
 #define DECOMPOSER_HPP
 
 #include "Assembler.hpp"
-#include "RequestUnit.hpp"
+#include "DataUnit.hpp"
 
 // forward declaration
-class RequestData;
+class ConcurrentData;
 
-/// @brief Decomposes a RequestData into RequestUnits
-class Decomposer : public Assembler<RequestData*, RequestUnit> {
+/// @brief Decomposes a ConcurrentData into data units
+class Decomposer : public Assembler<ConcurrentData*, DataUnit> {
   DISABLE_COPY(Decomposer);
 
  private:
@@ -35,8 +35,8 @@ class Decomposer : public Assembler<RequestData*, RequestUnit> {
   int run() override;
 
   /// @brief Consuming procedure
-  /// @param data Request data pointer
-  void consume(RequestData* data) override;
+  /// @param data shared data pointer
+  void consume(ConcurrentData* data) override;
 };
 
 #endif  // DECOMPOSER_HPP

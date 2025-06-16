@@ -8,7 +8,7 @@
 // forward declarations
 class HttpRequest;
 class HttpResponse;
-class RequestData;
+class ConcurrentData;
 
 /**
 @brief Base class for all web applications that can be registered with the
@@ -36,7 +36,7 @@ class HttpApp {
   virtual void stop();
   /// @brief Parse the HTTP request and create request data. Returns nullptr
   /// by default
-  virtual RequestData* createRequestData(HttpRequest& httpRequest
+  virtual ConcurrentData* createConcurrentData(HttpRequest& httpRequest
       , HttpResponse& httpResponse);
 };
 

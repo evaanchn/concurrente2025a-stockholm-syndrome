@@ -3,15 +3,15 @@
 #include <vector>
 
 #include "GoldbachCalculator.hpp"
-#include "GoldbachRequestData.hpp"
+#include "GoldbachData.hpp"
 
-void GoldbachRequestData::processQuery(size_t index) {
+void GoldbachData::processQuery(size_t index) {
   GoldbachCalculator calculator;
   // processNumber(query, resultsVector)
   calculator.processNumber(this->queries[index], this->results[index]);
 }
 
-void GoldbachRequestData::buildResult(int64_t value
+void GoldbachData::buildResult(int64_t value
   , std::vector<int64_t>& result) {
   // checks wheter each sum() has two (even value) or three(odd) operands
   size_t sumOperands = ((std::abs(value) % 2 == 0) ? 2 : 3);
@@ -29,7 +29,7 @@ void GoldbachRequestData::buildResult(int64_t value
   }
 }
 
-void GoldbachRequestData::sumsResponse(size_t sumOperands
+void GoldbachData::sumsResponse(size_t sumOperands
     , std::vector<int64_t>& result) {
   this->httpResponse.body()
     << "        <div class='sums-grid'>";

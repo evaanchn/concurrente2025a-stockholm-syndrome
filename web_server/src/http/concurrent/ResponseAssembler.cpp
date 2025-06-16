@@ -1,7 +1,7 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
 #include "ResponseAssembler.hpp"
-#include "RequestData.hpp"
+#include "ConcurrentData.hpp"
 
 ResponseAssembler::ResponseAssembler(size_t pendingStopConditions)
     : pendingStopConditions(pendingStopConditions) {
@@ -19,11 +19,11 @@ int ResponseAssembler::run() {
   return EXIT_SUCCESS;
 }
 
-void ResponseAssembler::consume(RequestUnit unit) {
-  RequestData* requestData = unit.requestData;
-  requestData->markUnitReady();
+void ResponseAssembler::consume(DataUnit unit) {
+  ConcurrentData* concurrentData = unit.concurrentData;
+  concurrentData->markUnitReady();
   // Check if data for response is complete, if so, enqueue
-  if (requestData->isReady()) {
-    this->produce(requestData);
+  if (concurrentData->isReady()) {
+    this->produce(concurrentData);
   }
 }

@@ -10,7 +10,7 @@
 
 #include "Queue.hpp"
 #include "TcpServer.hpp"
-#include "RequestUnit.hpp"
+#include "DataUnit.hpp"
 
 #define DEFAULT_PORT "8080"
 
@@ -86,18 +86,18 @@ class HttpServer : public TcpServer {
 
   /// socket producing queue
   Queue<Socket>* socketsQueue = nullptr;
-  /// Connection Handlers: socket consumers, request data producers
+  /// Connection Handlers: socket consumers, concurrent data producers
   std::vector<HttpConnectionHandler*> handlers;
-  // Decomposer: request data pointers consumer, request units producer
+  // Decomposer: concurrent data pointers consumer, data units producer
   Decomposer* decomposer = nullptr;
-  // Request Units queue
-  Queue<RequestUnit>* requestUnitsQueue = nullptr;
-  // Calculators: consumers and producers of request units
+  // concurrent Units queue
+  Queue<DataUnit>* dataUnitsQueue = nullptr;
+  // Calculators: consumers and producers of data units
   std::vector<Calculator*> calculators;
-  // Response assembler: consumer of request units
-  // and producer of request data pointers
+  // Response assembler: consumer of data units
+  // and producer of concurrent data pointers
   ResponseAssembler* responseAssembler = nullptr;
-  // Client responder: consumer of request data pointers, responds back
+  // Client responder: consumer of concurrent data pointers, responds back
   ClientResponder* clientResponder = nullptr;
 
  public:

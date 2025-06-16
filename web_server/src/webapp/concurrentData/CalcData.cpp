@@ -4,37 +4,37 @@
 #include <string>
 #include <vector>
 
-#include "CalcRequestData.hpp"
-#include "RequestUnit.hpp"
+#include "CalcData.hpp"
+#include "DataUnit.hpp"
 #include "Util.hpp"
 
-CalcRequestData::CalcRequestData(HttpRequest& httpRequest
+CalcData::CalcData(HttpRequest& httpRequest
     , HttpResponse& httpResponse)
-    : RequestData(httpRequest, httpResponse)  {
+    : ConcurrentData(httpRequest, httpResponse)  {
 }
 
-std::vector<int64_t>& CalcRequestData::getQueries() {
+std::vector<int64_t>& CalcData::getQueries() {
   return this->queries;
 }
 
-void CalcRequestData::updatePending() {
+void CalcData::updatePending() {
   // Update pending queries count and allocate results vector
   this->pendingQueries = this->queries.size();
   this->results.resize(this->queries.size());
 }
 
-std::vector<RequestUnit> CalcRequestData::decompose() {
-  std::vector<RequestUnit> requestUnits;
+std::vector<DataUnit> CalcData::decompose() {
+  std::vector<DataUnit> dataUnits;
   size_t index = 0;
-  // Fill request units vector
+  // Fill data units vector
   for (size_t i = 0; i < this->pendingQueries; ++i) {
-    requestUnits.push_back(RequestUnit(this, index));
+    dataUnits.push_back(DataUnit(this, index));
     ++index;
   }
-  return requestUnits;
+  return dataUnits;
 }
 
-const std::vector<std::string> CalcRequestData::getURIValues() {
+const std::vector<std::string> CalcData::getURIValues() {
   // Replace %xx hexadecimal codes by their ASCII symbols
   const std::string& uri = Util::decodeURI(httpRequest.getURI());
   // Numbers were asked in the form "/appPrefix/123,45,-7899" or
@@ -55,7 +55,7 @@ const std::vector<std::string> CalcRequestData::getURIValues() {
   return texts;
 }
 
-void CalcRequestData::formatResponse() {
+void CalcData::formatResponse() {
   // Obtain the values from the URI
   std::vector<std::string> valueList = this->getURIValues();
   // start ordered list of results
@@ -99,7 +99,7 @@ void CalcRequestData::formatResponse() {
     << "</html>\n";
 }
 
-void CalcRequestData::respond() {
+void CalcData::respond() {
   // format into httpResponse body
   this->formatResponse();
   // send to client

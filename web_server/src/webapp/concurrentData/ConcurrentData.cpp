@@ -1,18 +1,18 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
-#include "RequestData.hpp"
+#include "ConcurrentData.hpp"
 
-RequestData::RequestData(const HttpRequest& httpRequest
+ConcurrentData::ConcurrentData(const HttpRequest& httpRequest
   , const HttpResponse& httpResponse)
   : pendingQueries(0)
   , httpRequest(httpRequest)
   , httpResponse(httpResponse) {
 }
 
-void RequestData::markUnitReady() {
+void ConcurrentData::markUnitReady() {
   if (pendingQueries > 0) --pendingQueries;
 }
 
-bool RequestData::isReady() const {
+bool ConcurrentData::isReady() const {
   return (pendingQueries == 0);
 }
