@@ -2,7 +2,6 @@
 #ifndef APPCALCULATOR_HPP
 #define APPCALCULATOR_HPP
 
-#include <iostream>
 #include <vector>
 
 class AppCalculator {

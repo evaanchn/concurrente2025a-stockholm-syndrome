@@ -3,6 +3,7 @@
 #include <vector>
 
 #include "Decomposer.hpp"
+#include "RequestData.hpp"
 
 Decomposer::Decomposer(size_t pendingStopConditions
     , size_t stopConditionsToSend)

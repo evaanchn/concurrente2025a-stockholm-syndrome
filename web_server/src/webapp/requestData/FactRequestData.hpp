@@ -6,11 +6,9 @@
 #include <iostream>
 #include <vector>
 
-#include "PrimeFactCalculator.hpp"
-#include "ConcurrentApp.hpp"
 #include "CalcRequestData.hpp"
 
-/// @brief Base class to save data from a client request throughout the
+/// @brief Store and process data for Fact app
 /// concurrent production line
 class FactRequestData : public CalcRequestData {
  public:

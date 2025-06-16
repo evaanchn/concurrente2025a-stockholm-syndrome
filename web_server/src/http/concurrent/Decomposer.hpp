@@ -3,12 +3,11 @@
 #ifndef DECOMPOSER_HPP
 #define DECOMPOSER_HPP
 
-#include <cstdlib>
-#include <vector>
-
 #include "Assembler.hpp"
-#include "RequestData.hpp"
 #include "RequestUnit.hpp"
+
+// forward declaration
+class RequestData;
 
 /// @brief Decomposes a RequestData into RequestUnits
 class Decomposer : public Assembler<RequestData*, RequestUnit> {

@@ -1,6 +1,7 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
 #include "ResponseAssembler.hpp"
+#include "RequestData.hpp"
 
 ResponseAssembler::ResponseAssembler(size_t pendingStopConditions)
     : pendingStopConditions(pendingStopConditions) {

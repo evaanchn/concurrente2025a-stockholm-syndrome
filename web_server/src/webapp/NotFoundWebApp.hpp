@@ -4,12 +4,7 @@
 #ifndef NOTFOUNDWEBAPP_HPP
 #define NOTFOUNDWEBAPP_HPP
 
-#include <string>
-#include <vector>
-
 #include "HttpApp.hpp"
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
 
 /// @brief App prefixes
 // static const char* const FACT_PREFIX = "/fact";

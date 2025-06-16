@@ -3,6 +3,9 @@
 #include <string>
 
 #include "HttpConnectionHandler.hpp"
+#include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
+#include "HttpApp.hpp"
 
 HttpConnectionHandler::HttpConnectionHandler
   (std::vector<HttpApp*>& applications)

@@ -3,9 +3,10 @@
 #ifndef GOLDBACHCALCULATOR_HPP
 #define GOLDBACHCALCULATOR_HPP
 
-#include <iostream>
 #include <vector>
-#include "Prime.hpp"
+#include <cstddef>
+#include <inttypes.h>
+
 #include "AppCalculator.hpp"
 
 /**

@@ -3,12 +3,7 @@
 #ifndef FACTWEBAPP_HPP
 #define FACTWEBAPP_HPP
 
-#include <string>
-#include <vector>
-
 #include "CalcWebApp.hpp"
-#include "FactRequestData.hpp"
-#include "HomeWebApp.hpp"
 
 /**
 @brief A web application that calculates prime factors

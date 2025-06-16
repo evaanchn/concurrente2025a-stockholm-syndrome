@@ -5,7 +5,8 @@
 #include <vector>
 
 #include "CalcRequestData.hpp"
-#include "CalcWebApp.hpp"
+#include "RequestUnit.hpp"
+#include "Util.hpp"
 
 CalcRequestData::CalcRequestData(HttpRequest& httpRequest
     , HttpResponse& httpResponse)

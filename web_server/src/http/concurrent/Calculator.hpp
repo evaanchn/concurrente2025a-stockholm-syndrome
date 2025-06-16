@@ -2,12 +2,8 @@
 #ifndef CALCULATOR_HPP
 #define CALCULATOR_HPP
 
-#include <iostream>
-#include <vector>
 #include "Assembler.hpp"
 #include "RequestUnit.hpp"
-#include "RequestData.hpp"
-#include "AppCalculator.hpp"
 
 class Calculator : public Assembler<RequestUnit, RequestUnit> {
  public:

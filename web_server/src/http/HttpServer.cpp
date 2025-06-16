@@ -13,6 +13,12 @@
 #include "NetworkAddress.hpp"
 #include "Socket.hpp"
 
+#include "Calculator.hpp"
+#include "ClientResponder.hpp"
+#include "Decomposer.hpp"
+#include "HttpConnectionHandler.hpp"
+#include "ResponseAssembler.hpp"
+
 const char* const usage =
   "Usage: webserv [port] [max_connections] [queue_capacity]\n"
   "\n"

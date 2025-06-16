@@ -4,10 +4,11 @@
 #define HTTPAPP_H
 
 #include "common.hpp"
-#include "RequestData.hpp"
 
+// forward declarations
 class HttpRequest;
 class HttpResponse;
+class RequestData;
 
 /**
 @brief Base class for all web applications that can be registered with the

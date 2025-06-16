@@ -9,11 +9,12 @@
 #include "Socket.hpp"
 #include "Log.hpp"
 #include "NetworkAddress.hpp"
-#include "HttpApp.hpp"
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
-#include "ConcurrentApp.hpp"
-#include "RequestData.hpp"
+
+// forward declaration
+class HttpApp;
+class RequestData;
+class HttpResponse;
+class HttpRequest;
 
 /**
  * @class HttpConnectionHandler

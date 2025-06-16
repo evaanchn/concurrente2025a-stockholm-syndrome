@@ -5,24 +5,22 @@
 
 #include <climits>
 #include <csignal>
-#include <mutex>
+#include <thread>
 #include <vector>
 
 #include "Queue.hpp"
 #include "TcpServer.hpp"
-#include "Thread.hpp"
-#include "HttpConnectionHandler.hpp"
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
-
-#include "Decomposer.hpp"
-#include "Calculator.hpp"
-#include "ResponseAssembler.hpp"
-#include "ClientResponder.hpp"
+#include "RequestUnit.hpp"
 
 #define DEFAULT_PORT "8080"
 
+// forward declarations
+class Calculator;
+class ClientResponder;
+class Decomposer;
 class HttpApp;
+class HttpConnectionHandler;
+class ResponseAssembler;
 
 /**
 @brief Implements a minimalist web server.

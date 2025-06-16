@@ -2,20 +2,17 @@
 
 #include "RequestData.hpp"
 
-RequestData::RequestData(HttpRequest& httpRequest, HttpResponse& httpResponse)
+RequestData::RequestData(const HttpRequest& httpRequest
+  , const HttpResponse& httpResponse)
   : pendingQueries(0)
   , httpRequest(httpRequest)
   , httpResponse(httpResponse) {
 }
 
-HttpResponse& RequestData::getHttpResponse() {
-  return this->httpResponse;
-}
-
-void RequestData::signalUnitReady() {
+void RequestData::markUnitReady() {
   if (pendingQueries > 0) --pendingQueries;
 }
 
-bool RequestData::isReady() {
+bool RequestData::isReady() const {
   return (pendingQueries == 0);
 }

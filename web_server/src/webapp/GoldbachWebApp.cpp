@@ -2,6 +2,7 @@
 
 #include "GoldbachWebApp.hpp"
 #include "GoldbachRequestData.hpp"
+#include "HomeWebApp.hpp"
 
 GoldbachWebApp::GoldbachWebApp()
 : CalcWebApp("/goldbach", "/goldbach?number=", "Goldbach sums") {

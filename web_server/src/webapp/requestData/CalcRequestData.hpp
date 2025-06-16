@@ -7,9 +7,7 @@
 #include <string>
 #include <vector>
 
-#include "ConcurrentApp.hpp"
 #include "RequestData.hpp"
-#include "RequestUnit.hpp"
 
 /// @brief Base calculation class to save data from a client request throughout
 // the concurrent production line

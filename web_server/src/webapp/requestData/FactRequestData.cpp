@@ -1,6 +1,7 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
 #include "FactRequestData.hpp"
+#include "PrimeFactCalculator.hpp"
 
 void FactRequestData::processQuery(size_t index) {
   PrimeFactCalculator calculator;

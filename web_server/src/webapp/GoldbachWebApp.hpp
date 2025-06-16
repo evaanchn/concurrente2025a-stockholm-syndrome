@@ -4,12 +4,8 @@
 #define GOLDBACHWEBAPP_HPP
 
 #include <string>
-#include <vector>
-
 
 #include "CalcWebApp.hpp"
-#include "GoldbachCalculator.hpp"
-#include "HomeWebApp.hpp"
 
 /**
 @brief A web application that calculates Goldbach sums

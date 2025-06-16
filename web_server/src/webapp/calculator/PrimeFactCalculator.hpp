@@ -4,8 +4,8 @@
 #define PRIMEFACTCALCULATOR_HPP
 
 #include <inttypes.h>
-#include <math.h>
 #include <vector>
+#include <cstddef>
 
 #include "AppCalculator.hpp"
 #include "Prime.hpp"

@@ -2,6 +2,7 @@
 
 #include <vector>
 
+#include "GoldbachCalculator.hpp"
 #include "GoldbachRequestData.hpp"
 
 void GoldbachRequestData::processQuery(size_t index) {

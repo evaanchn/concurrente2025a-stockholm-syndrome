@@ -6,7 +6,10 @@
 #include <cstdlib>
 
 #include "Assembler.hpp"
-#include "RequestData.hpp"
+#include "RequestUnit.hpp"
+
+// forward declaration
+class RequestData;
 
 /// @brief
 class ResponseAssembler : public Assembler<RequestUnit, RequestData*> {

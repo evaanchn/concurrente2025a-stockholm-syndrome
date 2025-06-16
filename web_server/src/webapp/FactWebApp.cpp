@@ -1,7 +1,8 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
 #include "FactWebApp.hpp"
-#include "PrimeFactCalculator.hpp"
+#include "FactRequestData.hpp"
+#include "HomeWebApp.hpp"
 
 FactWebApp::FactWebApp()
 : CalcWebApp("/fact", "/fact?number=", "Prime Factorization") {

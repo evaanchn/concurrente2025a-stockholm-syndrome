@@ -6,12 +6,9 @@
 #include <iostream>
 #include <vector>
 
-#include "GoldbachCalculator.hpp"
-#include "ConcurrentApp.hpp"
 #include "CalcRequestData.hpp"
 
-/// @brief Base class to save data from a client request throughout the
-/// concurrent production line
+/// @brief Store and process data for goldbach app
 class GoldbachRequestData : public CalcRequestData {
  public:
   /// Constructor

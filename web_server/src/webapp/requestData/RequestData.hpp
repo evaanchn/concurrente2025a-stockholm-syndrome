@@ -3,12 +3,16 @@
 #ifndef REQUESTDATA_HPP
 #define REQUESTDATA_HPP
 
+// TODO(us) Add "concurrent" to the name
+
 #include <iostream>
 #include <vector>
 
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
-#include "RequestUnit.hpp"
+// #include "RequestUnit.hpp"
+
+struct RequestUnit;
 
 /// @brief Base class to save data from a client request throughout the
 /// concurrent production line
@@ -23,11 +27,10 @@ class RequestData {
 
  public:
   /// Constructor
-  explicit RequestData(HttpRequest& httpRequest, HttpResponse& httpResponse);
+  explicit RequestData(const HttpRequest& httpRequest
+      , const HttpResponse& httpResponse);
   /// Destructor
   virtual ~RequestData() = default;
-  /// Access to the corresponding httpResponse from the request
-  HttpResponse& getHttpResponse();
   /// Decompose the queries into RequestUnits
   /// @return a vector of RequestUnits, each containing an index to save results
   virtual std::vector<RequestUnit> decompose() = 0;
@@ -37,11 +40,11 @@ class RequestData {
   /// Indicate that an answered request unit was recieved and is ready to be
   /// part of the response
   /// @remark to be called only by a ResponseAssembler (single thread)
-  void signalUnitReady();
+  void markUnitReady();
   /// Ask if all request units where completed and so the response can be
   /// created
   /// @return true if pendingQueries is 0, false otherwise
-  bool isReady();
+  bool isReady() const;
   /// Take the results and format them into the httpResponse, then send it
   virtual void respond() = 0;
 };

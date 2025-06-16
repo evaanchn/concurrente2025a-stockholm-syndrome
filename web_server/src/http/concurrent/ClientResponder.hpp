@@ -3,10 +3,10 @@
 #ifndef CLIENTRESPONDER_HPP
 #define CLIENTRESPONDER_HPP
 
-#include <cstdlib>
-
 #include "Assembler.hpp"
-#include "RequestData.hpp"
+
+// forward declaration
+class RequestData;
 
 /// @brief ResponseAssembler is a class that assembles responses from
 /// RequestUnits and sends them back to the client.
