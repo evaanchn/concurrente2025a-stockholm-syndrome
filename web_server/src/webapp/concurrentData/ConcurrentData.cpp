@@ -10,9 +10,9 @@ ConcurrentData::ConcurrentData(const HttpRequest& httpRequest
 }
 
 void ConcurrentData::markUnitReady() {
-  if (pendingQueries > 0) --pendingQueries;
+  if (this->pendingQueries > 0) --this->pendingQueries;
 }
 
 bool ConcurrentData::isReady() const {
-  return (pendingQueries == 0);
+  return this->pendingQueries == 0;
 }

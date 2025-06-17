@@ -3,14 +3,11 @@
 #ifndef CONCURRENTDATA_HPP
 #define CONCURRENTDATA_HPP
 
-// TODO(us) Add "concurrent" to the name
-
 #include <iostream>
 #include <vector>
 
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
-// #include "DataUnit.hpp"
 
 struct DataUnit;
 
