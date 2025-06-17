@@ -26,8 +26,8 @@ image::web_server_12_design.svg[algin="center"]
 - Accepts connections from clients.
 - Ask applications to parses the `HttpRequest`.
 - For concurrent apps, wraps it into an internal request object and enqueues it in the system.
-- `RequestData` contains shared memory for future stages.
-- Each `RequestData` includes:
+- `ConcurrentData` contains shared memory for future stages.
+- Each `ConcurrentData` includes:
 - Original `HttpRequest`.
 - Original `HttpResponse`.
 - A pendingQueries that indicates the pending queries to be processed.
@@ -37,9 +37,9 @@ image::web_server_12_design.svg[algin="center"]
 
 **Functionality**:
 
-- Decomposes each received request into smaller, independent processing units called `RequestUnit`.
-- Each `RequestUnit` includes:
-- A pointer to a shared `RequestData`. 
+- Decomposes each received request into smaller, independent processing units called `DataUnit`.
+- Each `DataUnit` includes:
+- A pointer to a shared `ConcurrentData`. 
 - Index to store the results of the operation.
 
 === Calculator (Assembler)
@@ -48,9 +48,9 @@ image::web_server_12_design.svg[algin="center"]
 
 **Functionality**:
 
-- Takes individual `RequestUnit`s and performs the required computation.
+- Takes individual `DataUnit` and performs the required computation.
 - Stores the results in the corresponding result vector of the unit.
-- Send the processed `RequestUnit` to the `RepliesAssembler`.
+- Send the processed `DataUnit` to the `RepliesAssembler`.
 
 === RepliesAssembler (Assembler)
 
@@ -58,8 +58,8 @@ image::web_server_12_design.svg[algin="center"]
 
 **Functionality**:
 
-- Gathers all `RequestUnit`s belonging to the same original request.
-- Send completed `RequestData` object to the ClientResponder.
+- Gathers all `DataUnit`s belonging to the same original request.
+- Send completed `ConcurrentData` object to the ClientResponder.
 
 === ClientResponder (Consumer)
 
@@ -67,8 +67,8 @@ image::web_server_12_design.svg[algin="center"]
 
 **Functionality**:
 
-- Build response with the `RequestData` object and sends it back to the client.
-- Delete de `RequestData` object to free memory.
+- Build response with the `ConcurrentData` object and sends it back to the client.
+- Delete de `ConcurrentData` object to free memory.
 
 [[calculators_designs]]
 == Calculators designs
