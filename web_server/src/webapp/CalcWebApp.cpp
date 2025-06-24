@@ -1,8 +1,5 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
-#include <string>
-#include <vector>
-
 #include "CalcWebApp.hpp"
 
 bool CalcWebApp::canHandleHttpRequest(HttpRequest& httpRequest) {

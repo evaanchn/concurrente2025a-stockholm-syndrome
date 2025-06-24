@@ -4,12 +4,8 @@
 #define GOLDBACHWEBAPP_HPP
 
 #include <string>
-#include <vector>
-
 
 #include "CalcWebApp.hpp"
-#include "GoldbachCalculator.hpp"
-#include "HomeWebApp.hpp"
 
 /**
 @brief A web application that calculates Goldbach sums
@@ -25,11 +21,11 @@ class GoldbachWebApp : public CalcWebApp {
   ~GoldbachWebApp() = default;
 
  private:
-  /// @brief Create a RequestData object to store the request data
+  /// @brief Create a ConcurrentData object to store data
   /// @param httpRequest is the request to be handled
   /// @param httpResponse is the response to be handled
-  /// @return a pointer to the created RequestData object
-  RequestData* createRequestData(HttpRequest& httpRequest
+  /// @return a pointer to the created ConcurrentData object
+  ConcurrentData* createConcurrentData(HttpRequest& httpRequest
     , HttpResponse& httpResponse) override;
 };
 

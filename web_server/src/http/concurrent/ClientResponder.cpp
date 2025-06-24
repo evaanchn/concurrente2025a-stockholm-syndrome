@@ -1,24 +1,22 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
 #include "ClientResponder.hpp"
+#include "ConcurrentData.hpp"
 
-ClientResponder::ClientResponder(size_t pendingStopConditions)
-    : pendingStopConditions(pendingStopConditions) {
+ClientResponder::ClientResponder() {
 }
 
 int ClientResponder::run() {
-  // Consume from own queue and send responses until receiving stop conditions
-  while (pendingStopConditions > 0) {
-    this->consumeLoop();
-    --pendingStopConditions;  // Mark one stop condition consumed
-  }
+  // Consume from own queue
+  this->consumeLoop();
+
   return EXIT_SUCCESS;
 }
 
-void ClientResponder::consume(RequestData* requestData) {
-  assert(requestData);
+void ClientResponder::consume(ConcurrentData* concurrentData) {
+  assert(concurrentData);
   // format the response and send it to the client
-  requestData->respond();
-  // delete the request data since It is no longer needed
-  delete requestData;
+  concurrentData->respond();
+  // delete the concurrent data since It is no longer needed
+  delete concurrentData;
 }

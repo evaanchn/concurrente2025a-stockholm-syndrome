@@ -10,9 +10,6 @@ void HttpApp::stop() {
   // Default base class implementation does nothing
 }
 
-RequestData* HttpApp::createRequestData(HttpRequest& httpRequest
-    , HttpResponse& httpResponse) {
-  (void) httpRequest;
-  (void) httpResponse;
-  return nullptr;
+ConcurrentData* HttpApp::createConcurrentData(HttpRequest&, HttpResponse&) {
+  return nullptr;  // Returns nullptr by default, unless is concurrent app
 }

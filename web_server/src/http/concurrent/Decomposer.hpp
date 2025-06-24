@@ -3,19 +3,22 @@
 #ifndef DECOMPOSER_HPP
 #define DECOMPOSER_HPP
 
-#include <cstdlib>
-#include <vector>
-
 #include "Assembler.hpp"
-#include "RequestData.hpp"
-#include "RequestUnit.hpp"
+#include "DataUnit.hpp"
 
-/// @brief Decomposes a RequestData into RequestUnits
-class Decomposer : public Assembler<RequestData*, RequestUnit> {
+// forward declaration
+class ConcurrentData;
+
+/// @brief Decomposes a ConcurrentData into data units
+class Decomposer : public Assembler<ConcurrentData*, DataUnit> {
   DISABLE_COPY(Decomposer);
 
  private:
+  /// @brief Equivalent to number of producers that produce to its queue
+  /// Once all of them stop, decomposer stops too
   size_t pendingStopConditions = 0;
+  /// @brief Amount of consumers of the queue decomposer produces to.
+  /// must signal to each one that it has stopped for them to stop.
   size_t stopConditionsToSend = 0;
 
  public:
@@ -24,7 +27,7 @@ class Decomposer : public Assembler<RequestData*, RequestUnit> {
   * @param pendingStopConditions Amount of stop conditions decomposer must
   * consume to stop
   * @param stopConditionsToSend Amount of stop conditions next entity needs
-  */ 
+  */
   Decomposer(size_t pendingStopConditions, size_t stopConditionsToSend);
 
   /// @brief Main procedure Decomposer thread will run
@@ -32,8 +35,8 @@ class Decomposer : public Assembler<RequestData*, RequestUnit> {
   int run() override;
 
   /// @brief Consuming procedure
-  /// @param data Request data pointer
-  void consume(RequestData* data) override;
+  /// @param data shared data pointer
+  void consume(ConcurrentData* data) override;
 };
 
 #endif  // DECOMPOSER_HPP

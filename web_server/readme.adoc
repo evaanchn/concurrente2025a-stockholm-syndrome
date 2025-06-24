@@ -85,7 +85,7 @@ $ sudo apt-get install make
 
 === Compilation
 
-Compile the program by running the following command inside the *web_server_11* folder:
+Compile the program by running the following command inside the *web_server* folder:
 
 [source]
 ----
@@ -96,7 +96,7 @@ Run the server using a command like the following:
 
 [source]
 ----
-$ ./bin/web_server_11 8080 30 70 40
+$ ./bin/web_server 8080 30 70 40
 ----
 
 Where:

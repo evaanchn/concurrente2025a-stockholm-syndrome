@@ -4,16 +4,16 @@
 #include <string>
 
 #include "NotFoundWebApp.hpp"
+#include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
 
 bool NotFoundWebApp::handleHttpRequest(HttpRequest& httpRequest,
     HttpResponse& httpResponse) {
   return this->serveNotFound(httpRequest, httpResponse);
 }
 
-bool NotFoundWebApp::serveNotFound(HttpRequest& httpRequest
+bool NotFoundWebApp::serveNotFound(HttpRequest&
     , HttpResponse& httpResponse) {
-    (void)httpRequest;
-  // TODO(you): 404 not found page should be served by a NotFoundWebApp object
   // Set HTTP response metadata (headers)
   httpResponse.setStatusCode(404);
   httpResponse.setHeader("Server", "AttoServer v1.0");

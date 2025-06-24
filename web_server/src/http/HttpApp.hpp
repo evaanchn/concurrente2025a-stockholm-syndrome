@@ -4,10 +4,11 @@
 #define HTTPAPP_H
 
 #include "common.hpp"
-#include "RequestData.hpp"
 
+// forward declarations
 class HttpRequest;
 class HttpResponse;
+class ConcurrentData;
 
 /**
 @brief Base class for all web applications that can be registered with the
@@ -25,17 +26,18 @@ class HttpApp {
   ~HttpApp() = default;
   /// Called by the web server when the web server is started
   virtual void start();
-  /// @brief Parse the HTTP request and create request data
-  virtual RequestData* createRequestData(HttpRequest& httpRequest
-      , HttpResponse& httpResponse);
   /// Handle HTTP requests. @see HttpServer::handleHttpRequest()
   /// @return true If this application handled the request, false otherwise
   /// and another chained application should handle it
-  virtual bool handleHttpRequest(HttpRequest& httpRequest,
-    HttpResponse& httpResponse) = 0;
+  virtual bool handleHttpRequest(HttpRequest& httpRequest
+      , HttpResponse& httpResponse) = 0;
   /// Called when the web server stops, in order to allow the web application
   /// clean up and finish as well
   virtual void stop();
+  /// @brief Parse the HTTP request and create request data. Returns nullptr
+  /// by default
+  virtual ConcurrentData* createConcurrentData(HttpRequest& httpRequest
+      , HttpResponse& httpResponse);
 };
 
 #endif  // HTTPAPP_H

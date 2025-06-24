@@ -1,15 +1,5 @@
 // Copyright 2021,2024 Jeisson Hidalgo-Cespedes. ECCI-UCR. CC BY 4.0
 
-#include <algorithm>
-#include <cassert>
-#include <cstring>
-#include <iostream>
-#include <stdexcept>
-#include <string>
-#include <vector>
-
-#include "FactWebApp.hpp"
-#include "GoldbachWebApp.hpp"
 #include "HomeWebApp.hpp"
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
@@ -30,7 +20,6 @@ void HomeWebApp::stop() {
 bool HomeWebApp::handleHttpRequest(HttpRequest& httpRequest,
     HttpResponse& httpResponse) {
   // If the home page was asked
-  // TODO(you): Homepage should be served by a HomeWebApp object
   if (httpRequest.getMethod() == "GET" && httpRequest.getURI() == "/") {
     return this->serveHomepage(httpRequest, httpResponse);
   }

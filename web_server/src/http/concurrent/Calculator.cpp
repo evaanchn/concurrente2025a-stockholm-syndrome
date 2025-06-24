@@ -1,17 +1,18 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 #include "Calculator.hpp"
+#include "ConcurrentData.hpp"
 
 int Calculator::run() {
-  // Start consuming from the request units queue
+  // Start consuming from the data units queue
   this->consumeLoop();
-  this->produce(RequestUnit());  // Send stop condition to signal next consumer
+  this->produce(DataUnit());  // Send stop condition to signal next consumer
   return EXIT_SUCCESS;
 }
 
-void Calculator::consume(RequestUnit unit) {
-  // Get the request data
-  RequestData* requestData = unit.requestData;
+void Calculator::consume(DataUnit unit) {
+  // Get data
+  ConcurrentData* concurrentData = unit.concurrentData;
   // Process the number using the AppCalculator
-  requestData->processQuery(unit.resultIndex);
+  concurrentData->processQuery(unit.resultIndex);
   this->produce(unit);
 }

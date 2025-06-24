@@ -4,11 +4,6 @@
 #ifndef CALCWEBAPP_HPP
 #define CALCWEBAPP_HPP
 
-#include <algorithm>
-#include <cassert>
-#include <cstring>
-#include <iostream>
-#include <stdexcept>
 #include <string>
 #include <vector>
 

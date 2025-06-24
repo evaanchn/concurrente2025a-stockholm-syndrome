@@ -6,30 +6,33 @@
 #include <cstdlib>
 
 #include "Assembler.hpp"
-#include "RequestData.hpp"
+#include "DataUnit.hpp"
+
+// forward declaration
+class ConcurrentData;
 
 /// @brief
-class ResponseAssembler : public Assembler<RequestUnit, RequestData*> {
+class ResponseAssembler : public Assembler<DataUnit, ConcurrentData*> {
   DISABLE_COPY(ResponseAssembler);
 
  private:
+  /// Amount of stop conds needed from data units handlers
+  /// to stop operating (no data units left to assemble and send)
   size_t pendingStopConditions = 0;
-  size_t stopConditionsToSend = 0;
 
  public:
   /// @brief Constructor of the class
-  ResponseAssembler(size_t pendingStopConditions,
-      size_t stopConditionsToSend = 1);
+  explicit ResponseAssembler(size_t pendingStopConditions);
 
   /// @brief Destructor of the class
   ~ResponseAssembler() = default;
 
-  /// @brief starts to consume all the pending request
+  /// @brief starts to consume all completed data units
   int run() override;
 
   /// @brief Consuming procedure
-  /// @param unit Request unit
-  void consume(RequestUnit unit) override;
+  /// @param unit Concurrent data unit
+  void consume(DataUnit unit) override;
 };
 
 #endif  // RESPONSEASSEMBLER_HPP

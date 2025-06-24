@@ -9,17 +9,19 @@
 #include "Socket.hpp"
 #include "Log.hpp"
 #include "NetworkAddress.hpp"
-#include "HttpApp.hpp"
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
-#include "ConcurrentApp.hpp"
-#include "RequestData.hpp"
+
+// forward declaration
+class HttpApp;
+class ConcurrentData;
+class HttpResponse;
+class HttpRequest;
 
 /**
  * @class HttpConnectionHandler
  * @brief Thread object that manages a connection with a client (one socket)
+ * and attends to http requests that can be sent
  */
-class HttpConnectionHandler : public Assembler<Socket, RequestData*> {
+class HttpConnectionHandler : public Assembler<Socket, ConcurrentData*> {
  private:
   /// Reference to app chain in server
   std::vector<HttpApp*>& applications;

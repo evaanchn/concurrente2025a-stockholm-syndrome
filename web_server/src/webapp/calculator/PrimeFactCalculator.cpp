@@ -1,5 +1,6 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#include <math.h>
 #include <vector>
 
 #include "PrimeFactCalculator.hpp"

@@ -1,8 +1,10 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
 #include <vector>
+#include <cstdlib>
 
 #include "GoldbachCalculator.hpp"
+#include "Prime.hpp"
 
 size_t GoldbachCalculator::processNumber(int64_t number,
     std::vector<int64_t>& goldbachSums) {

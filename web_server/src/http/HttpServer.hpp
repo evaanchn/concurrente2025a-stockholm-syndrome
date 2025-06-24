@@ -5,24 +5,22 @@
 
 #include <climits>
 #include <csignal>
-#include <mutex>
+#include <thread>
 #include <vector>
 
 #include "Queue.hpp"
 #include "TcpServer.hpp"
-#include "Thread.hpp"
-#include "HttpConnectionHandler.hpp"
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
-
-#include "Decomposer.hpp"
-#include "Calculator.hpp"
-#include "ResponseAssembler.hpp"
-#include "ClientResponder.hpp"
+#include "DataUnit.hpp"
 
 #define DEFAULT_PORT "8080"
 
+// forward declarations
+class Calculator;
+class ClientResponder;
+class Decomposer;
 class HttpApp;
+class HttpConnectionHandler;
+class ResponseAssembler;
 
 /**
 @brief Implements a minimalist web server.
@@ -65,7 +63,7 @@ repeats the process with the following application in the chain: the pets
 application. If no application manages the request, a 404 Not-found response
 is sent to the client.
 */
-class HttpServer : public TcpServer{
+class HttpServer : public TcpServer {
   DISABLE_COPY(HttpServer);
 
  protected:
@@ -81,27 +79,25 @@ class HttpServer : public TcpServer{
  private:
   /// Max amount of accepted client connections
   unsigned int maxConnections = std::thread::hardware_concurrency();
-  /// Socket's queue default capacity
-  uint64_t socketsQueueCapacity = SEM_VALUE_MAX;
-  /// Max capacity for request unit's queue
-  unsigned int requestUnitsQueueCapacity = SEM_VALUE_MAX;
+  /// Queue's default capacity
+  unsigned int queuesCapacity = SEM_VALUE_MAX;
   /// Numer of calculator threads in the server
   unsigned int calculatorsAmount = std::thread::hardware_concurrency();
 
   /// socket producing queue
   Queue<Socket>* socketsQueue = nullptr;
-  /// Connection Handlers: socket consumers, request data producers
+  /// Connection Handlers: socket consumers, concurrent data producers
   std::vector<HttpConnectionHandler*> handlers;
-  // Decomposer: request data pointers consumer, request units producer
+  // Decomposer: concurrent data pointers consumer, data units producer
   Decomposer* decomposer = nullptr;
-  // Request Units queue
-  Queue<RequestUnit>* requestUnitsQueue = nullptr;
-  // Calculators: consumers and producers of request units
+  // concurrent Units queue
+  Queue<DataUnit>* dataUnitsQueue = nullptr;
+  // Calculators: consumers and producers of data units
   std::vector<Calculator*> calculators;
-  // Response assembler: consumer of request units
-  // and producer of request data pointers
+  // Response assembler: consumer of data units
+  // and producer of concurrent data pointers
   ResponseAssembler* responseAssembler = nullptr;
-  // Client responder: consumer of request data pointers, responds back
+  // Client responder: consumer of concurrent data pointers, responds back
   ClientResponder* clientResponder = nullptr;
 
  public:

@@ -2,13 +2,7 @@
 #ifndef CONCURRENTAPP_HPP
 #define CONCURRENTAPP_HPP
 
-#include <vector>
-#include <iostream>
-
 #include "HttpApp.hpp"
-#include "HttpRequest.hpp"
-#include "HttpResponse.hpp"
-#include "RequestData.hpp"
 
 /// @brief ConcurrentApp is a base class for web applications that handle
 /// @details This class is designed
@@ -44,7 +38,7 @@ class ConcurrentApp : public HttpApp {
   /// @return true if this application can handle the request,
   virtual bool canHandleHttpRequest(HttpRequest& httpRequest) = 0;
   /// @brief Parse the HTTP request to parse numbers from the URI
-  RequestData* createRequestData(HttpRequest& httpRequest
+  ConcurrentData* createConcurrentData(HttpRequest& httpRequest
       , HttpResponse& httpResponse) override = 0;
 };
 

@@ -3,10 +3,14 @@
 #include <string>
 
 #include "HttpConnectionHandler.hpp"
+#include "HttpRequest.hpp"
+#include "HttpResponse.hpp"
+#include "HttpApp.hpp"
 
 HttpConnectionHandler::HttpConnectionHandler
   (std::vector<HttpApp*>& applications)
-  : applications(applications) {}
+  : applications(applications) {
+}
 
 int HttpConnectionHandler::run() {
   // Start consuming sockets from queue and enqueue request data if
@@ -71,12 +75,12 @@ bool HttpConnectionHandler::route(HttpRequest& httpRequest
     HttpApp* app = this->applications[index];
     if (app->handleHttpRequest(httpRequest, httpResponse)) {
       // If handleHttpRequest returned true, it could be a concurrent app
-      RequestData* request = app->createRequestData(httpRequest
+      ConcurrentData* data = app->createConcurrentData(httpRequest
           , httpResponse);
-      // If a request was created, enqueue it
-      if (request) {
-        // Enqueue request data to be processed by the concurrent app
-        this->produce(request);
+      // If a concurrent data was created, enqueue it
+      if (data) {
+        // Enqueue data data to be processed by the concurrent app
+        this->produce(data);
       }
       return true;
     }
