@@ -5,14 +5,14 @@
 #include "Assembler.hpp"
 #include "DataUnit.hpp"
 
-class Calculator : public Assembler<DataUnit, DataUnit> {
+class Calculator : public Assembler<DataUnit*, DataUnit*> {
  public:
   Calculator() = default;
-  /// @brief  Consume a DataUnit containing an integer to be processed
-  /// @param data DataUnit containing the data to be processed
+  /// @brief  Consume a DataUnit pointer with ref to an integer to be processed
+  /// @param data DataUnit pointer to register with data to be processed
   /// @details This method processes the input data and produces a result
   /// by calling the AppCalculator's processNumber method.
-  void consume(DataUnit data) override;
+  void consume(DataUnit* data) override;
 
   /// @brief Start consuming loop
   /// @return EXIT SUCCESS / EXIT FAILURE

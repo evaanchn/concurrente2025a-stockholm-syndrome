@@ -91,7 +91,7 @@ class HttpServer : public TcpServer {
   // Decomposer: concurrent data pointers consumer, data units producer
   Decomposer* decomposer = nullptr;
   // concurrent Units queue
-  Queue<DataUnit>* dataUnitsQueue = nullptr;
+  Queue<DataUnit*>* dataUnitsQueue = nullptr;
   // Calculators: consumers and producers of data units
   std::vector<Calculator*> calculators;
   // Response assembler: consumer of data units
