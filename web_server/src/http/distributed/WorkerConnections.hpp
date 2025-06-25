@@ -3,12 +3,15 @@
 #ifndef WORKERCONNECTIONS_HPP
 #define WORKERCONNECTIONS_HPP
 
-#include <vector>
 #include <mutex>
+#include <random>
+#include <vector>
 
 #include "common.hpp"
-#include "TcpServer.hpp"
+#include "Socket.hpp"
 
+// TODO(Andrey): make documentation
+// Thread save monitor to control worker sockets
 class WorkerConnections {
   DISABLE_COPY(WorkerConnections);
 
@@ -19,9 +22,9 @@ class WorkerConnections {
  public:
   WorkerConnections() = default;
   ~WorkerConnections();
-  Socket getRandomWorkerConnection();
+  Socket& getRandomWorkerConnection();
   void removeSocket(int index);
-  void addConnection(Socket socket);
+  void addConnection(Socket& socket);
   void stopWorkers();
   bool hasConnections() const;
   size_t getConnectionCount() const;

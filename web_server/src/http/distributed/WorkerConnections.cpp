@@ -2,24 +2,43 @@
 
 #include "WorkerConnections.hpp"
 
+// TODO(Andrey): make documentation
 WorkerConnections::~WorkerConnections() {
   this->connections.clear();
 }
 
 Socket& WorkerConnections::getRandomWorkerConnection() {
+  std::lock_guard<std::mutex> lock(this->canAccessWorkerConnections);
+  if (!this->connections.empty()) {
+    throw std::runtime_error("No worker connections available");
+  }
+  // size_t number = rand() % 100;
+  unsigned seed = time(NULL) + clock() + pthread_self();
+  size_t index = rand_r(&seed) % this->connections.size();
+  return this->connections[index];
 }
 
 void WorkerConnections::removeSocket(int index) {
+  std::lock_guard<std::mutex> lock(this->canAccessWorkerConnections);
+  this->connections.erase(this->connections.begin() + index);
 }
 
 void WorkerConnections::addConnection(Socket& socket) {
+  std::lock_guard<std::mutex> lock(this->canAccessWorkerConnections);
+  this->connections.push_back(socket);
 }
 
 void WorkerConnections::stopWorkers() {
+  std::lock_guard<std::mutex> lock(this->canAccessWorkerConnections);
+  for (Socket& socket : this->connections) {
+    socket.close();
+  }
 }
 
 bool WorkerConnections::hasConnections() const {
+  return !this->connections.empty();
 }
 
 size_t WorkerConnections::getConnectionCount() const {
+  return this->connections.size();
 }
