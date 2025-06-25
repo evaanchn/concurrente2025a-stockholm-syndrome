@@ -8,9 +8,9 @@
 #include "DataUnit.hpp"
 #include "Util.hpp"
 
-CalcData::CalcData(HttpRequest& httpRequest
-    , HttpResponse& httpResponse)
-    : ConcurrentData(httpRequest, httpResponse)  {
+CalcData::CalcData(HttpRequest& httpRequest,
+    HttpResponse& httpResponse):
+    ConcurrentData(httpRequest, httpResponse)  {
 }
 
 std::vector<int64_t>& CalcData::getQueries() {
@@ -23,12 +23,12 @@ void CalcData::updatePending() {
   this->results.resize(this->queries.size());
 }
 
-std::vector<DataUnit> CalcData::decompose() {
-  std::vector<DataUnit> dataUnits;
+std::vector<DataUnit*> CalcData::decompose() {
+  std::vector<DataUnit*> dataUnits;
   size_t index = 0;
   // Fill data units vector
   for (size_t i = 0; i < this->pendingQueries; ++i) {
-    dataUnits.push_back(DataUnit(this, index));
+    dataUnits.push_back(new DataUnit(this, index));
     ++index;
   }
   return dataUnits;

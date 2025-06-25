@@ -183,7 +183,7 @@ void HttpServer::connectQueues() {
   this->decomposer->createOwnQueue(SEM_VALUE_MAX);
   // Create queue between decomposers and data units handlers
   this->dataUnitsQueue
-      = new Queue<DataUnit>(this->queuesCapacity);
+      = new Queue<DataUnit*>(this->queuesCapacity);
   // Response assembler and client responder have their own queue
   this->responseAssembler->createOwnQueue(SEM_VALUE_MAX);
   this->clientResponder->createOwnQueue(SEM_VALUE_MAX);

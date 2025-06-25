@@ -30,7 +30,7 @@ class ConcurrentData {
   virtual ~ConcurrentData() = default;
   /// Decompose the queries into ataUnits
   /// @return a vector of DataUnits, each containing an index to save results
-  virtual std::vector<DataUnit> decompose() = 0;
+  virtual std::vector<DataUnit*> decompose() = 0;
   /// @brief Process a query
   /// @param index index to obtain queries
   virtual void processQuery(size_t index) = 0;

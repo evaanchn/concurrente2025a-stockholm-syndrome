@@ -46,9 +46,9 @@ class CalcData : public ConcurrentData {
   /// @param result vector containing the result elements
   virtual void buildResult(int64_t value, std::vector<int64_t>& result) = 0;
   /// Decompose the queries into data units
-  /// @return a vector of DataUnit, each containing an index to save
+  /// @return a vector of DataUnit pointers
   /// results
-  std::vector<DataUnit> decompose() override;
+  std::vector<DataUnit*> decompose() override;
   /// Take the results and format them into the httpResponse, then send it
   void respond() override;
 };

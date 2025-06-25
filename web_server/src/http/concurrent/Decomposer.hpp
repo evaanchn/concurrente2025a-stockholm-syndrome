@@ -10,7 +10,7 @@
 class ConcurrentData;
 
 /// @brief Decomposes a ConcurrentData into data units
-class Decomposer : public Assembler<ConcurrentData*, DataUnit> {
+class Decomposer : public Assembler<ConcurrentData*, DataUnit*> {
   DISABLE_COPY(Decomposer);
 
  private:

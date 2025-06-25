@@ -5,14 +5,14 @@
 int Calculator::run() {
   // Start consuming from the data units queue
   this->consumeLoop();
-  this->produce(DataUnit());  // Send stop condition to signal next consumer
+  this->produce(nullptr);  // Send stop condition to signal next consumer
   return EXIT_SUCCESS;
 }
 
-void Calculator::consume(DataUnit unit) {
+void Calculator::consume(DataUnit* unit) {
   // Get data
-  ConcurrentData* concurrentData = unit.concurrentData;
+  ConcurrentData* concurrentData = unit->concurrentData;
   // Process the number using the AppCalculator
-  concurrentData->processQuery(unit.resultIndex);
+  concurrentData->processQuery(unit->resultIndex);
   this->produce(unit);
 }

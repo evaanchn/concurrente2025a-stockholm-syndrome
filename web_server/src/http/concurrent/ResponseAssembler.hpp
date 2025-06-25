@@ -12,7 +12,7 @@
 class ConcurrentData;
 
 /// @brief
-class ResponseAssembler : public Assembler<DataUnit, ConcurrentData*> {
+class ResponseAssembler : public Assembler<DataUnit*, ConcurrentData*> {
   DISABLE_COPY(ResponseAssembler);
 
  private:
@@ -32,7 +32,7 @@ class ResponseAssembler : public Assembler<DataUnit, ConcurrentData*> {
 
   /// @brief Consuming procedure
   /// @param unit Concurrent data unit
-  void consume(DataUnit unit) override;
+  void consume(DataUnit* unit) override;
 };
 
 #endif  // RESPONSEASSEMBLER_HPP
