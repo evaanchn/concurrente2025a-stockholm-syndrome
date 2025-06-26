@@ -3,12 +3,15 @@
 #ifndef HTTPAPP_H
 #define HTTPAPP_H
 
+#include <string>
+
 #include "common.hpp"
 
 // forward declarations
 class HttpRequest;
 class HttpResponse;
 class ConcurrentData;
+class DataUnit;
 
 /**
 @brief Base class for all web applications that can be registered with the
@@ -34,10 +37,18 @@ class HttpApp {
   /// Called when the web server stops, in order to allow the web application
   /// clean up and finish as well
   virtual void stop();
-  /// @brief Parse the HTTP request and create request data. Returns nullptr
-  /// by default
+  /// @brief Parse the HTTP request and create request data.
+  /// @return nullptr by default
   virtual ConcurrentData* createConcurrentData(HttpRequest& httpRequest
-      , HttpResponse& httpResponse);
+    , HttpResponse& httpResponse, const size_t appIndex);
+  /// @brief Create a plain text from DataUnit to be send into the network
+  /// @return empty text by default
+  virtual std::string serializeRequest(DataUnit* dataUnit);
+  /// @brief Parse received text into the response to a DataUnit
+  /// @return nullptr by default
+  virtual DataUnit* deserializeResponse(std::string responseData);
+  // virtual std::string serializeResponse(WorkerUnit*);
+  // virtual WorkerUnit* deserializeRequest(std::string requestData);
 };
 
 #endif  // HTTPAPP_H

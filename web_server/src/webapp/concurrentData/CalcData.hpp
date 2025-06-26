@@ -17,21 +17,34 @@ class CalcData : public ConcurrentData {
   std::vector<int64_t> queries;
   /// Store results obtained from all request units
   std::vector<std::vector<int64_t>> results;
+  const std::string resultsPrefix = "=";
 
  public:
   /// Constructor
-  CalcData(HttpRequest& httpRequest, HttpResponse& httpResponse);
+  CalcData(HttpRequest& httpRequest, HttpResponse& httpResponse,
+    const size_t appIndex);
   DISABLE_COPY(CalcData);
   // Destructor
   virtual ~CalcData() = default;
   /// @brief Obtain list of values from the httpRequest URI
   /// @return a vector of strings with the values from the URI
   const std::vector<std::string> getURIValues();
+  /// @brief Get the queries vector
+  /// @details This method returns a reference to the queries vector, which
+  /// contains the original values to be processed.
   std::vector<int64_t>& getQueries();
   /// Update pendingQueries according to the queries size and reserve space to
   /// store results
   /// @remark to be called after queries are set
   void updatePending();
+  /// @brief Serialize a query into a string
+  std::string serializeQuery(size_t queryIndex) const override;
+  /// @brief Serialize the result of a query into a string
+  std::string serializeResult(size_t queryIndex) const override;
+  /// @brief Deserialize a result from a string
+  /// @throws std::runtime_error if the result is not valid
+  void deserializeResult(const size_t resultIndex
+    , std::string& queryResult) override;
   /// @brief Format the response with the results of data
   /// @details This method is called by the web server to format the response
   /// with the results of a shared data. It builds the HTML response body
