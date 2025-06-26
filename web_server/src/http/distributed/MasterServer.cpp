@@ -12,6 +12,7 @@
 #include "Log.hpp"
 #include "NetworkAddress.hpp"
 #include "Socket.hpp"
+#include "WorkerConnections.hpp"
 
 const char* const usage =
   "Usage: webserv [port] [max_connections] [queue_capacity]\n"

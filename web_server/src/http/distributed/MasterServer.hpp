@@ -11,14 +11,14 @@
 #include "DataUnit.hpp"
 #include "Queue.hpp"
 #include "TcpServer.hpp"
-#include "WorkerConnectionHander.hpp"
+#include "WorkerConnectionHandler.hpp"
+#include "WorkerConnections.hpp"
 
 #define DEFAULT_PORT "9090"
 #define WORKER_PASSWORD "wokerSecret"
 
 // forward declarations
 class HttpApp;
-class WorkerConnections;
 
 class MasterServer : public TcpServer, public Producer<Socket> {
   DISABLE_COPY(MasterServer);
@@ -28,9 +28,11 @@ class MasterServer : public TcpServer, public Producer<Socket> {
 
  private:
   size_t stopConditionToSend = 0;
-  WorkerConnections & workerConnections;
+  WorkerConnections workerConnections;
 
  public:
+  /// Constructor (not public for singleton pattern)
+  MasterServer();
   /// Destructor
   ~MasterServer();
   // Unique (singleton pattern) instance of the server
@@ -43,8 +45,6 @@ class MasterServer : public TcpServer, public Producer<Socket> {
   void stop();
 
  protected:
-  /// Constructor (not public for singleton pattern)
-  MasterServer();
   /// @brief Handle a worker connection request.
   /// @param workerConnection comunication socket with the worker
   void handleClientConnection(Socket& workerConnection) override;

@@ -21,6 +21,9 @@ class Decomposer;
 class HttpApp;
 class HttpConnectionHandler;
 class ResponseAssembler;
+class WorkerConnectionHandler;
+class WorkerConnections;
+class MasterServer;
 
 /**
 @brief Implements a minimalist web server.
@@ -84,6 +87,8 @@ class HttpServer : public TcpServer {
   /// Numer of calculator threads in the server
   unsigned int calculatorsAmount = std::thread::hardware_concurrency();
 
+  unsigned int maxWorkerConnections = 0;
+
   /// socket producing queue
   Queue<Socket>* socketsQueue = nullptr;
   /// Connection Handlers: socket consumers, concurrent data producers
@@ -99,6 +104,16 @@ class HttpServer : public TcpServer {
   ResponseAssembler* responseAssembler = nullptr;
   // Client responder: consumer of concurrent data pointers, responds back
   ClientResponder* clientResponder = nullptr;
+
+  Queue<Socket>* workersQueue = nullptr;
+  
+  std::vector<WorkerConnectionHandler*> workerConnectionHandlers;
+  
+  MasterServer* masterServer = nullptr;
+  
+  WorkerConnections* workerConnections;
+
+  
 
  public:
   /// Destructor
