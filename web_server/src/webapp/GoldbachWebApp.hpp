@@ -20,13 +20,14 @@ class GoldbachWebApp : public CalcWebApp {
   /// Destructor
   ~GoldbachWebApp() = default;
 
- private:
+ public:
   /// @brief Create a ConcurrentData object to store data
   /// @param httpRequest is the request to be handled
   /// @param httpResponse is the response to be handled
+  /// @param appIndex index of the application that created this data
   /// @return a pointer to the created ConcurrentData object
   ConcurrentData* createConcurrentData(HttpRequest& httpRequest
-    , HttpResponse& httpResponse) override;
+    , HttpResponse& httpResponse, const size_t appIndex) override;
 };
 
 #endif  // GOLDBACHWEBAPP_HPP

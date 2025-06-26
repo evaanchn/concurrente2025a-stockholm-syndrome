@@ -3,10 +3,15 @@
 #include "ConcurrentData.hpp"
 
 ConcurrentData::ConcurrentData(const HttpRequest& httpRequest
-  , const HttpResponse& httpResponse)
+  , const HttpResponse& httpResponse, const size_t appIndex)
   : pendingQueries(0)
   , httpRequest(httpRequest)
-  , httpResponse(httpResponse) {
+  , httpResponse(httpResponse)
+  , appIndex(appIndex) {
+}
+
+size_t ConcurrentData::getAppIndex() const {
+    return this->appIndex;
 }
 
 void ConcurrentData::markUnitReady() {

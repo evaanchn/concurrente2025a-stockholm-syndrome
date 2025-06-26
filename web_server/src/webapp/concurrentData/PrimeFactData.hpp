@@ -15,8 +15,10 @@ class PrimeFactData : public CalcData {
   /// @brief Constructor
   /// @param httpRequest is the request to be handled
   /// @param httpResponse is the response to be handled
-  PrimeFactData(HttpRequest& httpRequest, HttpResponse& httpResponse)
-      : CalcData(httpRequest, httpResponse) {
+  /// @param appIndex index of the application that created this dats
+  PrimeFactData(HttpRequest& httpRequest, HttpResponse& httpResponse
+    , const size_t appIndex)
+  : CalcData(httpRequest, httpResponse, appIndex) {
   }
   /// @brief Process a queries for prime factorization
   /// @param index index of the queries to process
