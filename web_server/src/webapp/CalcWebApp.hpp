@@ -53,6 +53,20 @@ class CalcWebApp : public ConcurrentApp {
   /// @param httpRequest request to be parsed
   /// @param queries is the vector to store the parsed numbers
   void parseRequest(HttpRequest& httpRequest, std::vector<int64_t>& queries);
+
+
+ public:  // distribution
+  /// @brief Create a plain text from DataUnit to be send into the network
+  /// @param dataUnit data to be parsed into text
+  /// @return parsed text
+  std::string serializeRequest(DataUnit* dataUnit) override;
+  /// @brief Parse received response, saving the results and creating its
+  /// corresponding DataUnit
+  /// @param responseData text to be parsed into a DataUnit
+  /// @return pointer to the created DataUnit
+  DataUnit* deserializeResponse(std::string responseData) override;
+  // virtual std::string serializeResponse(WorkerUnit*) override;
+  // virtual WorkerUnit* deserializeRequest(std::string requestData) override;
 };
 
 #endif  // CALCWEBAPP_HPP

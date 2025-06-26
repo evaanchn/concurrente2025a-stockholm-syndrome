@@ -2,6 +2,8 @@
 #ifndef CONCURRENTAPP_HPP
 #define CONCURRENTAPP_HPP
 
+#include <string>
+
 #include "HttpApp.hpp"
 
 /// @brief ConcurrentApp is a base class for web applications that handle
@@ -39,7 +41,14 @@ class ConcurrentApp : public HttpApp {
   virtual bool canHandleHttpRequest(HttpRequest& httpRequest) = 0;
   /// @brief Parse the HTTP request to parse numbers from the URI
   ConcurrentData* createConcurrentData(HttpRequest& httpRequest
-      , HttpResponse& httpResponse) override = 0;
+      , HttpResponse& httpResponse, const size_t appIndex) override = 0;
+  /// @brief Create a plain text from DataUnit to be send into the network
+  std::string serializeRequest(DataUnit* dataUnit) override = 0;
+  /// @brief Parse received text into the response to a DataUnit
+  DataUnit* deserializeResponse(std::string responseData) override = 0;
+  // virtual std::string serializeResponse(WorkerUnit*) override = 0;
+  // virtual WorkerUnit* deserializeRequest(std::string requestData)
+  // override = 0;
 };
 
 #endif  // CONCURRENTAPP_HPP

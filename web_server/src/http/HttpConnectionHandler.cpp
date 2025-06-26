@@ -76,7 +76,7 @@ bool HttpConnectionHandler::route(HttpRequest& httpRequest
     if (app->handleHttpRequest(httpRequest, httpResponse)) {
       // If handleHttpRequest returned true, it could be a concurrent app
       ConcurrentData* data = app->createConcurrentData(httpRequest
-          , httpResponse);
+          , httpResponse, index);
       // If a concurrent data was created, enqueue it
       if (data) {
         // Enqueue data data to be processed by the concurrent app

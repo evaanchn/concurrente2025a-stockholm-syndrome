@@ -1,5 +1,6 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#include <cassert>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -9,8 +10,8 @@
 #include "Util.hpp"
 
 CalcData::CalcData(HttpRequest& httpRequest,
-    HttpResponse& httpResponse):
-    ConcurrentData(httpRequest, httpResponse)  {
+    HttpResponse& httpResponse, const size_t appIndex):
+    ConcurrentData(httpRequest, httpResponse, appIndex) {
 }
 
 std::vector<int64_t>& CalcData::getQueries() {
@@ -21,6 +22,47 @@ void CalcData::updatePending() {
   // Update pending queries count and allocate results vector
   this->pendingQueries = this->queries.size();
   this->results.resize(this->queries.size());
+}
+
+std::string CalcData::serializeQuery(size_t queryIndex) const {
+  assert(queryIndex < this->queries.size());
+  // Serialize the query as a string
+  return std::to_string(this->queries[queryIndex]);
+}
+
+std::string CalcData::serializeResult(size_t queryIndex) const {
+  assert(queryIndex < this->results.size());
+  std::string resultBuffer;
+  // results prefix
+  resultBuffer += this->resultsPrefix;
+  for (const int64_t& value : this->results[queryIndex]) {
+    resultBuffer += std::to_string(value) + ",";
+  }
+  // Remove the last space if there are results
+  if (!resultBuffer.empty()) {
+    resultBuffer.pop_back();
+  }
+  return resultBuffer;
+}
+
+void CalcData::deserializeResult(const size_t resultIndex
+    , std::string& queryResult) {
+  assert(resultIndex < this->results.size());
+  assert(!queryResult.empty());
+
+  size_t numbersStart = queryResult.find(this->resultsPrefix);
+  // Split the result string by spaces
+  const std::vector<std::string>& values =
+    Util::split(queryResult.substr(numbersStart), ",", true);
+
+  // Convert each value to int64_t and store in results
+  for (const std::string& value : values) {
+    try {
+      this->results[resultIndex].push_back(std::stoll(value));
+    } catch (const std::exception& exception) {
+      throw std::runtime_error("Invalid result value: " + value);
+    }
+  }
 }
 
 std::vector<DataUnit*> CalcData::decompose() {

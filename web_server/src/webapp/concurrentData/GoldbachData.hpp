@@ -12,8 +12,9 @@
 class GoldbachData : public CalcData {
  public:
   /// Constructor
-  GoldbachData(HttpRequest& httpRequest, HttpResponse& httpRespomse)
-      : CalcData(httpRequest, httpRespomse) {
+  GoldbachData(HttpRequest& httpRequest, HttpResponse& httpRespomse,
+    const size_t appIndex)
+  : CalcData(httpRequest, httpRespomse, appIndex) {
   }
   /// @brief Process a query for goldbach sums
   /// @param index index of the queries to process

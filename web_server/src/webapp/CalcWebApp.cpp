@@ -1,6 +1,11 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#include <cassert>
+#include <sstream>
+
 #include "CalcWebApp.hpp"
+#include "CalcData.hpp"
+#include "DataUnit.hpp"
 
 bool CalcWebApp::canHandleHttpRequest(HttpRequest& httpRequest) {
   // If the request starts with appPrefix is for this web app
@@ -45,4 +50,38 @@ void CalcWebApp::parseRequest(HttpRequest& httpRequest
       continue;
     }
   }
+}
+
+std::string CalcWebApp::serializeRequest(DataUnit* dataUnit) {
+  assert(dataUnit);
+  uintptr_t originalDataPtr = reinterpret_cast<std::uintptr_t>
+    (dataUnit->concurrentData);
+
+  std::stringstream requestBuffer;
+  requestBuffer << dataUnit->concurrentData->getAppIndex() <<
+    '\n' << originalDataPtr << '\n' <<
+    dataUnit->resultIndex << '\n' <<
+    dataUnit->concurrentData->serializeQuery(dataUnit->resultIndex);
+
+  return requestBuffer.str();
+}
+
+DataUnit* CalcWebApp::deserializeResponse(std::string responseData) {
+  assert(!responseData.empty());
+  // CalcData and resultIndex
+  std::stringstream responseStream(responseData);
+  uintptr_t originalDataPtr = 0;
+  size_t resultIndex = 0;
+  if (!(responseStream >> originalDataPtr >> resultIndex)) {
+    throw std::runtime_error("Invalid response format");
+  }
+  // Save result into the original CalcData object
+  std::string queryResult;
+  std::getline(responseStream, queryResult);
+  reinterpret_cast<CalcData*>(originalDataPtr)->deserializeResult
+    (resultIndex, queryResult);
+  // Create a new DataUnit with the original data pointer and result index
+  DataUnit* dataUnit = new DataUnit(reinterpret_cast<CalcData*>(originalDataPtr)
+    , resultIndex);
+  return dataUnit;
 }

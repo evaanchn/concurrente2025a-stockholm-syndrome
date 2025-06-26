@@ -9,11 +9,11 @@ FactWebApp::FactWebApp()
 }
 
 ConcurrentData* FactWebApp::createConcurrentData(HttpRequest& httpRequest
-    , HttpResponse& httpResponse) {
+    , HttpResponse& httpResponse, const size_t appIndex) {
   // Serve header of the html
   HomeWebApp::serveHeader(httpResponse, this->title);
   // Create a PrimeFactData object to store data
-  PrimeFactData* data = new PrimeFactData(httpRequest, httpResponse);
+  PrimeFactData* data = new PrimeFactData(httpRequest, httpResponse, appIndex);
   if (data) {
     // Parse the request to extract queries into data
     this->parseRequest(httpRequest, data->getQueries());
