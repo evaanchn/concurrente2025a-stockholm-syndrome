@@ -80,10 +80,22 @@ WorkUnit* CalcWebApp::deserializeRequest(std::string requestData) {
   uintptr_t originalDataPtr = 0;
   size_t originalResultIdx = 0;
   int64_t query = 0;
-  // Obtain appIndex, original concurrent data ptr and results index, with query
-  if (!(requestStream >> appIndex >> originalDataPtr >> originalResultIdx
-      >> query)) {
-    throw std::runtime_error("Invalid request format");
+  // Split the result string by spaces
+  const std::vector<std::string>& request =
+    Util::split(requestData, "\n", true);
+  if (request.size() < REQUEST_BUFFER_LINES_COUNT + 1) {
+    throw std::runtime_error("Invalid request format " + requestData);
+  }
+  try {
+    appIndex = std::stoul(request[0]);
+    originalDataPtr = std::stoul(request[1]);
+    if (!originalDataPtr) {
+      throw std::runtime_error("invalid data address");
+    }
+    originalResultIdx = std::stoul(request[2]);
+    query = std::stoll(request[3]);
+  } catch (const std::exception& exception) {
+    throw std::runtime_error("Invalid serial CalcData: " + requestData);
   }
   // Classes that inherit from this one would know what type conc data to create
   return this->createWorkUnit(appIndex, originalDataPtr, originalResultIdx,
