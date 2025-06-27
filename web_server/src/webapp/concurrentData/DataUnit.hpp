@@ -20,16 +20,16 @@ struct DataUnit {
 
  public:
   /// @brief Default constructor
-  explicit DataUnit(ConcurrentData* concurrentData = nullptr
-      , size_t resultIndex = 0)
-  : concurrentData(concurrentData)
-  , resultIndex(resultIndex) {
+  explicit DataUnit(ConcurrentData* concurrentData = nullptr,
+      size_t resultIndex = 0) :
+      concurrentData(concurrentData),
+      resultIndex(resultIndex) {
   }
   /// Compare two DataUnit objects for equality
   /// @return true if both objects attributes are equal, false otherwise
   inline bool operator==(const DataUnit& other) const {
-    return this->concurrentData == other.concurrentData
-      && this->resultIndex == other.resultIndex;
+    return this->concurrentData == other.concurrentData &&
+        this->resultIndex == other.resultIndex;
   }
 };
 
