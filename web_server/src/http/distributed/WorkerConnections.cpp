@@ -7,7 +7,7 @@ WorkerConnections::~WorkerConnections() {
   this->connections.clear();
 }
 
-Socket& WorkerConnections::getRandomWorkerConnection() {
+Socket WorkerConnections::getRandomWorkerConnection() {
   std::lock_guard<std::mutex> lock(this->canAccessWorkerConnections);
   Socket selectedSocket;
   // Loop forever until finding valid socket
@@ -20,7 +20,6 @@ Socket& WorkerConnections::getRandomWorkerConnection() {
     // size_t number = rand() % 100;
     unsigned seed = time(NULL) + clock() + pthread_self();
     size_t index = rand_r(&seed) % this->connections.size();
-  
     selectedSocket = this->connections[index];  // Obtain socket
     // If socket is no longer connected
     if (!selectedSocket) {

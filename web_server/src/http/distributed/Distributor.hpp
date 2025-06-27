@@ -3,8 +3,8 @@
 #ifndef DISTRIBUTOR_HPP
 #define DISTRIBUTOR_HPP
 
-#define DISTRIBUTED true
 
+#include "common.hpp"
 #include "Dispatcher.hpp"
 
 // Forward declarations

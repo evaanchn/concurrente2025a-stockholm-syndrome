@@ -8,11 +8,11 @@
 #include <thread>
 #include <vector>
 
+#include "common.hpp"
+#include "DataUnit.hpp"
 #include "Queue.hpp"
 #include "TcpServer.hpp"
-#include "DataUnit.hpp"
-
-#define DEFAULT_PORT "8080"
+#include "WorkerConnections.hpp"
 
 // forward declarations
 class Calculator;
@@ -21,8 +21,9 @@ class Decomposer;
 class HttpApp;
 class HttpConnectionHandler;
 class ResponseAssembler;
+class Distributor;
+class RequestClient;
 class WorkerConnectionHandler;
-class WorkerConnections;
 class MasterServer;
 
 /**
@@ -87,7 +88,7 @@ class HttpServer : public TcpServer {
   /// Numer of calculator threads in the server
   unsigned int calculatorsAmount = std::thread::hardware_concurrency();
 
-  unsigned int maxWorkerConnections = 0;
+  unsigned int maxWorkerConnections = 4;
 
   /// socket producing queue
   Queue<Socket>* socketsQueue = nullptr;
@@ -104,16 +105,18 @@ class HttpServer : public TcpServer {
   ResponseAssembler* responseAssembler = nullptr;
   // Client responder: consumer of concurrent data pointers, responds back
   ClientResponder* clientResponder = nullptr;
-
-  Queue<Socket>* workersQueue = nullptr;
-  
+  // Queue for worker
+  Queue<Socket>* workerConnectionsQueue = nullptr;
+  // Distributor: distributes data units to calculators or workers
+  Distributor* distributor = nullptr;
+  //
+  RequestClient* requestClient = nullptr;
+  //
   std::vector<WorkerConnectionHandler*> workerConnectionHandlers;
-  
-  MasterServer* masterServer = nullptr;
-  
-  WorkerConnections* workerConnections;
-
-  
+  //
+  MasterServer* masterServer;
+  //
+  WorkerConnections workerConnections;
 
  public:
   /// Destructor
@@ -164,6 +167,8 @@ class HttpServer : public TcpServer {
  private:
   /// @brief Creates thread objects
   void createThreads();
+/// @brief Creates queues for the server
+  void createQueues();
   /// @brief Connects producer-consumer queues
   void connectQueues();
   /// @brief Starts all thread objects

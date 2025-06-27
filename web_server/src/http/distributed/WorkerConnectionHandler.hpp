@@ -10,6 +10,8 @@
 #include "Socket.hpp"
 #include "string.h"
 
+#define RESPONSE_BUFFER_LINES_COUNT 3
+
 // forward declaration
 class HttpApp;
 class DataUnit;

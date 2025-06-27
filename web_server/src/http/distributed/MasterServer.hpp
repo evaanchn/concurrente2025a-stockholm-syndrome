@@ -8,13 +8,14 @@
 #include <thread>
 #include <vector>
 
+#include "common.hpp"
 #include "DataUnit.hpp"
 #include "Queue.hpp"
 #include "TcpServer.hpp"
 #include "WorkerConnectionHandler.hpp"
 #include "WorkerConnections.hpp"
+#include "Socket.hpp"
 
-#define DEFAULT_PORT "9090"
 #define WORKER_PASSWORD "wokerSecret"
 
 // forward declarations
@@ -24,24 +25,24 @@ class MasterServer : public TcpServer, public Producer<Socket> {
   DISABLE_COPY(MasterServer);
 
  protected:
-  const char* port = DEFAULT_PORT;
+  const char* port = DEFAULT_MASTER_PORT;
 
  private:
-  size_t stopConditionToSend = 0;
-  WorkerConnections workerConnections;
+  size_t stopConditionsToSend = 0;
+  WorkerConnections& workerConnections;
 
  public:
   /// Constructor (not public for singleton pattern)
-  MasterServer();
+  MasterServer(WorkerConnections& workerConnections,
+      size_t stopConditionsToSend);
   /// Destructor
   ~MasterServer();
-  // Unique (singleton pattern) instance of the server
-  static MasterServer& getInstance();
   /// @brief Start the server and listen for incoming connections.
   /// @return EXIT_SUCCESS
   int run();
-  /// @brief This method is called by the controller when it receives a
-  /// signal to stop the server.
+  /// @brief Listen for incoming connections on the specified port.
+  void listenForever(const char* port);
+  /// @brief Stop the server from accepting new connections.
   void stop();
 
  protected:

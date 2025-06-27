@@ -16,11 +16,15 @@
 #include "Calculator.hpp"
 #include "ClientResponder.hpp"
 #include "Decomposer.hpp"
+#include "Distributor.hpp"
 #include "HttpConnectionHandler.hpp"
 #include "ResponseAssembler.hpp"
+#include "RequestClient.hpp"
 #include "WorkerConnectionHandler.hpp"
 #include "WorkerConnections.hpp"
 #include "MasterServer.hpp"
+
+#define DISTRIBUTED true
 
 const char* const usage =
   "Usage: webserv [port] [max_connections] [queue_capacity]\n"
@@ -38,6 +42,7 @@ HttpServer::HttpServer() {
 HttpServer::~HttpServer() {
   delete this->socketsQueue;
   delete this->dataUnitsQueue;
+  delete this->workerConnectionsQueue;
 }
 
 HttpServer& HttpServer::getInstance() {
@@ -49,7 +54,7 @@ void HttpServer::handleSignal(int signalID) {
   if (signalID == SIGINT || signalID == SIGTERM) {
     std::cout << "Stop: " << ((signalID == SIGINT) ? "SIGINT" : "SIGTERM")
       << " thread: " << std::this_thread::get_id() << "\n";
-    HttpServer::getInstance().stopListening();
+    HttpServer::getInstance().stop();
   }
 }
 
@@ -64,6 +69,7 @@ int HttpServer::run(int argc, char* argv[]) {
     if (this->analyzeArguments(argc, argv)) {
       stopApps = this->startServer();
       this->createThreads();
+      this->createQueues();
       this->connectQueues();
       this->startThreads();
       // Accept all client connections. The main process will get blocked
@@ -161,8 +167,13 @@ void HttpServer::createThreads() {
   // After stopping, it notifies each calculator it must stop through
   // enqueued stop conditions in their queue
   this->decomposer = new Decomposer(
-      /*pendindStopConditions*/ this->maxConnections
-      , /*stopConditionsToSend*/ calculatorsAmount);
+      /*pendindStopConditions*/ this->maxConnections);
+
+  this->distributor = new Distributor(this->workerConnections,
+      /*stopConditionsToSend*/ this->calculatorsAmount);
+
+  this->requestClient = new RequestClient(this->workerConnections,
+      this->applications);
 
   // Reserve enough space for calculators
   this->calculators.reserve(this->calculatorsAmount);
@@ -172,38 +183,54 @@ void HttpServer::createThreads() {
     this->calculators.push_back(calculator);
   }
 
-  // Response assembler must wait for all calculators to finish
-  this->responseAssembler = new ResponseAssembler(/*pendingStopConditions*/
-      calculatorsAmount);
-  // Create client responder with its own queue
-  this->clientResponder = new ClientResponder();
+  // Create server in charge of listening for worker conenctions
+  this->masterServer = new MasterServer(this->workerConnections,
+      /*stopConditionsToSend*/ this->maxWorkerConnections);
 
+  // Reserve space for worker connection handlers
   this->workerConnectionHandlers.reserve(this->maxWorkerConnections);
-  for(size_t index = 0; index < this->maxWorkerConnections; ++index) {
-    // Each calculator must have its own queue
+  // Create each worker connection handler and add to vector
+  for (size_t index = 0; index < this->maxWorkerConnections; ++index) {
     WorkerConnectionHandler* workerHandler = new WorkerConnectionHandler(
       this->applications);
     this->workerConnectionHandlers.push_back(workerHandler);
   }
-  // Create worker connections
-  this->workerConnections = new WorkerConnections();
-  this->masterServer = new MasterServer();
+
+  // Response assembler must wait for all calculators and worker connection
+  // handlers to finish
+  this->responseAssembler = new ResponseAssembler(/*pendingStopConditions*/
+    this->calculatorsAmount + this->maxWorkerConnections);
+  // Create client responder with its own queue
+  this->clientResponder = new ClientResponder();
 }
 
-void HttpServer::connectQueues() {
+void HttpServer::createQueues() {
   // Create the queue for handlers to get connections to work with
   this->socketsQueue = new Queue<Socket>(this->queuesCapacity);
+
   // Decomposer consumes from its own queue
   this->decomposer->createOwnQueue(SEM_VALUE_MAX);
+
+  // Distributor has its own queue to consume from
+  this->distributor->createOwnQueue(SEM_VALUE_MAX);
+
+  // RequestClient has its own queue to consume from
+  this->requestClient->createOwnQueue(SEM_VALUE_MAX);
+
   // Create queue between decomposers and data units handlers
   this->dataUnitsQueue
       = new Queue<DataUnit*>(this->queuesCapacity);
-  this->workersQueue
+
+  // Create queue for worker connections
+  this->workerConnectionsQueue
       = new Queue<Socket>(this->maxWorkerConnections);
+
   // Response assembler and client responder have their own queue
   this->responseAssembler->createOwnQueue(SEM_VALUE_MAX);
   this->clientResponder->createOwnQueue(SEM_VALUE_MAX);
+}
 
+void HttpServer::connectQueues() {
   // Connection handlers will consume from the server's sockets queue
   // and produce to the decomposer's queue
   for (size_t index = 0; index < this->maxConnections; ++index) {
@@ -212,7 +239,16 @@ void HttpServer::connectQueues() {
   }
 
   // Decomposer produces to the unit's queue
-  this->decomposer->setProducingQueue(this->dataUnitsQueue);
+  this->decomposer->setProducingQueue(this->distributor->getConsumingQueue());
+
+  // Distributor produces for requestClient and into dataUnits queue
+  this->distributor->registerRedirect(DISTRIBUTED,
+    this->requestClient->getConsumingQueue());
+  this->distributor->registerRedirect(!DISTRIBUTED, this->dataUnitsQueue);
+
+  // RequestClient consumes from its queue and produces to distributor's queue
+  this->requestClient->setProducingQueue(this->
+    distributor->getConsumingQueue());
 
   // Each calculator consumes from the data units queue
   // And produces to the response assembler's queue
@@ -221,20 +257,20 @@ void HttpServer::connectQueues() {
     this->calculators[index]->
         setProducingQueue(this->responseAssembler->getConsumingQueue());
   }
-  
-  // Response assembler produces to client responder's queue
-  this->responseAssembler->setProducingQueue(this->clientResponder->
-      getConsumingQueue());
 
-  for(size_t index = 0; index < this->maxWorkerConnections; ++index) {
+  // MasterServer
+  this->masterServer->setProducingQueue(this->workerConnectionsQueue);
+
+  // WorkerConnectionHandlers
+  for (size_t index = 0; index < this->maxWorkerConnections; ++index) {
     this->workerConnectionHandlers[index]->
-      setConsumingQueue(this->workersQueue);
+      setConsumingQueue(this->workerConnectionsQueue);
     this->workerConnectionHandlers[index]->
       setProducingQueue(this->responseAssembler->getConsumingQueue());
   }
-
-  this->masterServer->setProducingQueue(this->workersQueue);
-  
+  // Response assembler produces to client responder's queue
+  this->responseAssembler->setProducingQueue(this->clientResponder->
+    getConsumingQueue());
 }
 
 void HttpServer::startThreads() {
@@ -244,20 +280,27 @@ void HttpServer::startThreads() {
   }
   // Decomposer starts to wait for concurrent data to decompose
   this->decomposer->startThread();
+
+  this->distributor->startThread();
+
+  this->requestClient->startThread();
   // Calculators start to wait for concurrent units to process
   for (size_t index = 0; index < this->calculatorsAmount; ++index) {
     this->calculators[index]->startThread();
   }
+
   // Response assembler starts to wait for units done
   this->responseAssembler->startThread();
-  // Client responder starts to wait for concurrent data to be done
-  this->clientResponder->startThread();
 
-  for(size_t index = 0; index < this->maxWorkerConnections; ++index) {
-    this->workerConnectionHandlers[index]->startThread();
-  }
   // Start master server thread
   this->masterServer->startThread();
+
+  for (size_t index = 0; index < this->maxWorkerConnections; ++index) {
+    this->workerConnectionHandlers[index]->startThread();
+  }
+
+  // Client responder starts to wait for concurrent data to be done
+  this->clientResponder->startThread();
 }
 
 void HttpServer::handleClientConnection(Socket& client) {
@@ -292,26 +335,42 @@ void HttpServer::joinThreads() {
   for (size_t i = 0; i < this->maxConnections; ++i) {
     this->socketsQueue->enqueue(Socket());
   }
-
   // Wait for thread objects to finish and join
   for (size_t index = 0; index < this->handlers.size(); ++index) {
     this->handlers[index]->waitToFinish();
+    printf("Handler %zu finished.\n", index);
   }
 
+  // Wait for decomposer, who sends a stop condition to distributor before halt
   this->decomposer->waitToFinish();
+  printf("Decomposer finished.\n");
+  // Wait after decomposer and request client sent their stop conditions
+  this->distributor->waitToFinish();
+  printf("Distributor finished.\n");
+  // Wait since it receives a stop condition from distributor first
+  this->requestClient->waitToFinish();
+  printf("Request client finished.\n");
 
   for (size_t index = 0; index < this->calculatorsAmount; ++index) {
     this->calculators[index]->waitToFinish();
+    printf("Calculator %zu finished.\n", index);
   }
+  // Stop the master server, which will stop accepting worker connections
+  this->masterServer->stop();
+  for (size_t index = 0; index < this->maxWorkerConnections; ++index) {
+    this->workerConnectionHandlers[index]->waitToFinish();
+    printf("Worker connection handler %zu finished.\n", index);
+  }
+
+  this->masterServer->stopListening();
+  this->masterServer->waitToFinish();
+  printf("Master server finished.\n");
 
   this->responseAssembler->waitToFinish();
+  printf("Response assembler finished.\n");
+
   this->clientResponder->waitToFinish();
-
-  for(size_t index = 0; index < this->maxWorkerConnections; ++index) {
-    this->workerConnectionHandlers[index]->waitToFinish();
-  }
-
-  this->masterServer->waitToFinish();
+  printf("Client responder finished.\n");
 }
 
 void HttpServer::deleteThreads() {
@@ -324,22 +383,28 @@ void HttpServer::deleteThreads() {
   delete this->decomposer;
   this->decomposer = nullptr;
 
+  delete this->distributor;
+  this->distributor = nullptr;
+
+  delete this->requestClient;
+  this->requestClient = nullptr;
+
   for (Calculator* calculator : this->calculators) {
     delete calculator;
   }
   this->calculators.clear();  // Clear pointers stored
 
+  // delete this->masterServer;
+  this->masterServer = nullptr;
+  for (size_t index = 0; index < this->maxWorkerConnections; ++index) {
+    delete this->workerConnectionHandlers[index];
+  }
+  this->workerConnectionHandlers.clear();  // Clear pointers stored
   delete this->responseAssembler;
   this->responseAssembler = nullptr;
 
   delete this->clientResponder;
   this->clientResponder = nullptr;
-
-  for(size_t index = 0; index < this->maxWorkerConnections; ++index) {
-    delete this->workerConnectionHandlers[index];
-  }
-  this->workerConnectionHandlers.clear();  // Clear pointers stored
-  delete this->masterServer;
 }
 
 void HttpServer::stopApps() {
