@@ -3,6 +3,8 @@
 #ifndef REQUESTCLIENT_HPP
 #define REQUESTCLIENT_HPP
 
+#include <vector>
+
 #include "Assembler.hpp"
 
 // Forward declarations

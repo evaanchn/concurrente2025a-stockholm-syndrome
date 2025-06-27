@@ -22,7 +22,7 @@ class WorkerConnections {
  public:
   WorkerConnections() = default;
   ~WorkerConnections();
-  Socket& getRandomWorkerConnection();
+  Socket getRandomWorkerConnection();
   void removeSocket(int index);
   void addConnection(Socket& socket);
   void stopWorkers();

@@ -42,14 +42,14 @@ bool WorkerConnectionHandler::route(Socket& workerConnection) {
   }
 
   std::string buffer;
-  for (size_t i = 0; i < 3; ++i) {
+  for (size_t i = 0; i < RESPONSE_BUFFER_LINES_COUNT; ++i) {
     if (!workerConnection.readLine(buffer, '\n')) {
       Log::append(Log::ERROR, "worker", "Error reading request line");
       return false;  // error reading line
     }
   }
-  DataUnit* dataUnit = nullptr;
-    // this->applications[appIndex]->deserializeResponse(buffer);
+  DataUnit* dataUnit = this->applications[appIndex]->
+    deserializeResponse(buffer);
   if (dataUnit == nullptr) {
     return false;  // error deserializing response
   }

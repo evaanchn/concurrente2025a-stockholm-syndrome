@@ -1,16 +1,18 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
 #include <string>
+#include <vector>
 
 #include "RequestClient.hpp"
 #include "WorkerConnections.hpp"
 #include "ConcurrentData.hpp"
 #include "DataUnit.hpp"
+#include "HttpApp.hpp"
 
 RequestClient::RequestClient(WorkerConnections& workerConnections,
   std::vector<HttpApp*>& applications):
-    workerConnections(workerConnections),
-    applications(applications) {
+    applications(applications),
+    workerConnections(workerConnections) {
 }
 
 int RequestClient::run() {
@@ -18,17 +20,20 @@ int RequestClient::run() {
   this->consumeLoop();
   // Send stop condition back to Distributor
   this->produce(nullptr);
+  printf("Request client finished.\n");
+  return EXIT_SUCCESS;
 }
 
 void RequestClient::consume(DataUnit* unit) {
   // TODO(any): uncomment for concurrent data and serialization modifications
   try {
     ConcurrentData* concurrentData = unit->concurrentData;
-    size_t appIndex = 0;   // concurrentData->getAppIndex();
-    std::string serializedUnit = ""; // this->applications[appIndex].serializeRequest(unit);
+    size_t appIndex = concurrentData->getAppIndex();
+    std::string serializedUnit =
+      this->applications[appIndex]->serializeRequest(unit);
 
     // Get random connection to send stuff first
-    Socket& connection = this->workerConnections.getRandomWorkerConnection();
+    Socket connection = this->workerConnections.getRandomWorkerConnection();
     connection << serializedUnit;  // Add serialized data to socket
 
     // Try to send message to worker

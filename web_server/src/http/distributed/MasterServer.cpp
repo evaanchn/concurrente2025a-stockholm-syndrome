@@ -14,25 +14,13 @@
 #include "Socket.hpp"
 #include "WorkerConnections.hpp"
 
-const char* const usage =
-  "Usage: webserv [port] [max_connections] [queue_capacity]\n"
-  "\n"
-  "  port        Network port to listen incoming HTTP requests, default "
-    DEFAULT_PORT "\n"
-  "  max_connections  Max amount of connections the server"
-  " can attend concurrently\n"
-  "  conn_queue_capacity  Max amount of connections that"
-  " can be stored in queue\n";
-
-MasterServer::MasterServer() {
+MasterServer::MasterServer(WorkerConnections& workerConnections,
+      size_t stopConditionsToSend):
+  stopConditionsToSend(stopConditionsToSend),
+  workerConnections(workerConnections) {
 }
 
 MasterServer::~MasterServer() {
-}
-
-MasterServer& MasterServer::getInstance() {
-  static MasterServer server;
-  return server;
 }
 
 int MasterServer::run() {
@@ -40,12 +28,16 @@ int MasterServer::run() {
   try {
     this->listenForConnections(this->port);
     this->acceptAllConnections();
-  }catch (const std::runtime_error& error) {
+  } catch (const std::runtime_error& error) {
     std::cerr << "Error: " << error.what() << std::endl;
+    this->stop();
   }
   return EXIT_SUCCESS;
 }
 
+void MasterServer::listenForever(const char* port) {
+  return TcpServer::listenForever(port);
+}
 
 void MasterServer::handleClientConnection(Socket& workerConnection) {
   // Handle the client connection by sending it to the worker connections
@@ -59,7 +51,7 @@ void MasterServer::handleClientConnection(Socket& workerConnection) {
 void MasterServer::stop() {
   // Stop listening for incoming client connection requests
   this->stopListening();
-  for (size_t i = 0; i < this->stopConditionToSend; ++i) {
+  for (size_t i = 0; i < this->stopConditionsToSend; ++i) {
     this->produce(Socket());  // Send stop condition to handlers
   }
 }
