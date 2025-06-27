@@ -6,6 +6,7 @@
 #include <vector>
 #include <string>
 
+#include "common.hpp"
 #include "CalcWebApp.hpp"
 #include "CalcData.hpp"
 #include "DataUnit.hpp"
@@ -107,15 +108,25 @@ std::string CalcWebApp::serializeResponse(WorkUnit* workUnit) {
 DataUnit* CalcWebApp::deserializeResponse(std::string responseData) {
   assert(!responseData.empty());
   // CalcData and resultIndex
-  std::stringstream responseStream(responseData);
   uintptr_t originalDataPtr = 0;
   size_t resultIndex = 0;
-  if (!(responseStream >> originalDataPtr >> resultIndex)) {
-    throw std::runtime_error("Invalid response format");
+  // Split the result string by spaces
+  const std::vector<std::string>& response =
+    Util::split(responseData, "\n", true);
+  if (response.size() < RESPONSE_BUFFER_LINES_COUNT) {
+    throw std::runtime_error("Invalid response format " + responseData);
+  }
+  try {
+    originalDataPtr = std::stoul(response[0]);
+    if (!originalDataPtr) {
+      throw std::runtime_error("invalid data address");
+    }
+    resultIndex = std::stoul(response[1]);
+  } catch (const std::exception& exception) {
+    throw std::runtime_error("Invalid serial CalcData: " + responseData);
   }
   // Save result into the original CalcData object
-  std::string queryResult;
-  std::getline(responseStream, queryResult);
+  std::string queryResult = response[2].c_str();
   reinterpret_cast<CalcData*>(originalDataPtr)->deserializeResult
     (resultIndex, queryResult);
   // Create a new DataUnit with the original data pointer and result index

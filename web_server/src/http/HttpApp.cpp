@@ -29,6 +29,6 @@ std::string HttpApp::serializeResponse(WorkUnit*) {
   return "";   // Returns empty by default, unless is concurrent app
 }
 
-WorkUnit* HttpApp::deserializeRequest(std::string requestData) {
+WorkUnit* HttpApp::deserializeRequest(std::string) {
   return nullptr;  // Returns nullptr by default, unless is concurrent app
 }

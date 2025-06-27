@@ -5,12 +5,11 @@
 
 #include <vector>
 
+#include "common.hpp"
 #include "Assembler.hpp"
 #include "Log.hpp"
 #include "Socket.hpp"
 #include "string.h"
-
-#define RESPONSE_BUFFER_LINES_COUNT 3
 
 // forward declaration
 class HttpApp;

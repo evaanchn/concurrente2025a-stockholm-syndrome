@@ -43,10 +43,12 @@ bool WorkerConnectionHandler::route(Socket& workerConnection) {
 
   std::string buffer;
   for (size_t i = 0; i < RESPONSE_BUFFER_LINES_COUNT; ++i) {
-    if (!workerConnection.readLine(buffer, '\n')) {
+    std::string line;
+    if (!workerConnection.readLine(line, '\n')) {
       Log::append(Log::ERROR, "worker", "Error reading request line");
       return false;  // error reading line
     }
+    buffer += line + '\n';
   }
   DataUnit* dataUnit = this->applications[appIndex]->
     deserializeResponse(buffer);

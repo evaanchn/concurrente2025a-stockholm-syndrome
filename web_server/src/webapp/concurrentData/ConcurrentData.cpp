@@ -11,9 +11,10 @@ ConcurrentData::ConcurrentData(const HttpRequest& httpRequest,
 }
 
 ConcurrentData::ConcurrentData(const size_t appIndex):
-  appIndex(appIndex),
+  pendingQueries(0),
   httpRequest(Socket()),
-  httpResponse(Socket(), "") {
+  httpResponse(Socket(), ""),
+  appIndex(appIndex) {
 }
 
 size_t ConcurrentData::getAppIndex() const {
