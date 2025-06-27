@@ -1,5 +1,7 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#include <vector>
+
 #include "PrimeFactData.hpp"
 #include "PrimeFactCalculator.hpp"
 
@@ -9,8 +11,8 @@ void PrimeFactData::processQuery(size_t index) {
   calculator.processNumber(this->queries[index], this->results[index]);
 }
 
-void PrimeFactData::buildResult(int64_t value
-  , std::vector<int64_t>& result) {
+void PrimeFactData::buildResult(int64_t value,
+    std::vector<int64_t>& result) {
   // result contains each prime factor and its exponent
   // e.g: {prime1, exponent1, prime2, exponent2, ...}
   size_t primeFactorsCount = result.size() / 2;
