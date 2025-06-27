@@ -17,4 +17,12 @@
 /// For data transmissions
 typedef unsigned char byte;
 
+// Web server constants
+
+#define DISTRIBUTED true
+
+#define DEFAULT_PORT "8080"
+
+#define DEFAULT_MASTER_PORT "9090"
+
 #endif  // COMMON_HPP
