@@ -1,7 +1,7 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
-#ifndef WORKERUNIT_HPP
-#define WORKERUNIT_HPP
+#ifndef WORKUNIT_HPP
+#define WORKUNIT_HPP
 
 #include <iostream>
 #include <vector>
@@ -13,7 +13,7 @@ class ConcurrentData;
 
 /// @brief Dataunit that encapsulates the information required by master server
 /// when sending results back to the original request client.
-struct WorkerUnit : public DataUnit{
+struct WorkUnit : public DataUnit {
  public:
     /// Pointer to the original concurrent data from master server
     ConcurrentData* originalConcurrentData = nullptr;
@@ -22,14 +22,14 @@ struct WorkerUnit : public DataUnit{
 
  public:
   /// @brief Default constructor
-  explicit WorkerUnit(ConcurrentData* concurrentData = nullptr,
+  explicit WorkUnit(ConcurrentData* concurrentData = nullptr,
     size_t resultIndex = 0, ConcurrentData* originalConcurrentData = nullptr,
     size_t originalResultIndex = 0): DataUnit(concurrentData, resultIndex),
     originalConcurrentData(originalConcurrentData),
     originalResultIndex(originalResultIndex) {
   }
   /// Compare two WorkUnit objects for equality
-  inline bool operator==(const WorkerUnit& other) const {
+  inline bool operator==(const WorkUnit& other) const {
     return this->concurrentData == other.concurrentData
       && this->resultIndex == other.resultIndex
       && this->originalConcurrentData == other.originalConcurrentData
@@ -37,4 +37,4 @@ struct WorkerUnit : public DataUnit{
   }
 };
 
-#endif  // WORKERUNIT_HPP
+#endif  // WORKUNIT_HPP
