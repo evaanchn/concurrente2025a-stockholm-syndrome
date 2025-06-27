@@ -2,12 +2,18 @@
 
 #include "ConcurrentData.hpp"
 
-ConcurrentData::ConcurrentData(const HttpRequest& httpRequest
-  , const HttpResponse& httpResponse, const size_t appIndex)
-  : pendingQueries(0)
-  , httpRequest(httpRequest)
-  , httpResponse(httpResponse)
-  , appIndex(appIndex) {
+ConcurrentData::ConcurrentData(const HttpRequest& httpRequest,
+  const HttpResponse& httpResponse, const size_t appIndex) :
+  pendingQueries(0),
+  httpRequest(httpRequest),
+  httpResponse(httpResponse),
+  appIndex(appIndex) {
+}
+
+ConcurrentData::ConcurrentData(const size_t appIndex):
+  appIndex(appIndex),
+  httpRequest(Socket()),
+  httpResponse(Socket(), "") {
 }
 
 size_t ConcurrentData::getAppIndex() const {
