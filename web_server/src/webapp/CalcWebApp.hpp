@@ -13,6 +13,8 @@
 #include "HttpResponse.hpp"
 #include "Util.hpp"
 
+class WorkUnit;
+
 /// @brief CalcWebApp is a base class for web applications that handle
 class CalcWebApp : public ConcurrentApp {
   /// Objects of this class cannot be copied
@@ -61,12 +63,31 @@ class CalcWebApp : public ConcurrentApp {
   /// @return parsed text
   std::string serializeRequest(DataUnit* dataUnit) override;
   /// @brief Parse received response, saving the results and creating its
+  /// corresponding WorkUnit
+  /// @param requestData text to be parsed into a WorkUnit
+  /// @return pointer to the created WorkUnit
+  WorkUnit* deserializeRequest(std::string requestData) override;
+
+  /// @brief Create a plain text from WorkUnit to be send into the network
+  /// @param workUnit data to be parsed into text
+  /// @return parsed text
+  std::string serializeResponse(WorkUnit* workUnit) override;
+  /// @brief Parse received response, saving the results and creating its
   /// corresponding DataUnit
   /// @param responseData text to be parsed into a DataUnit
   /// @return pointer to the created DataUnit
   DataUnit* deserializeResponse(std::string responseData) override;
-  // virtual std::string serializeResponse(WorkerUnit*) override;
-  // virtual WorkerUnit* deserializeRequest(std::string requestData) override;
+
+ protected:
+  /// @brief Creates a work unit with corresponding ConcurrentData type.
+  /// @param appIndex Index of concurrent app that creates the worker unit.
+  /// @param originalDataPtr Pointer to concurrent data that works in master.
+  /// @param originalResultIdx Index of result that works in master.
+  /// @param query The number to process.
+  /// @return The work unit created from the paramters.
+  /// @note Used in worker process.
+  virtual WorkUnit* createWorkUnit(size_t appIndex, uintptr_t originalDataPtr,
+      size_t originalResultIdx, int64_t query) = 0;
 };
 
 #endif  // CALCWEBAPP_HPP

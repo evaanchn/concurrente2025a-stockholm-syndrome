@@ -1,11 +1,16 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
 #include <cassert>
+#include <cstdint>
 #include <sstream>
+#include <vector>
+#include <string>
 
+#include "common.hpp"
 #include "CalcWebApp.hpp"
 #include "CalcData.hpp"
 #include "DataUnit.hpp"
+#include "WorkUnit.hpp"
 
 bool CalcWebApp::canHandleHttpRequest(HttpRequest& httpRequest) {
   // If the request starts with appPrefix is for this web app
@@ -54,10 +59,12 @@ void CalcWebApp::parseRequest(HttpRequest& httpRequest
 
 std::string CalcWebApp::serializeRequest(DataUnit* dataUnit) {
   assert(dataUnit);
+  // Obtain original pointer to concurrent data
   uintptr_t originalDataPtr = reinterpret_cast<std::uintptr_t>
     (dataUnit->concurrentData);
 
-  std::stringstream requestBuffer;
+  std::stringstream requestBuffer;  // Buffer for request's data
+  // Write results in buffer
   requestBuffer << dataUnit->concurrentData->getAppIndex() <<
     '\n' << originalDataPtr << '\n' <<
     dataUnit->resultIndex << '\n' <<
@@ -66,18 +73,72 @@ std::string CalcWebApp::serializeRequest(DataUnit* dataUnit) {
   return requestBuffer.str();
 }
 
+WorkUnit* CalcWebApp::deserializeRequest(std::string requestData) {
+  assert(!requestData.empty());
+  std::stringstream requestStream(requestData);
+  size_t appIndex = 0;
+  uintptr_t originalDataPtr = 0;
+  size_t originalResultIdx = 0;
+  int64_t query = 0;
+  // Split the result string by spaces
+  const std::vector<std::string>& request =
+    Util::split(requestData, "\n", true);
+  if (request.size() < REQUEST_BUFFER_LINES_COUNT + 1) {
+    throw std::runtime_error("Invalid request format " + requestData);
+  }
+  try {
+    appIndex = std::stoul(request[0]);
+    originalDataPtr = std::stoul(request[1]);
+    if (!originalDataPtr) {
+      throw std::runtime_error("invalid data address");
+    }
+    originalResultIdx = std::stoul(request[2]);
+    query = std::stoll(request[3]);
+  } catch (const std::exception& exception) {
+    throw std::runtime_error("Invalid serial CalcData: " + requestData);
+  }
+  // Classes that inherit from this one would know what type conc data to create
+  return this->createWorkUnit(appIndex, originalDataPtr, originalResultIdx,
+      query);
+}
+
+std::string CalcWebApp::serializeResponse(WorkUnit* workUnit) {
+  assert(workUnit);
+  // Obtain original pointer to concurrent data
+  uintptr_t originalDataPtr = reinterpret_cast<std::uintptr_t>
+    (workUnit->originalConcurrentData);
+
+  std::stringstream responseData;  // Buffer for response's data
+  responseData << workUnit->concurrentData->getAppIndex() <<
+    '\n' << originalDataPtr << '\n' <<
+    workUnit->originalResultIndex << '\n' <<
+    workUnit->concurrentData->serializeResult(workUnit->resultIndex);
+
+  return responseData.str();
+}
+
 DataUnit* CalcWebApp::deserializeResponse(std::string responseData) {
   assert(!responseData.empty());
   // CalcData and resultIndex
-  std::stringstream responseStream(responseData);
   uintptr_t originalDataPtr = 0;
   size_t resultIndex = 0;
-  if (!(responseStream >> originalDataPtr >> resultIndex)) {
-    throw std::runtime_error("Invalid response format");
+  // Split the result string by spaces
+  const std::vector<std::string>& response =
+    Util::split(responseData, "\n", true);
+  if (response.size() < RESPONSE_BUFFER_LINES_COUNT) {
+    throw std::runtime_error("Invalid response format " + responseData);
+  }
+  try {
+    originalDataPtr = std::stoul(response[0]);
+    if (!originalDataPtr) {
+      throw std::runtime_error("invalid data address");
+    }
+    resultIndex = std::stoul(response[1]);
+  } catch (const std::exception& exception) {
+    throw std::runtime_error("Invalid serial CalcData: " + responseData);
   }
   // Save result into the original CalcData object
-  std::string queryResult;
-  std::getline(responseStream, queryResult);
+  std::string queryResult = response[2].c_str();
   reinterpret_cast<CalcData*>(originalDataPtr)->deserializeResult
     (resultIndex, queryResult);
   // Create a new DataUnit with the original data pointer and result index

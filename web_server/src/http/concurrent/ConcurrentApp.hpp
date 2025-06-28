@@ -6,6 +6,8 @@
 
 #include "HttpApp.hpp"
 
+class WorkUnit;
+
 /// @brief ConcurrentApp is a base class for web applications that handle
 /// @details This class is designed
 /// to handle HTTP requests in a concurrent environment, allowing for
@@ -39,16 +41,25 @@ class ConcurrentApp : public HttpApp {
   /// @param httpRequest request to be handled
   /// @return true if this application can handle the request,
   virtual bool canHandleHttpRequest(HttpRequest& httpRequest) = 0;
+
   /// @brief Parse the HTTP request to parse numbers from the URI
   ConcurrentData* createConcurrentData(HttpRequest& httpRequest
       , HttpResponse& httpResponse, const size_t appIndex) override = 0;
+
   /// @brief Create a plain text from DataUnit to be send into the network
+  /// @note Used in master process
   std::string serializeRequest(DataUnit* dataUnit) override = 0;
+  /// @brief Create a work unit from the serialized data sent from master
+  /// @note Used in worker process
+  WorkUnit* deserializeRequest(std::string requestData) override = 0;
+
+  /// @brief Create a work unit from the serialized data sent from master
+  /// @return parsed text
+  /// @note Used in worker process
+  std::string serializeResponse(WorkUnit*) override = 0;
   /// @brief Parse received text into the response to a DataUnit
+  /// @note Used in master process
   DataUnit* deserializeResponse(std::string responseData) override = 0;
-  // virtual std::string serializeResponse(WorkerUnit*) override = 0;
-  // virtual WorkerUnit* deserializeRequest(std::string requestData)
-  // override = 0;
 };
 
 #endif  // CONCURRENTAPP_HPP

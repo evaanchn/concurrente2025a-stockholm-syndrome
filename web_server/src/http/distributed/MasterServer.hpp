@@ -39,7 +39,7 @@ class MasterServer : public TcpServer, public Producer<Socket> {
   ~MasterServer();
   /// @brief Start the server and listen for incoming connections.
   /// @return EXIT_SUCCESS
-  int run();
+  int run() override;
   /// @brief Listen for incoming connections on the specified port.
   void listenForever(const char* port);
   /// @brief Stop the server from accepting new connections.

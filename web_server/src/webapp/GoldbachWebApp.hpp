@@ -28,6 +28,17 @@ class GoldbachWebApp : public CalcWebApp {
   /// @return a pointer to the created ConcurrentData object
   ConcurrentData* createConcurrentData(HttpRequest& httpRequest
     , HttpResponse& httpResponse, const size_t appIndex) override;
+
+ protected:
+  /// @brief Creates a work unit with corresponding ConcurrentData type.
+  /// @param appIndex Index of concurrent app that creates the worker unit.
+  /// @param originalDataPtr Pointer to concurrent data that works in master.
+  /// @param originalResultIdx Index of result that works in master.
+  /// @param query The number to process.
+  /// @return The work unit created from the paramters.
+  /// @note Used in worker process.
+  WorkUnit* createWorkUnit(size_t appIndex, uintptr_t originalDataPtr,
+      size_t originalResultIdx, int64_t query) override;
 };
 
 #endif  // GOLDBACHWEBAPP_HPP

@@ -29,6 +29,7 @@ class ConcurrentData {
   /// Constructor
   explicit ConcurrentData(const HttpRequest& httpRequest,
     const HttpResponse& httpResponse, const size_t appIndex);
+  explicit ConcurrentData(const size_t appIndex);
   /// Destructor
   virtual ~ConcurrentData() = default;
   /// Decompose the queries into ataUnits

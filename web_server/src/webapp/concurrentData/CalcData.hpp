@@ -12,6 +12,8 @@
 /// @brief Base calculation class to save data from a client request throughout
 // the concurrent production line
 class CalcData : public ConcurrentData {
+  DISABLE_COPY(CalcData);
+
  protected:
   /// Store input units to be processed into a DataUnit
   std::vector<int64_t> queries;
@@ -23,7 +25,8 @@ class CalcData : public ConcurrentData {
   /// Constructor
   CalcData(HttpRequest& httpRequest, HttpResponse& httpResponse,
     const size_t appIndex);
-  DISABLE_COPY(CalcData);
+  explicit CalcData(const size_t appIndex): ConcurrentData(appIndex) {
+  }
   // Destructor
   virtual ~CalcData() = default;
   /// @brief Obtain list of values from the httpRequest URI

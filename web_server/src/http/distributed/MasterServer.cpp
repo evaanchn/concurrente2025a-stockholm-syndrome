@@ -42,9 +42,11 @@ void MasterServer::listenForever(const char* port) {
 void MasterServer::handleClientConnection(Socket& workerConnection) {
   // Handle the client connection by sending it to the worker connections
   std::string password;
-  if (workerConnection >> password && password == WORKER_PASSWORD) {
+  if (workerConnection.readLine(password, '\n')) {
+    if (password == WORKER_PASSWORD) {
       workerConnections.addConnection(workerConnection);
       this->produce(workerConnection);
+    }
   }
 }
 

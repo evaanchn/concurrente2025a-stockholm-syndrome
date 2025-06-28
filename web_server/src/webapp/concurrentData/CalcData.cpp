@@ -10,7 +10,7 @@
 #include "Util.hpp"
 
 CalcData::CalcData(HttpRequest& httpRequest,
-    HttpResponse& httpResponse, const size_t appIndex):
+    HttpResponse& httpResponse, const size_t appIndex) :
     ConcurrentData(httpRequest, httpResponse, appIndex) {
 }
 
@@ -50,7 +50,8 @@ void CalcData::deserializeResult(const size_t resultIndex
   assert(resultIndex < this->results.size());
   assert(!queryResult.empty());
 
-  size_t numbersStart = queryResult.find(this->resultsPrefix);
+  size_t numbersStart = queryResult.find(this->resultsPrefix) +
+      this->resultsPrefix.length();
   // Split the result string by spaces
   const std::vector<std::string>& values =
     Util::split(queryResult.substr(numbersStart), ",", true);

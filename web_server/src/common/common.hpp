@@ -25,4 +25,8 @@ typedef unsigned char byte;
 
 #define DEFAULT_MASTER_PORT "9090"
 
+#define RESPONSE_BUFFER_LINES_COUNT 3
+
+#define REQUEST_BUFFER_LINES_COUNT 3
+
 #endif  // COMMON_HPP
