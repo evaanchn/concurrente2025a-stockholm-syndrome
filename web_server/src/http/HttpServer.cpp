@@ -312,6 +312,7 @@ void HttpServer::stop() {
   // method is called -maybe by a secondary thread-, the web server -running
   // by the main thread- will stop executing the acceptAllConnections() method.
   this->stopListening();
+  this->masterServer->stopListing();
 }
 
 void HttpServer::stopServer(const bool stopApps) {
@@ -355,16 +356,15 @@ void HttpServer::joinThreads() {
     this->calculators[index]->waitToFinish();
     printf("Calculator %zu finished.\n", index);
   }
+
   // Stop the master server, which will stop accepting worker connections
-  this->masterServer->stop();
+  // this->masterServer->stop();
+  this->masterServer->waitToFinish();
+
   for (size_t index = 0; index < this->maxWorkerConnections; ++index) {
     this->workerConnectionHandlers[index]->waitToFinish();
     printf("Worker connection handler %zu finished.\n", index);
   }
-
-  this->masterServer->stopListening();
-  this->masterServer->waitToFinish();
-  printf("Master server finished.\n");
 
   this->responseAssembler->waitToFinish();
   printf("Response assembler finished.\n");

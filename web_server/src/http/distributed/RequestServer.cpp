@@ -1,5 +1,6 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#include <string>
 #include <vector>
 
 #include "RequestServer.hpp"
@@ -64,7 +65,7 @@ DataUnit* RequestServer::readRequestFromMaster() {
     Log::append(Log::ERROR, "worker", "Invalid app index: " + buffer);
     return nullptr;
   }
-  
+
   // Read the request lines from the masterConnection
   buffer += '\n';  // appIndex separator
   std::string line;

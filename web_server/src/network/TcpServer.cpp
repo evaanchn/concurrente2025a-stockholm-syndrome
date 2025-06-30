@@ -35,9 +35,13 @@ void TcpServer::listenForever(const char* port) {
   this->acceptAllConnections();
 }
 
+
 void TcpServer::stopListening() {
   // An ugly way to stop incoming connections is closing the socket
   if (this->connectionRequestSocket >= 0) {
+    // Disable reading from the socket, so no more conn requests are allowed
+    ::shutdown(this->connectionRequestSocket, SHUT_RD);
+    // Close and destroy the socket file descriptor, releasing its resources
     this->closeSocket();
   }
 }

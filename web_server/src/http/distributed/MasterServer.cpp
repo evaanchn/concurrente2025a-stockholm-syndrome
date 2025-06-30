@@ -51,9 +51,8 @@ void MasterServer::handleClientConnection(Socket& workerConnection) {
 }
 
 void MasterServer::stop() {
-  // Stop listening for incoming client connection requests
-  this->stopListening();
+  // Send stop condition to handlers
   for (size_t i = 0; i < this->stopConditionsToSend; ++i) {
-    this->produce(Socket());  // Send stop condition to handlers
+    this->produce(Socket());
   }
 }

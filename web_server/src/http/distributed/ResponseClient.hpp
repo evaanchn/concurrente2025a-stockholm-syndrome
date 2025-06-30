@@ -3,6 +3,8 @@
 #ifndef RESPONSE_CLIENT
 #define RESPONSE_CLIENT
 
+#include <vector>
+
 #include "Consumer.hpp"
 #include "Socket.hpp"
 #include "TcpClient.hpp"

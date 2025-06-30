@@ -29,7 +29,7 @@ class RequestServer : public Producer<DataUnit*> {
   size_t stopConditionsToSend = 0;
 
  public:
-  ///@brief Constructor
+  /// @brief Constructor
   /// @param applications Reference to the vector of HttpApp objects
   /// @param stopConditionsToSend Amount of stop conditions next entity needs
   RequestServer(std::vector<HttpApp*>& applications, Socket& masterConnection,
@@ -41,7 +41,7 @@ class RequestServer : public Producer<DataUnit*> {
 
  private:
   /// @brief Consuming procedure
-  /// @param data shared 
+  /// @param data shared
   void handleMasterConnection();
 
   /// @brief Read the request from the masterConnection connection and produce
