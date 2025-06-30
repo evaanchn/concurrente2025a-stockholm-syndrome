@@ -30,7 +30,7 @@ ConcurrentData* FactWebApp::createConcurrentData(HttpRequest& httpRequest,
   return data;
 }
 
-WorkUnit* FactWebApp::createWorkUnit(size_t appIndex, uintptr_t originalDataPtr,
+DataUnit* FactWebApp::createWorkUnit(size_t appIndex, uintptr_t originalDataPtr,
     size_t originalResultIdx, int64_t query) {
   // Create a PrimeFactData object to store data
   PrimeFactData* primeFactData = new PrimeFactData(appIndex);

@@ -73,7 +73,7 @@ std::string CalcWebApp::serializeRequest(DataUnit* dataUnit) {
   return requestBuffer.str();
 }
 
-WorkUnit* CalcWebApp::deserializeRequest(std::string requestData) {
+DataUnit* CalcWebApp::deserializeRequest(std::string requestData) {
   assert(!requestData.empty());
   std::stringstream requestStream(requestData);
   size_t appIndex = 0;
@@ -100,21 +100,6 @@ WorkUnit* CalcWebApp::deserializeRequest(std::string requestData) {
   // Classes that inherit from this one would know what type conc data to create
   return this->createWorkUnit(appIndex, originalDataPtr, originalResultIdx,
       query);
-}
-
-std::string CalcWebApp::serializeResponse(WorkUnit* workUnit) {
-  assert(workUnit);
-  // Obtain original pointer to concurrent data
-  uintptr_t originalDataPtr = reinterpret_cast<std::uintptr_t>
-    (workUnit->originalConcurrentData);
-
-  std::stringstream responseData;  // Buffer for response's data
-  responseData << workUnit->concurrentData->getAppIndex() <<
-    '\n' << originalDataPtr << '\n' <<
-    workUnit->originalResultIndex << '\n' <<
-    workUnit->concurrentData->serializeResult(workUnit->resultIndex);
-
-  return responseData.str();
 }
 
 DataUnit* CalcWebApp::deserializeResponse(std::string responseData) {

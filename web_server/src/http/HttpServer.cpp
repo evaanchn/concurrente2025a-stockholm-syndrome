@@ -312,7 +312,7 @@ void HttpServer::stop() {
   // method is called -maybe by a secondary thread-, the web server -running
   // by the main thread- will stop executing the acceptAllConnections() method.
   this->stopListening();
-  this->masterServer->stopListing();
+  this->masterServer->stopListening();
 }
 
 void HttpServer::stopServer(const bool stopApps) {

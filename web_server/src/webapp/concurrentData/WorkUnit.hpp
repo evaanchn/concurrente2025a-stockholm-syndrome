@@ -28,6 +28,25 @@ struct WorkUnit : public DataUnit {
     originalConcurrentData(originalConcurrentData),
     originalResultIndex(originalResultIndex) {
   }
+
+ public:
+  /// @brief Parse processed data into a string
+  /// @return parsed text
+  /// @note Used in worker process
+  std::string serializeResponse() override {
+    // Obtain original pointer to concurrent data
+    uintptr_t originalDataPtr = reinterpret_cast<std::uintptr_t>
+      (this->originalConcurrentData);
+
+    std::stringstream responseData;  // Buffer for response's data
+    responseData << this->concurrentData->getAppIndex() << '\n' <<
+      originalDataPtr << '\n' <<
+      this->originalResultIndex << '\n' <<
+      this->concurrentData->serializeResult(this->resultIndex);
+
+    return responseData.str();
+  }
+
   /// Compare two WorkUnit objects for equality
   inline bool operator==(const WorkUnit& other) const {
     return this->concurrentData == other.concurrentData

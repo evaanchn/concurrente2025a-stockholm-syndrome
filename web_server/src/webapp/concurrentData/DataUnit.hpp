@@ -25,6 +25,16 @@ struct DataUnit {
       concurrentData(concurrentData),
       resultIndex(resultIndex) {
   }
+  /// @brief Default destructor
+  virtual ~DataUnit() = default;
+
+ public:
+  /// @brief Parse processed data into a string
+  /// @return parsed text
+  /// @note Used in worker process
+  virtual std::string serializeResponse() {
+    return "";  // Returns empty by default, not used 
+  }
   /// Compare two DataUnit objects for equality
   /// @return true if both objects attributes are equal, false otherwise
   inline bool operator==(const DataUnit& other) const {

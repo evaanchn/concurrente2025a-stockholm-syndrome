@@ -51,7 +51,7 @@ void CalcData::deserializeResult(const size_t resultIndex
   assert(!queryResult.empty());
 
   size_t numbersStart = queryResult.find(this->resultsPrefix) +
-      this->resultsPrefix.length();
+    this->resultsPrefix.length();
   // Split the result string by spaces
   const std::vector<std::string>& values =
     Util::split(queryResult.substr(numbersStart), ",", true);

@@ -3,10 +3,13 @@
 #include <string>
 #include <vector>
 
+#include "common.hpp"
 #include "ResponseClient.hpp"
 #include "ConcurrentData.hpp"
 #include "HttpApp.hpp"
 #include "WorkUnit.hpp"
+
+#define WORKER_PASSWORD "wokerSecret\n"
 
 ResponseClient::ResponseClient(std::vector<HttpApp*>& applications,
   size_t pendingStopConditions): applications(applications),
@@ -15,6 +18,7 @@ ResponseClient::ResponseClient(std::vector<HttpApp*>& applications,
 
 Socket& ResponseClient::connect(const char* server, const char* port) {
   this->TcpClient::connect(server, port);
+  return this->getSocket();
 }
 
 int ResponseClient::run() {
@@ -33,9 +37,7 @@ int ResponseClient::run() {
 void ResponseClient::consume(DataUnit* unit) {
   assert(unit);
   // serialize the result
-  size_t appIndex = unit->concurrentData->getAppIndex();
-  std::string queryResult = this->applications[appIndex]->
-    serializeResponse(unit);
+  std::string queryResult = unit->serializeResponse();
   // Send the result to the master server
   if (this->socket << queryResult) {
     this->socket.send();

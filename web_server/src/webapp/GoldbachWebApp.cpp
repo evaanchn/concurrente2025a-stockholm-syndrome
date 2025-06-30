@@ -30,7 +30,7 @@ ConcurrentData* GoldbachWebApp::createConcurrentData(HttpRequest& httpRequest
   return data;
 }
 
-WorkUnit* GoldbachWebApp::createWorkUnit(size_t appIndex,
+DataUnit* GoldbachWebApp::createWorkUnit(size_t appIndex,
     uintptr_t originalDataPtr, size_t originalResultIdx, int64_t query) {
   // Create a PrimeFactData object to store data
   GoldbachData* goldbachData = new GoldbachData(appIndex);
