@@ -27,6 +27,9 @@ int MasterServer::run() {
   // Start the server and listen for connections
   try {
     this->listenForConnections(this->port);
+    const NetworkAddress& address = this->getNetworkAddress();
+    Log::append(Log::INFO, "master", "Available at " + address.getIP()
+      + " port " + std::to_string(address.getPort()));
     this->acceptAllConnections();
   } catch (const std::runtime_error& error) {
     std::cerr << "Error: " << error.what() << std::endl;
@@ -43,7 +46,10 @@ void MasterServer::handleClientConnection(Socket& workerConnection) {
   // Handle the client connection by sending it to the worker connections
   std::string password;
   if (workerConnection.readLine(password, '\n')) {
+    std::cerr << "Received password from worker: [" << password << "]\n";
+    std::cerr << "Expected password: [" << WORKER_PASSWORD << "]\n";
     if (password == WORKER_PASSWORD) {
+      printf("Worker connection accepted\n");
       workerConnections.addConnection(workerConnection);
       this->produce(workerConnection);
     }

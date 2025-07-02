@@ -16,8 +16,6 @@
 #include "WorkerConnections.hpp"
 #include "Socket.hpp"
 
-#define WORKER_PASSWORD "wokerSecret"
-
 // forward declarations
 class HttpApp;
 
