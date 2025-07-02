@@ -32,11 +32,6 @@ int RequestServer::run() {
 
 void RequestServer::handleMasterConnection() {
   while (true) {
-    // Wait for the masterConnection connection to be ready to read
-    if (!this->masterConnection.receive()) {
-      // If the masterConnection connection is closed, stop consuming
-      break;
-    }
     // Read the data from the masterConnection connection
     DataUnit* work = this->readRequestFromMaster();
     if (work == nullptr) {
@@ -76,6 +71,7 @@ DataUnit* RequestServer::readRequestFromMaster() {
     }
     buffer += line + '\n';
   }
+  std::cout<< buffer<<std::endl;
   // Deserialize the request into a WorkUnit
   DataUnit* work = this->applications[appIndex]->deserializeRequest(buffer);
   return work;

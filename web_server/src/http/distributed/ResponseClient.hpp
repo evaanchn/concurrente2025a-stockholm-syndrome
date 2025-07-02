@@ -23,13 +23,11 @@ class ResponseClient : public TcpClient, public Consumer<DataUnit*> {
 
  private:
   /// Reference to app chain in server
-  std::vector<HttpApp*>& applications;
   size_t pendingStopConditions = 0;
 
  public:
   /// @brief Constructor of the class
-  ResponseClient(std::vector<HttpApp*>& applications,
-    size_t pendingStopCondition);
+  ResponseClient(size_t pendingStopCondition);
 
   /// @brief Destructor of the class
   ~ResponseClient() = default;

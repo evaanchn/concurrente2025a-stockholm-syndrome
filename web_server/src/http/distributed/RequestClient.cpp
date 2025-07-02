@@ -18,6 +18,8 @@ RequestClient::RequestClient(WorkerConnections& workerConnections,
 int RequestClient::run() {
   // Start consuming data units from queue
   this->consumeLoop();
+  // Stop all workers
+  this->workerConnections.stopWorkers();
   // Send stop condition back to Distributor
   this->produce(nullptr);
   printf("Request client finished.\n");
@@ -25,12 +27,12 @@ int RequestClient::run() {
 }
 
 void RequestClient::consume(DataUnit* unit) {
-  // TODO(any): uncomment for concurrent data and serialization modifications
   try {
     ConcurrentData* concurrentData = unit->concurrentData;
     size_t appIndex = concurrentData->getAppIndex();
     std::string serializedUnit =
       this->applications[appIndex]->serializeRequest(unit);
+      printf("Serialized unit for app index %zu: %s\n", appIndex, serializedUnit.c_str());
 
     // Get random connection to send stuff first
     Socket connection = this->workerConnections.getRandomWorkerConnection();
