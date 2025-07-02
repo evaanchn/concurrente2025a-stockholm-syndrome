@@ -42,7 +42,7 @@ void TcpServer::stopListening() {
     // Disable reading from the socket, so no more conn requests are allowed
     ::shutdown(this->connectionRequestSocket, SHUT_RD);
     // Close and destroy the socket file descriptor, releasing its resources
-    this->closeSocket();
+    // this->closeSocket();
   }
 }
 
