@@ -68,7 +68,7 @@ std::string CalcWebApp::serializeRequest(DataUnit* dataUnit) {
   requestBuffer << dataUnit->concurrentData->getAppIndex() <<
     '\n' << originalDataPtr << '\n' <<
     dataUnit->resultIndex << '\n' <<
-    dataUnit->concurrentData->serializeQuery(dataUnit->resultIndex);
+    dataUnit->concurrentData->serializeQuery(dataUnit->resultIndex) << '\n';
 
   return requestBuffer.str();
 }
@@ -109,7 +109,7 @@ DataUnit* CalcWebApp::deserializeResponse(std::string responseData) {
   size_t resultIndex = 0;
   // Split the result string by spaces
   const std::vector<std::string>& response =
-    Util::split(responseData, "\n", true);
+    Util::split(responseData, "\n", false);
   if (response.size() < RESPONSE_BUFFER_LINES_COUNT) {
     throw std::runtime_error("Invalid response format " + responseData);
   }

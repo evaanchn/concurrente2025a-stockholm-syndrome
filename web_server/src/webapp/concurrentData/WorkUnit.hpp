@@ -3,6 +3,7 @@
 #ifndef WORKUNIT_HPP
 #define WORKUNIT_HPP
 
+#include <cstdint>
 #include <iostream>
 #include <vector>
 
@@ -42,7 +43,7 @@ struct WorkUnit : public DataUnit {
     responseData << this->concurrentData->getAppIndex() << '\n' <<
       originalDataPtr << '\n' <<
       this->originalResultIndex << '\n' <<
-      this->concurrentData->serializeResult(this->resultIndex);
+      this->concurrentData->serializeResult(this->resultIndex) << '\n';
 
     return responseData.str();
   }

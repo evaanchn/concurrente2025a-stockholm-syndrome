@@ -48,7 +48,8 @@ std::string CalcData::serializeResult(size_t queryIndex) const {
 void CalcData::deserializeResult(const size_t resultIndex
     , std::string& queryResult) {
   assert(resultIndex < this->results.size());
-  assert(!queryResult.empty());
+  // handle empty results
+  if (queryResult.empty()) return;
 
   size_t numbersStart = queryResult.find(this->resultsPrefix) +
     this->resultsPrefix.length();
