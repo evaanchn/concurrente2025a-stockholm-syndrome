@@ -36,6 +36,7 @@ DataUnit* GoldbachWebApp::createWorkUnit(size_t appIndex,
   GoldbachData* goldbachData = new GoldbachData(appIndex);
   // Add singular query to data
   goldbachData->getQueries().push_back(query);
+  goldbachData->updatePending();
   // Work unit has usable new data created in worker's machine (index 0 for
   // query since there will only be one), and stores original data and index
   WorkUnit* workUnit = new WorkUnit(goldbachData, /*resultIndex*/ 0,
