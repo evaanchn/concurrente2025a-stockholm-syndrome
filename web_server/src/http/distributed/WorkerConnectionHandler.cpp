@@ -1,11 +1,16 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
-#include "WorkerConnectionHandler.hpp"
 #include <string>
 #include "HttpApp.hpp"
 
+#include "Log.hpp"
+#include "NetworkAddress.hpp"
+#include "WorkerConnectionHandler.hpp"
+
 WorkerConnectionHandler::WorkerConnectionHandler
-  (std::vector<HttpApp*>& applications)
-  : applications(applications) {
+  (std::vector<HttpApp*>& applications, 
+   WorkerConnections& workerConnections) :
+    applications(applications), 
+    workerConnections(workerConnections) {
 }
 
 
@@ -19,23 +24,35 @@ int WorkerConnectionHandler::run() {
 }
 
 void WorkerConnectionHandler::consume(Socket workerConnection) {
+  printf ("WorkerConnectionHandler::consume called\n");
   // While the same client asks for HTTP requests in the same connection
   while (true) {
-    // If the password is not valid, set free to receive a new connection
+    // If the workerConnection is not connected, stop consuming
     if (!route(workerConnection)) {
+      this->workerConnections.removeSocket(workerConnection);
       break;
     }
   }
 }
 
 bool WorkerConnectionHandler::route(Socket& workerConnection) {
+  printf("Routing request from worker connection...\n");
+  // Print IP and port from worker
+  const NetworkAddress& address = workerConnection.getNetworkAddress();
+  Log::append(Log::INFO, "connection",
+    std::string("connection established with worker ") + address.getIP()
+    + " port " + std::to_string(address.getPort()));
   std::string appIndexStr;
   if (!workerConnection.readLine(appIndexStr, '\n')) {
     return false;  // error reading line
   }
+  printf("Received app index: %s\n", appIndexStr.c_str());
   size_t appIndex = 0;
   try {
     appIndex = std::stoul(appIndexStr);
+    if (appIndex >= this->applications.size()) {
+      throw std::invalid_argument("appIndex out of range");
+    }
   } catch(const std::invalid_argument& e) {
     Log::append(Log::ERROR, "worker", "Invalid app index: " + appIndexStr);
     return false;  // invalid app index
@@ -49,6 +66,7 @@ bool WorkerConnectionHandler::route(Socket& workerConnection) {
       return false;  // error reading line
     }
     buffer += line + '\n';
+    printf ("Received line %zu: %s\n", i, line.c_str());
   }
   DataUnit* dataUnit = this->applications[appIndex]->
     deserializeResponse(buffer);

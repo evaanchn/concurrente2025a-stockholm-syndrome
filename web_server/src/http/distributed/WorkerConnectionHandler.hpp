@@ -4,12 +4,13 @@
 
 
 #include <vector>
+#include <string>
 
 #include "common.hpp"
 #include "Assembler.hpp"
 #include "Log.hpp"
 #include "Socket.hpp"
-#include "string.h"
+#include "WorkerConnections.hpp"
 
 // forward declaration
 class HttpApp;
@@ -24,12 +25,14 @@ class WorkerConnectionHandler : public Assembler <Socket, DataUnit*> {
   /// Reference to app chain in server
  private:
   std::vector<HttpApp*>& applications;
+  WorkerConnections& workerConnections;
 
  public:
   DISABLE_COPY(WorkerConnectionHandler);
 
   /// Constructor
-  explicit WorkerConnectionHandler(std::vector<HttpApp*>& applications);
+  explicit WorkerConnectionHandler(std::vector<HttpApp*>& applications, 
+    WorkerConnections& workerConnections);
 
   /// @brief Start consuming loop
   /// @return EXIT SUCCESS

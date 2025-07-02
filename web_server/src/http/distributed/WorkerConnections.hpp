@@ -23,7 +23,7 @@ class WorkerConnections {
   WorkerConnections() = default;
   ~WorkerConnections();
   Socket getRandomWorkerConnection();
-  void removeSocket(int index);
+  void removeSocket(Socket socket);
   void addConnection(Socket& socket);
   void stopWorkers();
   bool hasConnections() const;
