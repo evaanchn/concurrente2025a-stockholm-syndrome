@@ -23,6 +23,8 @@ class HttpConnectionHandler;
 class ResponseAssembler;
 class Distributor;
 class RequestClient;
+class RequestServer;
+class ResponseClient;
 class WorkerConnectionHandler;
 class MasterServer;
 
@@ -71,6 +73,8 @@ class HttpServer : public TcpServer {
   DISABLE_COPY(HttpServer);
 
  protected:
+  /// Distribution role of the server, either "master" or "worker".
+  std::string role = "master";
   /// TCP port where this web server will listen for connections
   const char* port = DEFAULT_PORT;
   /// Chain of registered web applications. Each time an incoming HTTP request
@@ -79,27 +83,26 @@ class HttpServer : public TcpServer {
   /// call the httpResponse.send() and the chain stops. If no web app serves
   /// the request, the not found page will be served.
   std::vector<HttpApp*> applications;
-
- private:
-  /// Max amount of accepted client connections
-  unsigned int maxConnections = std::thread::hardware_concurrency();
-  /// Queue's default capacity
-  unsigned int queuesCapacity = SEM_VALUE_MAX;
   /// Numer of calculator threads in the server
   unsigned int calculatorsAmount = std::thread::hardware_concurrency();
+  // concurrent Units queue
+  Queue<DataUnit*>* dataUnitsQueue = nullptr;
+  // Calculators: consumers and producers of data units
+  std::vector<Calculator*> calculators;
+  /// Queue's default capacity
+  unsigned int queuesCapacity = SEM_VALUE_MAX;
 
-  unsigned int maxWorkerConnections = 4;
-
+ private:  // Master attributes
+  /// Max amount of accepted client connections
+  unsigned int maxConnections = std::thread::hardware_concurrency();
+  /// Max amount of worker connections
+  unsigned int maxWorkerConnections = DEFAULT_MAX_WORKER_CONNECTIONS;
   /// socket producing queue
   Queue<Socket>* socketsQueue = nullptr;
   /// Connection Handlers: socket consumers, concurrent data producers
   std::vector<HttpConnectionHandler*> handlers;
   // Decomposer: concurrent data pointers consumer, data units producer
   Decomposer* decomposer = nullptr;
-  // concurrent Units queue
-  Queue<DataUnit*>* dataUnitsQueue = nullptr;
-  // Calculators: consumers and producers of data units
-  std::vector<Calculator*> calculators;
   // Response assembler: consumer of data units
   // and producer of concurrent data pointers
   ResponseAssembler* responseAssembler = nullptr;
@@ -118,6 +121,16 @@ class HttpServer : public TcpServer {
   //
   WorkerConnections workerConnections;
 
+ private:  // Worker attributes
+  /// TCP port where the master server is listening for connections
+  const char* masterPort = DEFAULT_MASTER_PORT;
+  /// IP address of the master server
+  const char* masterIP;
+  /// 
+  RequestServer* requestServer = nullptr;
+  /// 
+  ResponseClient* responseClient = nullptr;
+
  public:
   /// Destructor
   ~HttpServer();
@@ -133,6 +146,8 @@ class HttpServer : public TcpServer {
   void chainWebApp(HttpApp* application);
   /// Start the web server for listening client connections and HTTP requests
   int run(int argc, char* argv[]);
+  /// Start the web server in worker mode
+  int runWorker(int argc, char* argv[]);
   /// Indefinitely listen for client connection requests and accept all of them.
   /// For each accepted connection request, the virtual onConnectionAccepted()
   /// will be called. Inherited classes must override that method
@@ -145,16 +160,22 @@ class HttpServer : public TcpServer {
  protected:
   /// Constructor (not public for singleton pattern)
   HttpServer();
-  /// Analyze the command line arguments
+  /// Analyze the command line arguments, master as default role
   /// @return true if program can continue execution, false otherwise
   bool analyzeArguments(int argc, char* argv[]);
+  /// Analyze the command line arguments for worker mode
+  bool analyzeWorkerArguments(int argc, char* argv[]);
   /// Start the web server. Create other objects required to respond to clients.
   /// @return true if apps were started
   bool startServer();
+  /// Start the web server in worker mode. Create other objects required to
+  bool startWorker();
   /// Stop the web server. The server may stop not immediately. It will stop
   /// for listening further connection requests at once, but pending HTTP
   /// requests that are enqueued will be allowed to finish
   void stopServer(const bool stopApps);
+  /// Stop the worker service
+  void stopWorker(const bool stopApps);
   /// Start all registered applications, given them a chance to build their
   /// data structures just before starting to run
   void startApps();
@@ -163,8 +184,8 @@ class HttpServer : public TcpServer {
   void stopApps();
   /// This method is called each time a client connection request is accepted.
   void handleClientConnection(Socket& client) override;
-
- private:
+  
+ private:  // master
   /// @brief Creates thread objects
   void createThreads();
 /// @brief Creates queues for the server
@@ -177,6 +198,20 @@ class HttpServer : public TcpServer {
   void joinThreads();
   /// @brief Deletes all thread objects
   void deleteThreads();
+
+ private:  // worker
+  /// @brief Creates thread objects for worker mode
+  void createWorkerThreads();
+  /// @brief Creates queues for the worker server
+  void createWorkerQueues();
+  /// @brief Connects producer-consumer queues for worker mode
+  void connectWorkerQueues();
+  /// @brief Starts all thread objects for worker mode
+  void startWorkerThreads();
+  /// @brief Waits for all threads to finish in worker mode
+  void joinWorkerThreads();
+  /// @brief Deletes all thread objects in worker mode
+  void deleteWorkerThreads();
 };
 
 #endif  // HTTPSERVER_H
