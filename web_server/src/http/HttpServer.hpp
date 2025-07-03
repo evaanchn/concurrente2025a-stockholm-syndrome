@@ -6,6 +6,7 @@
 #include <climits>
 #include <csignal>
 #include <thread>
+#include <string>
 #include <vector>
 
 #include "common.hpp"
@@ -101,24 +102,24 @@ class HttpServer : public TcpServer {
   Queue<Socket>* socketsQueue = nullptr;
   /// Connection Handlers: socket consumers, concurrent data producers
   std::vector<HttpConnectionHandler*> handlers;
-  // Decomposer: concurrent data pointers consumer, data units producer
+  /// Decomposer: concurrent data pointers consumer, data units producer
   Decomposer* decomposer = nullptr;
-  // Response assembler: consumer of data units
-  // and producer of concurrent data pointers
+  /// Response assembler: consumer of data units
+  /// and producer of concurrent data pointers
   ResponseAssembler* responseAssembler = nullptr;
-  // Client responder: consumer of concurrent data pointers, responds back
+  /// Client responder: consumer of concurrent data pointers, responds back
   ClientResponder* clientResponder = nullptr;
-  // Queue for worker
+  /// Queue for worker
   Queue<Socket>* workerConnectionsQueue = nullptr;
-  // Distributor: distributes data units to calculators or workers
+  /// Distributor: distributes data units to calculators or workers
   Distributor* distributor = nullptr;
-  //
+  /// Sends requests with queries to worker processes
   RequestClient* requestClient = nullptr;
-  //
-  std::vector<WorkerConnectionHandler*> workerConnectionHandlers;
-  //
+  /// Listens for worker connections
   MasterServer* masterServer;
-  //
+  /// Thread team to handle worker connections
+  std::vector<WorkerConnectionHandler*> workerConnectionHandlers;
+  /// Monitor with worker connections (sockets)
   WorkerConnections workerConnections;
 
  private:  // Worker attributes
@@ -126,9 +127,12 @@ class HttpServer : public TcpServer {
   const char* masterPort = DEFAULT_MASTER_PORT;
   /// IP address of the master server
   const char* masterIP;
-  /// 
+  /// Listens for master's requests
   RequestServer* requestServer = nullptr;
-  /// 
+
+  /// *(Worker also has DataUnit handlers, like Calculators)*
+
+  /// Sends responses to master
   ResponseClient* responseClient = nullptr;
 
  public:
@@ -146,8 +150,6 @@ class HttpServer : public TcpServer {
   void chainWebApp(HttpApp* application);
   /// Start the web server for listening client connections and HTTP requests
   int run(int argc, char* argv[]);
-  /// Start the web server in worker mode
-  int runWorker(int argc, char* argv[]);
   /// Indefinitely listen for client connection requests and accept all of them.
   /// For each accepted connection request, the virtual onConnectionAccepted()
   /// will be called. Inherited classes must override that method
@@ -163,19 +165,13 @@ class HttpServer : public TcpServer {
   /// Analyze the command line arguments, master as default role
   /// @return true if program can continue execution, false otherwise
   bool analyzeArguments(int argc, char* argv[]);
-  /// Analyze the command line arguments for worker mode
-  bool analyzeWorkerArguments(int argc, char* argv[]);
   /// Start the web server. Create other objects required to respond to clients.
   /// @return true if apps were started
   bool startServer();
-  /// Start the web server in worker mode. Create other objects required to
-  bool startWorker();
   /// Stop the web server. The server may stop not immediately. It will stop
   /// for listening further connection requests at once, but pending HTTP
   /// requests that are enqueued will be allowed to finish
   void stopServer(const bool stopApps);
-  /// Stop the worker service
-  void stopWorker(const bool stopApps);
   /// Start all registered applications, given them a chance to build their
   /// data structures just before starting to run
   void startApps();
@@ -184,11 +180,11 @@ class HttpServer : public TcpServer {
   void stopApps();
   /// This method is called each time a client connection request is accepted.
   void handleClientConnection(Socket& client) override;
-  
- private:  // master
+
+ private:
   /// @brief Creates thread objects
   void createThreads();
-/// @brief Creates queues for the server
+  /// @brief Creates queues for the server
   void createQueues();
   /// @brief Connects producer-consumer queues
   void connectQueues();
@@ -199,7 +195,21 @@ class HttpServer : public TcpServer {
   /// @brief Deletes all thread objects
   void deleteThreads();
 
- private:  // worker
+  // WORKER FLOW
+
+ public:
+  /// Start the web server in worker mode
+  int runWorker(int argc, char* argv[]);
+
+ protected:
+  /// Analyze the command line arguments for worker mode
+  bool analyzeWorkerArguments(int argc, char* argv[]);
+  /// Start the web server in worker mode. Create other objects required to
+  bool startWorker();
+  /// Stop the worker service
+  void stopWorker(const bool normalStop);
+
+ private:
   /// @brief Creates thread objects for worker mode
   void createWorkerThreads();
   /// @brief Creates queues for the worker server

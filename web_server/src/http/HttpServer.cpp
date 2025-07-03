@@ -43,16 +43,17 @@ const char* const usage =
 const char* const usage_worker =
   "Usage: webserver worker master_port master_ip\n\n"
   "  worker       Role of the server\n"
-  "  master_port  Port where the master server is listening for connections\n"
-  "  master_ip    IP address of the master server\n";
+  "  master_ip    IP address of the master server\n"
+  "  master_port  Port where the master server is listening for connections\n";
 
 HttpServer::HttpServer() {
 }
 
 HttpServer::~HttpServer() {
-  delete this->socketsQueue;
-  delete this->dataUnitsQueue;
-  delete this->workerConnectionsQueue;
+  // Free memory, if needed
+  if (this->socketsQueue) delete this->socketsQueue;
+  if (this->dataUnitsQueue) delete this->dataUnitsQueue;
+  if (this->workerConnectionsQueue) delete this->workerConnectionsQueue;
 }
 
 HttpServer& HttpServer::getInstance() {
@@ -89,8 +90,8 @@ int HttpServer::run(int argc, char* argv[]) {
       // catch below. Then, the main thread can continue stopping apps,
       /// finishing the server and any further cleaning it requires.
       this->acceptAllConnections();
-    }
-    else {
+    } else {
+      // If analyzeArguments() returned false, run worker logic
       return this->runWorker(argc, argv);
     }
   } catch (const std::invalid_argument& error) {
@@ -99,49 +100,36 @@ int HttpServer::run(int argc, char* argv[]) {
     return EXIT_FAILURE;
   } catch (const std::runtime_error& error) {
     std::cerr << "error: " << error.what() << std::endl;
-  } 
+  }
   // Destroy objects created by this server
   this->stopServer(stopApps);
   return EXIT_SUCCESS;
 }
 
-int HttpServer::runWorker(int argc, char* argv[]) {
-  bool stopApps = false;
-  try {
-    if (this->analyzeWorkerArguments(argc, argv)) {
-      stopApps = this->startWorker();
-      this->startWorkerThreads();
-    }
-  } catch (const std::invalid_argument& error) {
-    std::cerr << "error: " << error.what() << std::endl;
-    std::cout << usage_worker;
-    return EXIT_FAILURE;
-  } catch (const std::runtime_error& error) {
-    std::cerr << "error: " << error.what() << std::endl;
-  }
-
-  // Destroy objects created by this server
-  this->stopWorker(stopApps);
-  return EXIT_SUCCESS;
-}
-
 bool HttpServer::analyzeArguments(int argc, char* argv[]) {
   if (argc < 2) {
-    throw std::invalid_argument("must specify the role of the server");
+    throw std::invalid_argument("insufficient arguments");
   }
-  this->role = argv[1];
-  if (this->role == "worker") {
-    return false;
-  }
-  if (argc < 3) {
-    throw std::invalid_argument("not enough arguments");
-  }
-  // Traverse all arguments
+
+  // Traverse all arguments to check for 'help' specification
   for (int index = 1; index < argc; ++index) {
     const std::string argument = argv[index];
     if (argument.find("help") != std::string::npos) {
       throw std::invalid_argument("help requested");
     }
+  }
+
+  this->role = argv[1];  // Set role to analyze
+  // If speified role is worker, discontinue analysis
+  if (this->role == "worker") {
+    return false;
+  } else if (this->role != "master") {
+    // If role is not master either, the argument is invalid
+    throw std::invalid_argument("must specify the role of the server");
+  }
+
+  if (argc < 3) {
+    throw std::invalid_argument("must specify max worker connections");
   }
   try {
     this->maxWorkerConnections = std::stoul(argv[2]);
@@ -172,22 +160,6 @@ bool HttpServer::analyzeArguments(int argc, char* argv[]) {
   return true;
 }
 
-bool HttpServer::analyzeWorkerArguments(int argc, char* argv[]) {
-  // Traverse all arguments
-  for (int index = 1; index < argc; ++index) {
-    const std::string argument = argv[index];
-    if (argument.find("help") != std::string::npos) {
-      throw std::invalid_argument("help requested");
-    }
-  }
-  if (argc < 4) {
-    throw std::invalid_argument("not enough arguments");
-  }
-  this->masterPort = argv[2];
-  this->masterIP = argv[3];
-  return true;
-}
-
 bool HttpServer::startServer() {
   // Set signal handler method from HttpConnectionHandler
   // TODO(any): save previous signal if required
@@ -202,28 +174,6 @@ bool HttpServer::startServer() {
   const NetworkAddress& address = this->getNetworkAddress();
   Log::append(Log::INFO, "webserver", "Listening on " + address.getIP()
   + " port " + std::to_string(address.getPort()));
-  return true;
-}
-
-bool HttpServer::startWorker() {
-  // Start the log service
-  Log::getInstance().start();
-  // Start all web applications
-  this->startApps();
-  // Start waiting for connections
-  
-  // const NetworkAddress& address = this->getNetworkAddress();
-  // Log::append(Log::INFO, "webserver", "Available at " + address.getIP()
-  //   + " port " + std::to_string(address.getPort()));
-  this->createWorkerThreads();
-  this->createWorkerQueues();
-  this->connectWorkerQueues();
-  try {
-      this->responseClient->connect(this->masterIP, this->masterPort);
-  } catch(const std::runtime_error& error) {
-    std::cerr << error.what() << '\n';
-    return false;
-  }
   return true;
 }
 
@@ -292,23 +242,6 @@ void HttpServer::createThreads() {
   this->clientResponder = new ClientResponder();
 }
 
-void HttpServer::createWorkerThreads() {
-  // Create response client to send responses to master server
-  this->responseClient = new ResponseClient(this->calculatorsAmount);
-
-  // Reserve enough space for calculators
-  this->calculators.reserve(this->calculatorsAmount);
-  // Create each calculator and add to calculators vector
-  for (size_t index = 0; index < this->calculatorsAmount; ++index) {
-    Calculator* calculator = new Calculator();
-    this->calculators.push_back(calculator);
-  }
-
-  // Create request server to listen for requests from master server
-  this->requestServer = new RequestServer(this->applications,
-    responseClient->getSocket(), this->calculatorsAmount);
-}
-
 void HttpServer::createQueues() {
   // Create the queue for handlers to get connections to work with
   this->socketsQueue = new Queue<Socket>(this->queuesCapacity);
@@ -333,15 +266,6 @@ void HttpServer::createQueues() {
   // Response assembler and client responder have their own queue
   this->responseAssembler->createOwnQueue(SEM_VALUE_MAX);
   this->clientResponder->createOwnQueue(SEM_VALUE_MAX);
-}
-
-void HttpServer::createWorkerQueues() {
-  // Create the queue betwen request server and calculators
-  this->dataUnitsQueue
-      = new Queue<DataUnit*>(this->queuesCapacity);
-
-  // Response client has its own queue to consume
-  this->responseClient->createOwnQueue(this->queuesCapacity);
 }
 
 void HttpServer::connectQueues() {
@@ -387,19 +311,6 @@ void HttpServer::connectQueues() {
     getConsumingQueue());
 }
 
-void HttpServer::connectWorkerQueues() {
-  // RequestServer produces to calculators
-  this->requestServer->setProducingQueue(this->dataUnitsQueue);
-
-  // Each calculator consumes from the data units queue
-  // And produces to the response client
-  for (size_t index = 0; index < this->calculatorsAmount; ++index) {
-    this->calculators[index]->setConsumingQueue(this->dataUnitsQueue);
-    this->calculators[index]->
-        setProducingQueue(this->responseClient->getConsumingQueue());
-  }
-}
-
 void HttpServer::startThreads() {
   // Starts the connection handler threads to accept connections
   for (size_t index = 0; index < this->maxConnections; ++index) {
@@ -430,19 +341,6 @@ void HttpServer::startThreads() {
   this->clientResponder->startThread();
 }
 
-void HttpServer::startWorkerThreads() {
-  // Request server starts to wait for requests from master server
-  this->requestServer->startThread();
-
-  // Calculators start to wait for data units to process
-  for (size_t index = 0; index < this->calculatorsAmount; ++index) {
-    this->calculators[index]->startThread();
-  }
-
-  // Response client starts to wait for responses to send to master server
-  this->responseClient->startThread();
-}
-
 void HttpServer::handleClientConnection(Socket& client) {
   this->socketsQueue->enqueue(client);
 }
@@ -461,21 +359,6 @@ void HttpServer::stopServer(const bool stopApps) {
 
   // Delete handlers
   this->deleteThreads();
-
-  // If applications were started
-  if (stopApps) {
-    this->stopApps();
-  }
-  // Stop the log service
-  Log::getInstance().stop();
-}
-
-void HttpServer::stopWorker(const bool stopApps) {
-  // Join threads
-  this->joinWorkerThreads();
-
-  // Delete handlers
-  this->deleteWorkerThreads();
 
   // If applications were started
   if (stopApps) {
@@ -519,17 +402,6 @@ void HttpServer::joinThreads() {
   this->clientResponder->waitToFinish();
 }
 
-void HttpServer::joinWorkerThreads() {
-  // Wait for thread objects to finish and join
-  this->requestServer->waitToFinish();
-
-  for (size_t index = 0; index < this->calculatorsAmount; ++index) {
-    this->calculators[index]->waitToFinish();
-  }
-
-  this->responseClient->waitToFinish();
-}
-
 void HttpServer::deleteThreads() {
   // Free memory allocated for handler thread objects
   for (HttpConnectionHandler* handler : this->handlers) {
@@ -564,9 +436,149 @@ void HttpServer::deleteThreads() {
   this->clientResponder = nullptr;
 }
 
+void HttpServer::stopApps() {
+  // Stop web applications. Give them an opportunity to clean up
+  for (size_t index = 0; index < this->applications.size(); ++index) {
+    this->applications[index]->stop();
+  }
+}
+
+// =============================== WORKER =====================================
+int HttpServer::runWorker(int argc, char* argv[]) {
+  bool successfulStart = false;
+  int result = EXIT_SUCCESS;
+  try {
+    // Obtain necessary specifications from arguments
+    if (this->analyzeWorkerArguments(argc, argv)) {
+      // If unsuccessful because of throw, skip to catch
+      successfulStart = this->startWorker();
+      this->startWorkerThreads();
+    }
+  } catch (const std::invalid_argument& error) {
+    std::cerr << "error: " << error.what() << std::endl;
+    std::cout << usage_worker;
+    return EXIT_FAILURE;
+  } catch (const std::runtime_error& error) {
+    std::cerr << "error: " << error.what() << std::endl;
+    result = EXIT_FAILURE;
+  }
+
+  // Destroy objects created by this server
+  this->stopWorker(successfulStart);
+  return result;
+}
+
+
+bool HttpServer::analyzeWorkerArguments(int argc, char* argv[]) {
+  if (argc < 4) {
+    throw std::invalid_argument("not enough arguments");
+  }
+  this->masterIP = argv[2];  // Set master IP for worker
+  this->masterPort = argv[3];  // Set master port for worker
+  return true;
+}
+
+bool HttpServer::startWorker() {
+  // Start the log service
+  Log::getInstance().start();
+
+  // Start all web applications
+  this->startApps();
+
+  // Create worker's thread objects and conenct their queues
+  this->createWorkerThreads();
+  this->createWorkerQueues();
+  this->connectWorkerQueues();
+
+  this->responseClient->connect(this->masterIP, this->masterPort);
+
+  return true;
+}
+
+
+void HttpServer::createWorkerThreads() {
+  // Create response client to send responses to master server
+  this->responseClient = new ResponseClient(this->calculatorsAmount);
+
+  // Reserve enough space for calculators
+  this->calculators.reserve(this->calculatorsAmount);
+  // Create each calculator and add to calculators vector
+  for (size_t index = 0; index < this->calculatorsAmount; ++index) {
+    Calculator* calculator = new Calculator();
+    this->calculators.push_back(calculator);
+  }
+
+  // Create request server to listen for requests from master server
+  this->requestServer = new RequestServer(this->applications,
+    responseClient->getSocket(), this->calculatorsAmount);
+}
+
+void HttpServer::createWorkerQueues() {
+  // Create the queue betwen request server and calculators
+  this->dataUnitsQueue
+      = new Queue<DataUnit*>(this->queuesCapacity);
+
+  // Response client has its own queue to consume
+  this->responseClient->createOwnQueue(this->queuesCapacity);
+}
+
+void HttpServer::connectWorkerQueues() {
+  // RequestServer produces to calculators
+  this->requestServer->setProducingQueue(this->dataUnitsQueue);
+
+  // Each calculator consumes from the data units queue
+  // And produces to the response client
+  for (size_t index = 0; index < this->calculatorsAmount; ++index) {
+    this->calculators[index]->setConsumingQueue(this->dataUnitsQueue);
+    this->calculators[index]->
+        setProducingQueue(this->responseClient->getConsumingQueue());
+  }
+}
+
+void HttpServer::startWorkerThreads() {
+  // Request server starts to wait for requests from master server
+  this->requestServer->startThread();
+
+  // Calculators start to wait for data units to process
+  for (size_t index = 0; index < this->calculatorsAmount; ++index) {
+    this->calculators[index]->startThread();
+  }
+
+  // Response client starts to wait for responses to send to master server
+  this->responseClient->startThread();
+}
+
+void HttpServer::stopWorker(const bool normalStop) {
+  // Join threads, if they were started correctly
+  if (normalStop) {
+    this->joinWorkerThreads();
+  }
+
+  // Delete handlers
+  this->deleteWorkerThreads();
+
+  // If applications were started, stop
+  if (normalStop) {
+    this->stopApps();
+  }
+  // Stop the log service
+  Log::getInstance().stop();
+}
+
+void HttpServer::joinWorkerThreads() {
+  // Wait for thread objects to finish and join
+  this->requestServer->waitToFinish();
+
+  for (size_t index = 0; index < this->calculatorsAmount; ++index) {
+    this->calculators[index]->waitToFinish();
+  }
+
+  this->responseClient->waitToFinish();
+}
+
 void HttpServer::deleteWorkerThreads() {
   // Free memory allocated for handler thread objects
-  
+
   delete this->requestServer;
   this->requestServer = nullptr;
 
@@ -577,11 +589,4 @@ void HttpServer::deleteWorkerThreads() {
 
   delete this->responseClient;
   this->responseClient = nullptr;
-}
-
-void HttpServer::stopApps() {
-  // Stop web applications. Give them an opportunity to clean up
-  for (size_t index = 0; index < this->applications.size(); ++index) {
-    this->applications[index]->stop();
-  }
 }
