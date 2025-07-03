@@ -13,9 +13,10 @@ The following diagram shows the design for the concurrent web server, using two 
 
 [#web_server_diagram]
 .Web server diagram
-image::web_server_12_design.svg[algin="center"]
+image::web_server_13_design.svg[algin="center"]
 
-== Web server production line
+[[master_production_line]]
+== Master production line
 
 === HttpConnectionHandler (Assembler)
 
@@ -42,6 +43,39 @@ image::web_server_12_design.svg[algin="center"]
 - A pointer to a shared `ConcurrentData`. 
 - Index to store the results of the operation.
 
+=== Distributor (Dispatcher)
+**Role**: Distributes `DataUnit`s to the calculators or the ResponseClient.
+
+**Functionality**:
+
+- Determines if the are available workers to process the `DataUnit` and sends it to the ResponseClient
+- If no workers are available, it sends the `DataUnit` to the calculators.
+
+=== RequestClient (Consumer)
+**Role**: Serializes the `DataUnit` and sends it to the worker server.
+
+**Functionality**:
+
+- Recieves `DataUnit`s from the Distributor.
+- Serializes the `DataUnit` and sends it to the worker server at output buffer.
+
+=== MasterServer (TcpServer, Producer)
+**Role**: Accepts connections from clients.
+
+**Functionality**:
+
+- Listens for incoming worker connections.
+- Accepts connections from workers and their socket to the WorkerConnectionHandlers.
+
+
+=== WorkerConnectionHandler (Assembler)
+**Role**: Read results from worker connections.
+
+**Functionality**:
+
+- Reads results from worker connections at input buffer.
+- Deserializes result into a `DataUnit` and sends it to the RepliesAssembler.
+
 === Calculator (Assembler)
 
 **Role**: Operation processor.
@@ -62,13 +96,34 @@ image::web_server_12_design.svg[algin="center"]
 - Send completed `ConcurrentData` object to the ClientResponder.
 
 === ClientResponder (Consumer)
-
 **Role**: Builds the response and sends it to the client.
 
 **Functionality**:
 
 - Build response with the `ConcurrentData` object and sends it back to the client.
 - Delete de `ConcurrentData` object to free memory.
+
+
+[[worker_production_line]]
+== Worker production line
+
+=== RequestServer (Producer)
+
+**Role**: Reads work requests
+
+**Functionality**:
+
+- Reads incoming requests from the master server at input buffer.
+- Deserializes give query and send it to the calculators.
+
+=== ResponseClient (TcpClient, Consumer)
+**Role**: Connects to the master server, sends the results.
+
+**Functionality**: 
+
+- Connects to the master server given its port and IP address.
+- Waits for calculated results to serialize them from a `DataUnit`.
+- Sends the results to the master server at output buffer.
 
 [[calculators_designs]]
 == Calculators designs
@@ -101,4 +156,4 @@ include::GoldbachCalc.pseudo[]
 == Resources
 Visit https://jeisson.ecci.ucr.ac.cr/concurrente/2025a/proyectos/webserv/ for more information about the project.
 
-Visit https://drive.google.com/file/d/16KxjAQ0D0jIqLfzJsC4BZYRnn1Ba-Wyk/view?usp=sharing for full diagram resolution.
+Visit https://drive.google.com/file/d/1jUVtudWMtvezexsBjFGDk6oShX4G5bpa/view?usp=sharing for full diagram resolution.

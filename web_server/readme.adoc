@@ -15,11 +15,11 @@ This is an example of a Goldbach result for a query with three numbers: 72, 44, 
 
 [[problem_statement]]
 == Problem description (Analysis)
-The purpose of this project is to create a distributed, concurrent web server that provides service for serial and concurrent web applications, such as Goldbach summation and prime factorization calculators. This project addresses task concurrency and data parallelism, as well as a basic approach to networking.
+The purpose of this project is to create a distributed, concurrent web server that provides service for serial and concurrent web applications, such as Goldbach summation and prime factorization calculators. This project addresses task concurrency and data parallelism, as well as a basic approach to networking with http clients and cluster work distribution.
 
 [[structure]]
 == Structure of the project
-The program receives a certain number of requests from server clients, each containing numbers to be evaluated and an identifier indicating the operation to be performed. These requests are placed in a waiting queue to be processed by a group of threads that have access to the server's applications.
+The program receives a certain number of requests from server clients, each containing numbers to be evaluated and an identifier indicating the operation to be performed. These requests are placed in a waiting queue to be processed by a group of threads that have access to the server's applications or by other machines available at workers.
 
 Within each web application, the requests are parsed to extract the individual values needed for the calculations. Once all the results have been obtained, they are returned to the client in the same format in which they were received by the server.
 
@@ -89,25 +89,48 @@ Compile the program by running the following command inside the *web_server* fol
 
 [source]
 ----
-$ make run
+$ make clean && make
 ----
 
-Run the server using a command like the following:
+=== Running the server
+The server can be run two different ways, as master or worker. The master server will handle the web requests and distribute the tasks to the workers, while the workers will process the tasks and return the results. There must be at least one master server running, and it can attend http requests by itselft until connection with workers is established. The workers will only process tasks assigned by the master server.
 
+Execution mode is determined by the first command line argument passed to the server.
+
+==== Master server
+To run the master server, use the following command:
 [source]
 ----
-$ ./bin/web_server 8080 30 70 40
+$ ./bin/web_server master max_worker_connections [port] [max_connections] [queue_capacity]
 ----
 
 Where:
 
-- `8080` is the port for server connection (must be >1023).
-- `30` is the max number of concurrent connections.
-- `70` is the capacity of the pending connection queue.
-- `40` is the number of queue capacity for the calculator threads.
+- `master` is the type of server to run.
+- `max_worker_connections`  Max amount of worker connections to be handled.
+- `port` is the network port to listen incoming HTTP requests, default 8080
+- `max_connections` is the max amount of connections the server can attend concurrently, default [the amount CPUs available].
+- `queue_capacity` is the max amount of connections that can be stored in queue,default SEM_VALUE_MAX
+
+*Note*: If more than the specified worker connections are rquested, this could lead to unexpected behavior, ensure to set it correctly before running the master server.
+
+==== Worker server
+To run the worker server, use the following command:
+
+[source]
+----
+$ ./bin/web_server worker master_ip master_port
+----
+
+Where:
+
+- `worker` is the type of server to run.
+- `master_ip` is the IP address of the master server.
+- `master_port` is the port where the master server is listening for connections.
+
+=== Client connection (browser)
 
 Verify the server is running by opening your browser and visiting:
-
 [source]
 ----
 http://localhost:8080
@@ -137,8 +160,8 @@ image::images/GoldbachWebApp.png[]
 1. Press Ctrl + C in the terminal where the program is running.
 2. Alternatively, use the kill command to stop the server from running.
 
-=== Concurrency testing (httperf)
-To test concurrency, follow these steps:
+=== Stress testing (httperf)
+To test concurrency and distribution efficiency, follow these steps:
 
 1. Open two different windows or tabs.
 2. In one, request a heavy or long-lasting calculation.
@@ -184,4 +207,4 @@ According to the number of requests that were replied
 [[design]]
 == Design of solution
 
-See the link:design/readme.adoc[design/readme.adoc] folder for an overall design of the solution, including program structure.
+For more technical details, see the link:design/readme.adoc[design/readme.adoc] folder with an overall design of the solution, including program structure, threads parallelism, and processes work distribution.
