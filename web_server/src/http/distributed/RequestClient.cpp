@@ -22,7 +22,6 @@ int RequestClient::run() {
   this->workerConnections.stopWorkers();
   // Send stop condition back to Distributor
   this->produce(nullptr);
-  printf("Request client finished.\n");
   return EXIT_SUCCESS;
 }
 
@@ -32,7 +31,6 @@ void RequestClient::consume(DataUnit* unit) {
     size_t appIndex = concurrentData->getAppIndex();
     std::string serializedUnit =
       this->applications[appIndex]->serializeRequest(unit);
-      printf("Serialized unit for app index %zu: %s\n", appIndex, serializedUnit.c_str());
 
     // Get random connection to send stuff first
     Socket connection = this->workerConnections.getRandomWorkerConnection();

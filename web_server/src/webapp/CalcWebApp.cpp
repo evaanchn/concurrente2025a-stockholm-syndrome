@@ -57,6 +57,7 @@ void CalcWebApp::parseRequest(HttpRequest& httpRequest
   }
 }
 
+// Converts a DataUnit into a string format for network transmission
 std::string CalcWebApp::serializeRequest(DataUnit* dataUnit) {
   assert(dataUnit);
   // Obtain original pointer to concurrent data
@@ -73,6 +74,7 @@ std::string CalcWebApp::serializeRequest(DataUnit* dataUnit) {
   return requestBuffer.str();
 }
 
+// Reconstructs a DataUnit from serialized string data
 DataUnit* CalcWebApp::deserializeRequest(std::string requestData) {
   assert(!requestData.empty());
   std::stringstream requestStream(requestData);
@@ -83,17 +85,19 @@ DataUnit* CalcWebApp::deserializeRequest(std::string requestData) {
   // Split the result string by spaces
   const std::vector<std::string>& request =
     Util::split(requestData, "\n", true);
+  // Validate minimum required fields are present
   if (request.size() < REQUEST_BUFFER_LINES_COUNT + 1) {
     throw std::runtime_error("Invalid request format " + requestData);
   }
   try {
-    appIndex = std::stoul(request[0]);
-    originalDataPtr = std::stoul(request[1]);
-    if (!originalDataPtr) {
+    // Parse each component with type conversion:
+    appIndex = std::stoul(request[0]);  // Which app should handle this
+    originalDataPtr = std::stoul(request[1]);  // Original data location
+    if (!originalDataPtr) {  // Null pointer check
       throw std::runtime_error("invalid data address");
     }
-    originalResultIdx = std::stoul(request[2]);
-    query = std::stoll(request[3]);
+    originalResultIdx = std::stoul(request[2]);  // Position in results
+    query = std::stoll(request[3]);  // Actual number to process
   } catch (const std::exception& exception) {
     throw std::runtime_error("Invalid serial CalcData: " + requestData);
   }
@@ -114,16 +118,19 @@ DataUnit* CalcWebApp::deserializeResponse(std::string responseData) {
     throw std::runtime_error("Invalid response format " + responseData);
   }
   try {
+    // Parse the original data pointer (memory address as integer)
     originalDataPtr = std::stoul(response[0]);
     if (!originalDataPtr) {
       throw std::runtime_error("invalid data address");
     }
+    // Get which result position this data belongs to
     resultIndex = std::stoul(response[1]);
   } catch (const std::exception& exception) {
     throw std::runtime_error("Invalid serial CalcData: " + responseData);
   }
   // Save result into the original CalcData object
   std::string queryResult = response[2].c_str();
+  // Store the result in the original CalcData object
   reinterpret_cast<CalcData*>(originalDataPtr)->deserializeResult
     (resultIndex, queryResult);
   // Create a new DataUnit with the original data pointer and result index

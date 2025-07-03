@@ -40,7 +40,6 @@ void ResponseClient::consume(DataUnit* unit) {
   assert(unit);
   // serialize the result
   std::string queryResult = unit->serializeResponse();
-  std::cerr << "Sending result: " << queryResult << "\n";
   // Send the result to the master server
   this->socket << queryResult;
   // Send the result index to the master server

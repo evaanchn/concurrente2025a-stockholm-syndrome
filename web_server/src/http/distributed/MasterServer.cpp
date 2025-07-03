@@ -14,24 +14,32 @@
 #include "Socket.hpp"
 #include "WorkerConnections.hpp"
 
+// Initialize with worker connections queue and stop conditions count
 MasterServer::MasterServer(WorkerConnections& workerConnections,
       size_t stopConditionsToSend):
   stopConditionsToSend(stopConditionsToSend),
   workerConnections(workerConnections) {
 }
 
+// Empty destructor as cleanup is handled elsewhere
 MasterServer::~MasterServer() {
 }
 
+// Main server execution loop
 int MasterServer::run() {
   // Start the server and listen for connections
   try {
+    // Bind to port and start listening for incoming connections
     this->listenForConnections(this->port);
+    // Get network information for logging
     const NetworkAddress& address = this->getNetworkAddress();
     Log::append(Log::INFO, "master", "Available at " + address.getIP()
       + " port " + std::to_string(address.getPort()));
+    // Main server loop - accepts connections until stopped
+    // Each connection spawns a new thread handled by handleClientConnection()
     this->acceptAllConnections();
   } catch (const std::runtime_error& error) {
+    // Critical error handling - log to stderr and initiate shutdown
     std::cerr << "Error: " << error.what() << std::endl;
     this->stop();
   }
@@ -46,11 +54,10 @@ void MasterServer::handleClientConnection(Socket& workerConnection) {
   // Handle the client connection by sending it to the worker connections
   std::string password;
   if (workerConnection.readLine(password, '\n')) {
-    std::cerr << "Received password from worker: [" << password << "]\n";
-    std::cerr << "Expected password: [" << WORKER_PASSWORD << "]\n";
     if (password == WORKER_PASSWORD) {
-      printf("Worker connection accepted\n");
+      // Add authenticated connection to worker pool
       workerConnections.addConnection(workerConnection);
+      // Queue connection for processing by worker threads
       this->produce(workerConnection);
     }
   }

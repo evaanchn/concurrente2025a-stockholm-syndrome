@@ -2,7 +2,6 @@
 
 #include "WorkerConnections.hpp"
 
-// TODO(Andrey): make documentation
 WorkerConnections::~WorkerConnections() {
   this->connections.clear();
 }
@@ -41,10 +40,6 @@ void WorkerConnections::addConnection(Socket& socket) {
 void WorkerConnections::stopWorkers() {
   std::lock_guard<std::mutex> lock(this->canAccessWorkerConnections);
   for (Socket& socket : this->connections) {
-    // Skip if socket is not connected
-    // if (!socket) {
-    //   continue;
-    // }
     // Send stop condition to worker
     socket << "-1\n";  // -1 is a stop condition
     socket.send();  // Send stop condition
