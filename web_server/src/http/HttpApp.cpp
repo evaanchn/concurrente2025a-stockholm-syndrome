@@ -25,10 +25,6 @@ DataUnit* HttpApp::deserializeResponse(std::string) {
   return nullptr;  // Returns nullptr by default, unless is concurrent app
 }
 
-std::string HttpApp::serializeResponse(WorkUnit*) {
-  return "";   // Returns empty by default, unless is concurrent app
-}
-
-WorkUnit* HttpApp::deserializeRequest(std::string) {
+DataUnit* HttpApp::deserializeRequest(std::string) {
   return nullptr;  // Returns nullptr by default, unless is concurrent app
 }

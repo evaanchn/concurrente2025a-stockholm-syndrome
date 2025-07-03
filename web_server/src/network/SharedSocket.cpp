@@ -20,7 +20,7 @@ void SharedSocket::close() {
     ::close(this->socketFileDescriptor);
     // Log the disconnection event
     const NetworkAddress& address = this->getNetworkAddress();
-    Log::append(Log::INFO, "socket", std::string("connection -----closed")
+    Log::append(Log::INFO, "socket", std::string("connection -----closed ")
       + address.getIP() + " port " + std::to_string(address.getPort()));
     // Reset network address memory
     ::memset(&this->peerAddress, 0, sizeof(this->peerAddress));

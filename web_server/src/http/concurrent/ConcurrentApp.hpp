@@ -6,7 +6,7 @@
 
 #include "HttpApp.hpp"
 
-class WorkUnit;
+struct DataUnit;
 
 /// @brief ConcurrentApp is a base class for web applications that handle
 /// @details This class is designed
@@ -51,12 +51,8 @@ class ConcurrentApp : public HttpApp {
   std::string serializeRequest(DataUnit* dataUnit) override = 0;
   /// @brief Create a work unit from the serialized data sent from master
   /// @note Used in worker process
-  WorkUnit* deserializeRequest(std::string requestData) override = 0;
+  DataUnit* deserializeRequest(std::string requestData) override = 0;
 
-  /// @brief Create a work unit from the serialized data sent from master
-  /// @return parsed text
-  /// @note Used in worker process
-  std::string serializeResponse(WorkUnit*) override = 0;
   /// @brief Parse received text into the response to a DataUnit
   /// @note Used in master process
   DataUnit* deserializeResponse(std::string responseData) override = 0;

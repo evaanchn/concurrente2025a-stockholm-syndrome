@@ -4,32 +4,34 @@
 
 
 #include <vector>
+#include <string>
 
 #include "common.hpp"
 #include "Assembler.hpp"
 #include "Log.hpp"
 #include "Socket.hpp"
-#include "string.h"
+#include "WorkerConnections.hpp"
 
 // forward declaration
 class HttpApp;
-class DataUnit;
+struct DataUnit;
 
 /**
- * @class WorkerConnectionHandler
  * @brief Thread object that manages a connection with a worker (one socket)
- * and attends to worker requests that can be sent.
+ * and reads work results from it to deserialize them into DataUnit objects.
  */
 class WorkerConnectionHandler : public Assembler <Socket, DataUnit*> {
   /// Reference to app chain in server
  private:
   std::vector<HttpApp*>& applications;
+  WorkerConnections& workerConnections;
 
  public:
   DISABLE_COPY(WorkerConnectionHandler);
 
   /// Constructor
-  explicit WorkerConnectionHandler(std::vector<HttpApp*>& applications);
+  explicit WorkerConnectionHandler(std::vector<HttpApp*>& applications,
+    WorkerConnections& workerConnections);
 
   /// @brief Start consuming loop
   /// @return EXIT SUCCESS

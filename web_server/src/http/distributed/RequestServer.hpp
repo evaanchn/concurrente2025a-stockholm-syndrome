@@ -16,7 +16,7 @@ class HttpApp;
 struct DataUnit;
 struct WorkUnit;
 
-/// @brief Decomposes a ConcurrentData into data units
+/// @brief Reads requests from the master server and produces DataUnit objects
 class RequestServer : public Producer<DataUnit*> {
   DISABLE_COPY(RequestServer);
 
@@ -29,8 +29,9 @@ class RequestServer : public Producer<DataUnit*> {
   size_t stopConditionsToSend = 0;
 
  public:
-  ///@brief Constructor
+  /// @brief Constructor
   /// @param applications Reference to the vector of HttpApp objects
+  /// @param masterConnection Connection to master (socket)
   /// @param stopConditionsToSend Amount of stop conditions next entity needs
   RequestServer(std::vector<HttpApp*>& applications, Socket& masterConnection,
     size_t stopConditionsToSend);
@@ -41,7 +42,6 @@ class RequestServer : public Producer<DataUnit*> {
 
  private:
   /// @brief Consuming procedure
-  /// @param data shared 
   void handleMasterConnection();
 
   /// @brief Read the request from the masterConnection connection and produce

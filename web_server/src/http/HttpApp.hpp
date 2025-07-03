@@ -11,8 +11,7 @@
 class HttpRequest;
 class HttpResponse;
 class ConcurrentData;
-class DataUnit;
-class WorkUnit;
+struct DataUnit;
 
 /**
 @brief Base class for all web applications that can be registered with the
@@ -48,13 +47,9 @@ class HttpApp {
   /// @brief Parse received text into the response to a DataUnit
   /// @return nullptr by default
   virtual DataUnit* deserializeResponse(std::string responseData);
-
-  /// @brief Create a plain text from WorkUnit to be send into the network
-  /// @return empty text by default
-  virtual std::string serializeResponse(WorkUnit*);
   /// @brief Parse received text into the response to a WorkerUnit
   /// @return nullptr by default
-  virtual WorkUnit* deserializeRequest(std::string requestData);
+  virtual DataUnit* deserializeRequest(std::string requestData);
 };
 
 #endif  // HTTPAPP_H

@@ -13,7 +13,8 @@
 #include "HttpResponse.hpp"
 #include "Util.hpp"
 
-class WorkUnit;
+// forward declaration
+struct DataUnit;
 
 /// @brief CalcWebApp is a base class for web applications that handle
 class CalcWebApp : public ConcurrentApp {
@@ -66,12 +67,7 @@ class CalcWebApp : public ConcurrentApp {
   /// corresponding WorkUnit
   /// @param requestData text to be parsed into a WorkUnit
   /// @return pointer to the created WorkUnit
-  WorkUnit* deserializeRequest(std::string requestData) override;
-
-  /// @brief Create a plain text from WorkUnit to be send into the network
-  /// @param workUnit data to be parsed into text
-  /// @return parsed text
-  std::string serializeResponse(WorkUnit* workUnit) override;
+  DataUnit* deserializeRequest(std::string requestData) override;
   /// @brief Parse received response, saving the results and creating its
   /// corresponding DataUnit
   /// @param responseData text to be parsed into a DataUnit
@@ -86,7 +82,7 @@ class CalcWebApp : public ConcurrentApp {
   /// @param query The number to process.
   /// @return The work unit created from the paramters.
   /// @note Used in worker process.
-  virtual WorkUnit* createWorkUnit(size_t appIndex, uintptr_t originalDataPtr,
+  virtual DataUnit* createWorkUnit(size_t appIndex, uintptr_t originalDataPtr,
       size_t originalResultIdx, int64_t query) = 0;
 };
 

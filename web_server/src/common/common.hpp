@@ -29,4 +29,8 @@ typedef unsigned char byte;
 
 #define REQUEST_BUFFER_LINES_COUNT 3
 
+#define DEFAULT_MAX_WORKER_CONNECTIONS 4
+
+#define WORKER_PASSWORD "workerSecret"
+
 #endif  // COMMON_HPP

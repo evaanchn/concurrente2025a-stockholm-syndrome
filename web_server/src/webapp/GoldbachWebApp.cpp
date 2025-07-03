@@ -30,12 +30,13 @@ ConcurrentData* GoldbachWebApp::createConcurrentData(HttpRequest& httpRequest
   return data;
 }
 
-WorkUnit* GoldbachWebApp::createWorkUnit(size_t appIndex,
+DataUnit* GoldbachWebApp::createWorkUnit(size_t appIndex,
     uintptr_t originalDataPtr, size_t originalResultIdx, int64_t query) {
   // Create a PrimeFactData object to store data
   GoldbachData* goldbachData = new GoldbachData(appIndex);
   // Add singular query to data
   goldbachData->getQueries().push_back(query);
+  goldbachData->updatePending();
   // Work unit has usable new data created in worker's machine (index 0 for
   // query since there will only be one), and stores original data and index
   WorkUnit* workUnit = new WorkUnit(goldbachData, /*resultIndex*/ 0,

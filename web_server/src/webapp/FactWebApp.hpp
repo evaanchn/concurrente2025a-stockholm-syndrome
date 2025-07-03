@@ -5,8 +5,6 @@
 
 #include "CalcWebApp.hpp"
 
-class WorkUnit;
-
 /**
 @brief A web application that calculates prime factors
 */
@@ -37,7 +35,7 @@ class FactWebApp : public CalcWebApp {
   /// @param query The number to process.
   /// @return The work unit created from the paramters.
   /// @note Used in worker process.
-  WorkUnit* createWorkUnit(size_t appIndex, uintptr_t originalDataPtr,
+  DataUnit* createWorkUnit(size_t appIndex, uintptr_t originalDataPtr,
       size_t originalResultIdx, int64_t query) override;
 };
 

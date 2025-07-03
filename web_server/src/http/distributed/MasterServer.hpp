@@ -16,11 +16,10 @@
 #include "WorkerConnections.hpp"
 #include "Socket.hpp"
 
-#define WORKER_PASSWORD "wokerSecret"
-
 // forward declarations
 class HttpApp;
 
+/// @brief TCP server that listens for worker connections.
 class MasterServer : public TcpServer, public Producer<Socket> {
   DISABLE_COPY(MasterServer);
 

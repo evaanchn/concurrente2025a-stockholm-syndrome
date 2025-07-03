@@ -3,6 +3,8 @@
 #ifndef RESPONSE_CLIENT
 #define RESPONSE_CLIENT
 
+#include <vector>
+
 #include "Consumer.hpp"
 #include "Socket.hpp"
 #include "TcpClient.hpp"
@@ -13,21 +15,20 @@ class HttpApp;
 struct DataUnit;
 struct WorkUnit;
 
-/// @brief ResponseAssembler is a class that assembles responses from
-/// ConcurrentData and sends them back to the client.
-/// @remarks Responsible of deleting the ConcurrentData after processing it
+/// @brief TcpClient that connects to the master server
+/// It sends results back to the master server after receiving them from
+/// calculators.
 class ResponseClient : public TcpClient, public Consumer<DataUnit*> {
   DISABLE_COPY(ResponseClient);
 
  private:
-  /// Reference to app chain in server
-  std::vector<HttpApp*>& applications;
+  /// Amount of stop conditions that this client must consume
   size_t pendingStopConditions = 0;
 
  public:
   /// @brief Constructor of the class
-  ResponseClient(std::vector<HttpApp*>& applications,
-    size_t pendingStopCondition);
+  /// @param pendingStopCondition Amount of stop conditions to consume
+  explicit ResponseClient(size_t pendingStopCondition);
 
   /// @brief Destructor of the class
   ~ResponseClient() = default;
@@ -38,14 +39,14 @@ class ResponseClient : public TcpClient, public Consumer<DataUnit*> {
   /// @return A reference to the Socket object that can be used to send and
   /// receive information with the server
   /// @throw std::runtime_error if could not connect to the server
-  Socket& connect(const char* server, const char* port);
+  Socket& connect(const char* serverIP, const char* port);
 
   /// @brief starts to consume all DataUnits completed
   int run() override;
 
   /// @brief Consumes a DataUnit and sends obtained result back to the master
   /// then, it deletes the DataUnit object since it is no longer needed.
-  /// @param data Pointer to the DataUnit to be processed
+  /// @param data Pointer to the DataUnit to be serialized and sent
   void consume(DataUnit* data) override;
 };
 

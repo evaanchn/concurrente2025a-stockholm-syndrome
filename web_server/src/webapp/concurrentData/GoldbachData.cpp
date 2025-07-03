@@ -8,7 +8,15 @@
 void GoldbachData::processQuery(size_t index) {
   GoldbachCalculator calculator;
   // processNumber(query, resultsVector)
-  calculator.processNumber(this->queries[index], this->results[index]);
+  size_t sums_count =
+      calculator.processNumber(this->queries[index], this->results[index]);
+  // If query is positive, only add number of sums to result
+  // This prevents workers from having to send too many values.
+  if (this->queries[index] >= 0) {
+    this->results[index].clear();  // Clear registered sums
+    // Only insert sum
+    this->results[index].push_back(sums_count);
+  }
 }
 
 void GoldbachData::buildResult(int64_t value
@@ -18,6 +26,8 @@ void GoldbachData::buildResult(int64_t value
   // result contains each sum operands adjacent to each other
   // e.g: {sum1val, sum1val, sum2val, sum2val, ...}
   size_t sumsCount = (result.size()) / sumOperands;
+  // If request was positive, response will only have sums count
+  if (value >= 0) sumsCount = result[0];
   this->httpResponse.body()
     << "        <div class='number-result'>\n"
     << "          <span class='number-value'>" << value
