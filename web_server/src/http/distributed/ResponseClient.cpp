@@ -31,7 +31,6 @@ int ResponseClient::run() {
   for (size_t i = 0; i < this->pendingStopConditions; ++i) {
     this->consumeLoop();
   }
-  // TODO: send stop condition to master server
   this->socket.close();
   return EXIT_SUCCESS;
 }

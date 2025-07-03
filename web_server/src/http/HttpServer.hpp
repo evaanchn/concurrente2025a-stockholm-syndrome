@@ -149,6 +149,8 @@ class HttpServer : public TcpServer {
   /// Registers a web application to the chain
   void chainWebApp(HttpApp* application);
   /// Start the web server for listening client connections and HTTP requests
+  /// @param argc amount of arguments
+  /// @param argv vector of arguments
   int run(int argc, char* argv[]);
   /// Indefinitely listen for client connection requests and accept all of them.
   /// For each accepted connection request, the virtual onConnectionAccepted()
@@ -198,15 +200,18 @@ class HttpServer : public TcpServer {
   // WORKER FLOW
 
  public:
-  /// Start the web server in worker mode
+  /// @brief Start the web server in worker mode
+  /// @see run
   int runWorker(int argc, char* argv[]);
 
  protected:
-  /// Analyze the command line arguments for worker mode
+  /// @brief Analyze the command line arguments for worker mode
+  /// @see analyzeArguments
   bool analyzeWorkerArguments(int argc, char* argv[]);
   /// Start the web server in worker mode. Create other objects required to
   bool startWorker();
-  /// Stop the worker service
+  /// @brief Stop the worker service
+  /// @param normalStop Indicates whether or not to join threads and stop apps
   void stopWorker(const bool normalStop);
 
  private:

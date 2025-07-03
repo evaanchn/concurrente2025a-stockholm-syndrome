@@ -33,7 +33,7 @@ class ResponseClient : public TcpClient, public Consumer<DataUnit*> {
   ~ResponseClient() = default;
 
   /// @brief Connects to the master server
-  /// @param serverIP The server's network address
+  /// @param server The server's network address
   /// @param port The port number where the server is listening for connections
   /// @return A reference to the Socket object that can be used to send and
   /// receive information with the server

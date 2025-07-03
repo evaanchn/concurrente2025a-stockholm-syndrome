@@ -23,7 +23,6 @@ class Decomposer : public Assembler<ConcurrentData*, DataUnit*> {
   * @brief Constructor
   * @param pendingStopConditions Amount of stop conditions decomposer must
   * consume to stop
-  * @param stopConditionsToSend Amount of stop conditions next entity needs
   */
   explicit Decomposer(size_t pendingStopConditions);
 
