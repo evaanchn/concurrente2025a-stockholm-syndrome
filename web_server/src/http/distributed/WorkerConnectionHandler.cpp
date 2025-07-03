@@ -26,7 +26,6 @@ int WorkerConnectionHandler::run() {
 
 // Processes a single worker connection until it's closed
 void WorkerConnectionHandler::consume(Socket workerConnection) {
-  printf ("WorkerConnectionHandler::consume called\n");
   // While the same client asks for HTTP requests in the same connection
   while (true) {
     // If the workerConnection is not connected, stop consuming
@@ -40,7 +39,6 @@ void WorkerConnectionHandler::consume(Socket workerConnection) {
 
 // Handles request routing for a single worker connection
 bool WorkerConnectionHandler::route(Socket& workerConnection) {
-  printf("Routing request from worker connection...\n");
   // Print IP and port from worker
   const NetworkAddress& address = workerConnection.getNetworkAddress();
   Log::append(Log::INFO, "connection",

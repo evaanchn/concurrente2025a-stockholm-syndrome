@@ -493,22 +493,17 @@ void HttpServer::joinThreads() {
   // Wait for thread objects to finish and join
   for (size_t index = 0; index < this->handlers.size(); ++index) {
     this->handlers[index]->waitToFinish();
-    printf("Handler %zu finished.\n", index);
   }
 
   // Wait for decomposer, who sends a stop condition to distributor before halt
   this->decomposer->waitToFinish();
-  printf("Decomposer finished.\n");
   // Wait after decomposer and request client sent their stop conditions
   this->distributor->waitToFinish();
-  printf("Distributor finished.\n");
   // Wait since it receives a stop condition from distributor first
   this->requestClient->waitToFinish();
-  printf("Request client finished.\n");
 
   for (size_t index = 0; index < this->calculatorsAmount; ++index) {
     this->calculators[index]->waitToFinish();
-    printf("Calculator %zu finished.\n", index);
   }
 
   // Stop the master server, which will stop accepting worker connections
@@ -517,28 +512,22 @@ void HttpServer::joinThreads() {
 
   for (size_t index = 0; index < this->maxWorkerConnections; ++index) {
     this->workerConnectionHandlers[index]->waitToFinish();
-    printf("Worker connection handler %zu finished.\n", index);
   }
 
   this->responseAssembler->waitToFinish();
-  printf("Response assembler finished.\n");
 
   this->clientResponder->waitToFinish();
-  printf("Client responder finished.\n");
 }
 
 void HttpServer::joinWorkerThreads() {
   // Wait for thread objects to finish and join
   this->requestServer->waitToFinish();
-  printf("Request server finished.\n");
 
   for (size_t index = 0; index < this->calculatorsAmount; ++index) {
     this->calculators[index]->waitToFinish();
-    printf("Calculator %zu finished.\n", index);
   }
 
   this->responseClient->waitToFinish();
-  printf("Response client finished.\n");
 }
 
 void HttpServer::deleteThreads() {

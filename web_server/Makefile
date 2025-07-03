@@ -6,7 +6,7 @@ include ../common/Makefile
 
 # WebServer
 DEFS += -DWEBSERVER
-ARGS=8080 30 70 30
+ARGS=8080 30 70 40
 HOST=localhost
 PORT=8080
 CONN=200

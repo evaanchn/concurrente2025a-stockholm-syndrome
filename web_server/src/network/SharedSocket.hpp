@@ -57,9 +57,6 @@ struct SharedSocket {
   /// Return true if this socket is connected and there were no input/output
   /// errors before
   inline bool isOk() const {
-    printf("socket file descriptor: %d \n", this->socketFileDescriptor);
-    printf("input good: %d \n", this->input.good());
-    printf("output good: %d \n", this->output.good());
     return this->socketFileDescriptor >= 0 &&
         this->input.good() && this->output.good();
   }
