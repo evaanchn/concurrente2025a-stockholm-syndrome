@@ -14,7 +14,7 @@
 #include "Util.hpp"
 
 // forward declaration
-class DataUnit;
+struct DataUnit;
 
 /// @brief CalcWebApp is a base class for web applications that handle
 class CalcWebApp : public ConcurrentApp {

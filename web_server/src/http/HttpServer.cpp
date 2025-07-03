@@ -489,9 +489,10 @@ bool HttpServer::startWorker() {
   this->createWorkerThreads();
   this->createWorkerQueues();
   this->connectWorkerQueues();
-
   this->responseClient->connect(this->masterIP, this->masterPort);
-
+  Log::append(Log::INFO, "worker",
+    "Connected to master server at " + std::to_string(*this->masterIP) + ":" +
+    this->masterPort);
   return true;
 }
 

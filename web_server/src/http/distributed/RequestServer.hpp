@@ -16,7 +16,7 @@ class HttpApp;
 struct DataUnit;
 struct WorkUnit;
 
-/// @brief Decomposes a ConcurrentData into data units
+/// @brief Reads requests from the master server and produces DataUnit objects
 class RequestServer : public Producer<DataUnit*> {
   DISABLE_COPY(RequestServer);
 

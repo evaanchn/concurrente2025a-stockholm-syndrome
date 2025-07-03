@@ -11,7 +11,7 @@
 class HttpRequest;
 class HttpResponse;
 class ConcurrentData;
-class DataUnit;
+struct DataUnit;
 
 /**
 @brief Base class for all web applications that can be registered with the

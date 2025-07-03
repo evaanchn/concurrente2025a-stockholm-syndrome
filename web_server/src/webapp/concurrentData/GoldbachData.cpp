@@ -26,7 +26,7 @@ void GoldbachData::buildResult(int64_t value
   // result contains each sum operands adjacent to each other
   // e.g: {sum1val, sum1val, sum2val, sum2val, ...}
   size_t sumsCount = (result.size()) / sumOperands;
-  // If request was positive, response will only have sums count 
+  // If request was positive, response will only have sums count
   if (value >= 0) sumsCount = result[0];
   this->httpResponse.body()
     << "        <div class='number-result'>\n"

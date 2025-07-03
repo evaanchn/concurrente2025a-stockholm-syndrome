@@ -8,10 +8,11 @@
 #include "Assembler.hpp"
 
 // Forward declarations
-class DataUnit;
 class HttpApp;
 class WorkerConnections;
+struct DataUnit;
 
+/// @brief Consumes DataUnit objects and sends them to the worker connections
 class RequestClient : public Assembler<DataUnit*, DataUnit*> {
   DISABLE_COPY(RequestClient);
 

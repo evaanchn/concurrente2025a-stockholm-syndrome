@@ -47,9 +47,7 @@ void ResponseClient::consume(DataUnit* unit) {
     Log::append(Log::INFO, "worker", "Result sent successfully");
   } else {
     Log::append(Log::ERROR, "worker", "Error sending result to master server");
-    
   }
-
   delete unit->concurrentData;  // Delete the ConcurrentData object
   delete unit;  // Unit is not used anymore
 }

@@ -8,9 +8,9 @@
 
 // Initialize with reference to applications and worker connections pool
 WorkerConnectionHandler::WorkerConnectionHandler
-  (std::vector<HttpApp*>& applications, 
+  (std::vector<HttpApp*>& applications,
    WorkerConnections& workerConnections) :
-    applications(applications), 
+    applications(applications),
     workerConnections(workerConnections) {
 }
 

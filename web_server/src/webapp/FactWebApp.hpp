@@ -5,8 +5,6 @@
 
 #include "CalcWebApp.hpp"
 
-class WorkUnit;
-
 /**
 @brief A web application that calculates prime factors
 */

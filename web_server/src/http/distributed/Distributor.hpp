@@ -8,9 +8,10 @@
 #include "Dispatcher.hpp"
 
 // Forward declarations
-class DataUnit;
 class WorkerConnections;
+struct DataUnit;
 
+/// @brief Redicrects data units to worker connections or calculators.
 class Distributor : public Dispatcher<bool, DataUnit*> {
   DISABLE_COPY(Distributor);
 
@@ -21,6 +22,9 @@ class Distributor : public Dispatcher<bool, DataUnit*> {
   size_t stopConditionsToSend = 0;
 
  public:
+  /// @brief Constructor
+  /// @param workerConnections Reference to worker connections collection
+  /// @param stopConditionsToSend Amount of stop conditions next entity needs
   Distributor(WorkerConnections& workerConnections,
       size_t stopConditionsToSend);
   /// Start redirecting network messages

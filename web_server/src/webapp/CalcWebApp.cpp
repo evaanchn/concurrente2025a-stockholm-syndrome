@@ -10,6 +10,7 @@
 #include "CalcWebApp.hpp"
 #include "CalcData.hpp"
 #include "DataUnit.hpp"
+#include "Log.hpp"
 #include "WorkUnit.hpp"
 
 bool CalcWebApp::canHandleHttpRequest(HttpRequest& httpRequest) {
@@ -102,6 +103,8 @@ DataUnit* CalcWebApp::deserializeRequest(std::string requestData) {
     throw std::runtime_error("Invalid serial CalcData: " + requestData);
   }
   // Classes that inherit from this one would know what type conc data to create
+  Log::append(Log::INFO, "CalcWebApp",
+    "Processig query: " + std::to_string(query));
   return this->createWorkUnit(appIndex, originalDataPtr, originalResultIdx,
       query);
 }
