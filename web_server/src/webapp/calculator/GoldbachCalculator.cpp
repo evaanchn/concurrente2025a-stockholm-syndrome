@@ -20,7 +20,7 @@ size_t GoldbachCalculator::processNumber(int64_t number,
       this->weakGoldbach(number, goldbachSums);
       sumOperands = 3;  // Each sum consists of 3 numbers
     }
-    return getNSums(goldbachSums, sumOperands);
+    return this->getNSums(goldbachSums, sumOperands);
 }
 
 // Implements strong Goldbach conjecture for even numbers (n = p1 + p2)
