@@ -168,7 +168,7 @@ To test concurrency and distribution efficiency, follow these steps:
 3. In the other device, request a quick calculation at the same time.
 4. Verify that the expected fast calculation response arrives without waiting for the heavy one to finish first.
 
-*Diferences between handling multiple connections version and concurrent apps version:*
+*Stress testing across versions*
 
 Handling multiple connections version(30 threads and 70 queue capacity):
 [source] 
@@ -182,27 +182,69 @@ Connection time [ms]: min 370.8 avg 1897.4 max 3815.7 median 1923.5 stddev 772.1
 Connection time [ms]: connect 23.1
 Connection length [replies/conn]: 3.000
 ----
-
-Concurrent apps version(30 threads and 70 queue capacity):
+Concurrent apps version (30 threads and 70 queue capacity):
 [source] 
 ----
-$ httperf --server 192.168.100.8 --port 8080 --num-conns 200 --rate 50 --num-call 3 --uri /goldbach?number=922222 --timeout 2
+$ httperf --server 10.84.145.21 --port 8080 --num-conns 200 --rate 50 --num-call 3 --uri /goldbach?number=922222 --timeout 2
 
-Total: connections 200 requests 478 replies 417 test-duration 6.288 s
+Total: connections 200 requests 390 replies 285 test-duration 6.841 s
 
-Connection rate: 31.8 conn/s (31.4 ms/conn, <=110 concurrent connections)
-Connection time [ms]: min 268.4 avg 1721.7 max 3022.0 median 1808.5 stddev 722.1
-Connection time [ms]: connect 3.2
+Connection rate: 29.2 conn/s (34.2 ms/conn, <=118 concurrent connections)
+Connection time [ms]: min 773.8 avg 2191.1 max 3679.9 median 2246.5 stddev 763.0
+Connection time [ms]: connect 30.5
 Connection length [replies/conn]: 3.000
+
+Request rate: 57.0 req/s (17.5 ms/req)
+Request size [B]: 87.0
+
+Reply rate [replies/s]: min 41.4 avg 41.4 max 41.4 stddev 0.0 (1 samples)
+Reply time [ms]: response 709.0 transfer 0.0
+Reply size [B]: header 104.0 content 4289.0 footer 0.0 (total 4393.0)
+Reply status: 1xx=0 2xx=285 3xx=0 4xx=0 5xx=0
+
+CPU time [s]: user 0.72 system 6.12 (user 10.5% system 89.5% total 100.0%)
+Net I/O: 183.6 KB/s (1.5*10^6 bps)
+
+Errors: total 105 client-timo 105 socket-timo 0 connrefused 0 connreset 0
+Errors: fd-unavail 0 addrunavail 0 ftab-full 0 other 0
 ----
 
-These results indicate that the second version of the server has improved both in efficiency and responsiveness. *for the same number*
+These results indicate that the second version of the server has worsened both in efficiency and responsiveness, with the same parameters for an httperf test.
 
-*Success rate:*
-According to the number of requests that were replied
+Distributed version (30 threads and 70 queue capacity, with 2 worker machines):
+[source] 
+----
+httperf --server 10.84.145.20 --port 8080 --num-conns 200 --rate 50 --num-call 3 --uri /goldbach?number=922222 --timeout 2
+
+Total: connections 200 requests 600 replies 600 test-duration 6.269 s
+
+Connection rate: 31.9 conn/s (31.3 ms/conn, <=85 concurrent connections)
+Connection time [ms]: min 568.5 avg 1582.3 max 3030.0 median 1588.5 stddev 523.9
+Connection time [ms]: connect 66.9
+Connection length [replies/conn]: 3.000
+
+Request rate: 95.7 req/s (10.4 ms/req)
+Request size [B]: 87.0
+
+Reply rate [replies/s]: min 95.8 avg 95.8 max 95.8 stddev 0.0 (1 samples)
+Reply time [ms]: response 505.1 transfer 0.0
+Reply size [B]: header 104.0 content 4289.0 footer 0.0 (total 4393.0)
+Reply status: 1xx=0 2xx=600 3xx=0 4xx=0 5xx=0
+
+CPU time [s]: user 0.77 system 5.37 (user 12.2% system 85.6% total 97.8%)
+Net I/O: 418.7 KB/s (3.4*10^6 bps)
+
+Errors: total 0 client-timo 0 socket-timo 0 connrefused 0 connreset 0
+Errors: fd-unavail 0 addrunavail 0 ftab-full 0 other 0
+----
+
+Finally, the distributed version, ran with two worker machines of maximum four, had positive results in the amount of requests replied (600/600), reply rate (95.8 avg), and reply time (501ms). It also did not produce any errors with the successful connections, standing out from the previous versions.
+
+*Success rates:* According to the number of requests that were replied
 
 - Handling multiple connections version: 86% success
-- Concurrent apps version: 87% success
+- Concurrent apps version: 73% success
+- Distributed version: 100% success
 
 [[design]]
 == Design of solution
