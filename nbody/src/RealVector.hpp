@@ -41,18 +41,22 @@ class RealVector {
   RealVector operator*(const RealVector& other);
   /// @brief Components comparison
   /// @return True if all components are the same, false otherwise
-  bool operator==(const RealVector& other);
+  bool operator==(const RealVector& other) const;
   /// @see operator==
-  bool operator!=(const RealVector& other);
+  bool operator!=(const RealVector& other) const;
   /// @brief Vector-scalar multiplication
   /// @see operator+
   RealVector operator*(double scalar);
+  /// @brief Access to vector components, modifiable
+  double operator[](size_t index);
+  /// @brief Access to vector components, not modifiable
+  double operator[](size_t index) const;
 
  public:
   /// @brief Elevates each component of the vector to the specified exponent
   /// @param exponent Power to elevate to
   /// @return this, RealVector after applying exponents
-  RealVector pow(int exponent);
+  RealVector pow(double exponent);
   /// @brief Calculate norm, or square root of the sum of each component squared
   /// @return Calculated magnitude
   double get_magnitude() const;
