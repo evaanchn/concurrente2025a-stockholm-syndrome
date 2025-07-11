@@ -2,6 +2,7 @@
 
 #include "Body.hpp"
 #include <cmath>
+#include <sstream>
 #include <vector>
 
 Body::Body(double mass, double radius, RealVector position,
@@ -11,12 +12,13 @@ Body::Body(double mass, double radius, RealVector position,
 }
 
 double Body::addRadiuses(double otherRadius) {
-  return std::pow((std::pow(this->radius, 3) + std::pow(otherRadius, 3)), 1/3);
+  return std::pow((std::pow(this->radius, 3) +std::pow(otherRadius, 3)),
+    1.0 / 3);
 }
 
 void Body::updateAcceleration(double otherMass, RealVector otherPosition) {
   RealVector distance = otherPosition - this->position;
-  double distanceMagnitude = distance.get_magnitude();
+  double distanceMagnitude = distance.getMagnitude();
   if (distanceMagnitude == 0) {
     return;
   }
@@ -29,11 +31,13 @@ void Body::updateAcceleration(const Body& other) {
 }
 
 void Body::resetAcceleration() {
-  this->acceleration * 0;
+  this->acceleration = this->acceleration * 0;
 }
 
 void Body::updateVelocity(double deltaTime) {
-  this->velocity = this->velocity + this->acceleration * deltaTime;
+  // TODO(us): Negative G, ask proffessor
+  // this->velocity = this->velocity + (this->acceleration * -G) * deltaTime;
+  this->velocity = this->velocity + (this->acceleration * G) * deltaTime;
 }
 
 void Body::updatePosition(double deltaTime) {
@@ -43,7 +47,7 @@ void Body::updatePosition(double deltaTime) {
 bool Body::checkCollision(double otherRadius,
     RealVector otherPosition) {
   RealVector distance = otherPosition - this->position;
-  if (distance.get_magnitude() < this->radius + otherRadius) {
+  if (distance.getMagnitude() < this->radius + otherRadius) {
     return true;
   }
   return false;
@@ -63,7 +67,7 @@ bool Body::isActive() const {
 
 void Body::mergeVelocities(double otherMass, RealVector otherVelocity) {
   this->velocity = this->velocity * otherMass + otherVelocity * otherMass;
-  this->velocity = velocity * (1 / (this->mass + otherMass));
+  this->velocity = this->velocity * (1 / (this->mass + otherMass));
 }
 
 bool Body::absorb(double otherMass, double otherRadius,
@@ -136,4 +140,24 @@ std::vector<double> Body::serializeVelocityData() const {
 
 RealVector Body::getVelocity() const {
   return this->velocity;
+}
+
+std::string Body::toString() {
+  std::stringstream bodyStream;
+  bodyStream << "\nMass: " << std::to_string(this->mass) <<
+    "\nRadius: " << std::to_string(this->radius) <<
+    "\nPosition: " << this->position.to_string() <<
+    "\nVelocity: " << this->velocity.to_string();
+  return bodyStream.str();
+}
+
+std::ostream& operator<<(std::ostream& output, const Body& body) {
+  std::stringstream vectorsStream;
+  vectorsStream << std::defaultfloat
+      << body.position[0] << "\t" << body.position[1] << "\t"
+      << body.position[2] << "\t"
+      << body.velocity[0] << "\t" << body.velocity[1] << "\t"
+      << body.velocity[2];
+  output << body.mass << "\t" << body.radius << "\t" << vectorsStream.str();
+  return output;
 }

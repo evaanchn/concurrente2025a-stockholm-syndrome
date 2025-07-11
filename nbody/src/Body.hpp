@@ -3,8 +3,11 @@
 #ifndef BODY_HPP
 #define BODY_HPP
 
-#include <vector>
+#include <iostream>
 #include <string>
+#include <sstream>
+#include <vector>
+
 #include "RealVector.hpp"
 
 const double G = 6.67e-11;  // Gravitational constant
@@ -144,12 +147,12 @@ class Body {
 
   /// @brief Get the position of the body
   RealVector getPosition() const;
-  std::string toString() {
-    return "\nMass: " + std::to_string(this->mass) +
-           "\nRadius: " + std::to_string(this->radius) +
-           "\nPosition: " + this->position.to_string() +
-           "\nVelocity: " + this->velocity.to_string();
-  }
+
+  std::string toString();
+
+  friend std::ostream& operator<<(std::ostream& output, const Body& body);
 };
+
+std::ostream& operator<<(std::ostream& output, const Body& body);
 
 #endif  // BODY_HPP
