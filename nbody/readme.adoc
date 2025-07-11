@@ -1,41 +1,189 @@
-= Project name
+= N Bodies Simulation
 :experimental:
 :nofooter:
 :source-highlighter: highlightjs
 :sectnums:
-:stem: latexmath
+:stem: asciimath
 :toc:
 :xrefstyle: short
 
 
 [[problem_statement]]
 == Problem statement
+This program simulates the behavior of independent, perfectly spherical bodies in a three dimensional space. Each body's velocity and position are updated with the application of distinct formulas. Interactions, or collisions, between bodies caused by gravitational attraction result in the absortion of smaller bodies. The simulation stops once a predefined time is reached, or if only one body remains upon collision merges. Moreover, by using computational distribution, a large number of bodies can be stored and processed simultaneously, making it more realistic.
 
-#Analysis: Describe the problem to be solved#
+The three main procedures for each simulated state are listed and explained below.
 
-[[design]]
-== Design of solution
+=== Collision evaluation
+In order to evaluate if there is a collision between two bodies, the sum of radii and the distance between bodies is compared:
 
-#See the link:design/readme.adoc[design/] folder for an overall design of the solution.#
+- *Distance*:
+The distance is the resulting vector of the subtraction between the bodies' position vectors, as shown in the formula below.
 
+[asciimath]
+++++
+\vec{r_{i,j}} = \vec{x_i} - \vec{x_j}
+++++
 
-[[user_manual]]
-== User manual
+- *Collision condition*: If the sum of the bodies' radiuses is greater than the distance vector's magnitude, a collision has occured betweeen the two.
 
-[[build]]
-=== Build
+[asciimath]
+++++
+r_i + r_j \gt |\vec{r_{i,j}}|
+++++
 
-#Describe how to compile your solution.#
+Upon collision, the body with greater mass absorbs the smaller one in an inelastic collision. Consequently, the velocity of the absorbing body is updated with the following formula:
 
-[[usage]]
+[asciimath]
+++++
+\vec{V} = \frac{m_a \vec{V_a} + m_b \vec{V_b}} {m_a + m_b}
+++++
+
+=== Velocity update
+- *Acceleration*: The acceleration of a body for each state is calculated as the sum of forces applied by the other bodies, multiplied by the negated gravitational constant.
+
+[asciimath]
+++++
+\vec{a_i} = -G \sum_{i \ne j}^{N} \frac{m_j}{|\vec{r_{i,j}}|^3} \vec{r_{i,j}}
+++++
+
+- *Velocity*: After updating the body's acceleration, it is used to calculate the new velocity vector, along with the established duration between each state.
+
+[asciimath]
+++++
+\vec{V_{i,t+1}} = \vec{V_{i,t}} + \vec{a_i} \Delta t
+++++
+
+=== Position update
+After all bodies have calculated their velocity, their position is updated with the formula:
+
+[asciimath]
+++++
+\vec{x_{i,t+1}} = \vec{x_{i,t}} + \vec{V_{i,t+1}} \Delta t
+++++
+
+== User’s manual
+
+=== Prerequisites
+*Important:* A Unix/Linux variant is required as the operating system. Ej: debian, fedora.
+
+Clone the GitLab repository.
+
+[source]
+----
+$ git clone https://git.ucr.ac.cr/AXEL.ROJASRETANA/paralela25a-stockholm_syndrome.git
+----
+
+Install a C++ compiler with C++17 support (e.g., g++ or clang).
+
+[source]
+----
+g++ (Ubuntu 13.3.0-6ubuntu2~24.04) 13.3.0
+Copyright (C) 2023 Free Software Foundation, Inc.
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+----
+
+Install make program
+
+[source]
+----
+$ sudo apt-get install make
+----
+
+Install Mpich, for processes distribution
+[source]
+----
+$ sudo apt install mpich libmpich-dev
+----
+
+For Fedora users, the mpich module must be loaded, using the next command
+[source]
+----
+$ module load mpi/mpich-$arch
+----
+
+where $arch represents the machine's architecture, which can be obtained with the command
+[source]
+----
+$ uname -p
+----
+
+=== Compilation
+Compile the program by running the following command inside the *n_bodies* folder:
+
+[source]
+----
+$ make clean && make
+----
+
 === Usage
 
-#Describe how to run your solution, e.g: arguments. Provide examples.#
+==== Distribution
+The program must be executed in a distributed environment, like a cluster with Slurm system.
+Here you can access link:https://www.schedmd.com/[Slurm Documentation].
+
+To use the program in a Slurm system, a `.sh` file is required. You can modify the one given at “nbodies/simulation.sh”
+After the “prun” command, specify the required arguments for each mode, you can choose from <<file_mode>> or <<random_mode>>.
+
+
+[[file_mode]]
+==== File mode
+To execute the program with a <<bodies_file>> run the command:
+
+[source]
+----
+bin/nbody bodies.tsv delta_t max_time
+----
+
+Bodies.tsv: path of the file containing bodies information
+Delta_t: elapsed time to make a position update
+Max_time: amount of time that the simulation will take if no stop condition is reached before
+
+[[bodies_file]]
+===== Bodies file
+Contains each body separated by a new line and their information separated by tabulators. The following is a `bodies.tsv` file example:
+
+[source]
+----
+2[bodies_count]
+m(kg)  	r(m)	xx	xy	xz	vx	vy	vz
+2000    	5	0	0	0 	0	0	0
+50    	1	12	0	2	1	1	0.2
+----
+- bodies_count: number of bodies in the universe
+- r: radius
+- xx: initial position in x axis
+- xy: initial position in y axis
+- xz: initial position in z axis
+- vx: initial velocity in x axis
+- vy: initial velocity in y axis
+- vz: initial velocity in z axis
+
+[[random_mode]]
+==== Random generated mode
+The program can be executed generating a random population of bodies that will compose a simulation. For that purpose run the program with the following command:
+
+[source]
+----
+bin/nbody body_count delta_t max_time min_mass max_mass min_radius max_radius min_pos max_pos min_vel max_vel
+----
+
+- body_count: number of bodies in the universe
+- delta_t: elapsed time to make a position update
+- max_time: amount of time that the simulation will - take if no stop condition is reached before
+- min_mass: minimum value for body's mass
+- max_mass: maximum value for body's mass
+- min_rad: Minimum value for body's radius
+- max_rad: Maximum value for body's radius
+- min_pos: Minimum value the initial position can take at x, y, or z
+- max_pos: Maximum value the initial position can take at x, y, or z
+- min_vel: Minimum value the initial velocity can take at x, y, or z
+- max_vel: Maximum value the initial velocity can take at x, y, or z
+
+*Note*: min and max values are only for bodies creation(initialization)
 
 
 [[credits]]
 == Credits
-
-#Provide your contact information.#
-
-#Give credit to authors of libraries, images, sounds, or any resource you used.#
+For further information click the link of the homework statement that this project comes from: https://jeisson.ecci.ucr.ac.cr/concurrente/2025a/proyectos/nbody/
