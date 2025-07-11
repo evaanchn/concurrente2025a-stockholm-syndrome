@@ -1,3 +1,4 @@
+// Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 #include <cmath>
 
 #include "RealVector.hpp"
@@ -36,7 +37,17 @@ RealVector RealVector::operator*(const RealVector& other) {
   return RealVector(result);
 }
 
-bool RealVector::operator==(const RealVector& other) {
+double RealVector::operator[](size_t index) {
+  assert(index < this->size());
+  return this->components[index];
+}
+
+double RealVector::operator[](size_t index) const {
+  assert(index < this->size());
+  return this->components[index];
+}
+
+bool RealVector::operator==(const RealVector& other) const {
   assert(this->size() == other.size());
   for (size_t i = 0; i < this->components.size(); ++i) {
     if (this->components[i] != other.components[i]) {
@@ -46,7 +57,7 @@ bool RealVector::operator==(const RealVector& other) {
   return true;
 }
 
-bool RealVector::operator!=(const RealVector& other) {
+bool RealVector::operator!=(const RealVector& other) const {
   assert(this->size() == other.size());
   return !(*this == other);
 }
@@ -58,7 +69,7 @@ RealVector RealVector::operator*(double scalar) {
   return *this;
 }
 
-RealVector RealVector::pow(int exponent) {
+RealVector RealVector::pow(double exponent) {
   for (double& component : this->components) {
     component = std::pow(component, exponent);
   }
