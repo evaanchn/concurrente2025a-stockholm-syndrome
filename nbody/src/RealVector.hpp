@@ -15,11 +15,11 @@ class RealVector {
  public:  // Constructors
   RealVector() = default;
 
-  explicit RealVector(std::vector<double>& components) :
+  explicit RealVector(const std::vector<double>& components) :
     components(components) {
   }
 
-  explicit RealVector(size_t count) :
+  explicit RealVector(const size_t count) :
     components(count, double()) {
   }
 
@@ -32,21 +32,21 @@ class RealVector {
   /// @brief Vector addition
   /// @param other The other vector to operate with
   /// @return Result of operation
-  RealVector operator+(const RealVector& other);
+  RealVector operator+(const RealVector& other) const;
   /// @brief Vector subtraction
   /// @see operator+
-  RealVector operator-(const RealVector& other);
+  RealVector operator-(const RealVector& other) const;
   /// @brief Vector multiplication
   /// @see operator+
-  RealVector operator*(const RealVector& other);
+  RealVector operator*(const RealVector& other) const;
+  /// @brief Vector-scalar multiplication
+  /// @see operator+
+  RealVector operator*(double scalar) const;
   /// @brief Components comparison
   /// @return True if all components are the same, false otherwise
   bool operator==(const RealVector& other) const;
   /// @see operator==
   bool operator!=(const RealVector& other) const;
-  /// @brief Vector-scalar multiplication
-  /// @see operator+
-  RealVector operator*(double scalar);
   /// @brief Access to vector components, modifiable
   double operator[](size_t index);
   /// @brief Access to vector components, not modifiable
@@ -59,11 +59,11 @@ class RealVector {
   RealVector pow(double exponent);
   /// @brief Calculate norm, or square root of the sum of each component squared
   /// @return Calculated magnitude
-  double get_magnitude() const;
+  double getMagnitude() const;
 
  public:
   /// @brief Converts the vector to a string representation
-  std::string to_string();
+  std::string to_string() const;
 };
 
 #endif  // VECTOR_HPP

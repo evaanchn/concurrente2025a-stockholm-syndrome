@@ -1,5 +1,7 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 #include <cmath>
+#include <iomanip>
+#include <sstream>
 
 #include "RealVector.hpp"
 
@@ -7,7 +9,7 @@ size_t RealVector::size() const {
     return this->components.size();
 }
 
-RealVector RealVector::operator+(const RealVector& other) {
+RealVector RealVector::operator+(const RealVector& other) const {
   assert(this->size() == other.size());
   std::vector<double> result;
   result.reserve(this->components.size());
@@ -19,15 +21,13 @@ RealVector RealVector::operator+(const RealVector& other) {
   return RealVector(result);
 }
 
-RealVector RealVector::operator-(const RealVector& other) {
+RealVector RealVector::operator-(const RealVector& other) const {
   assert(this->size() == other.size());
-  // Copy other vector to negate with scalar multiplication
-  RealVector otherNegative = other;
   // Use the addition operator to perform subtraction
-  return *this + otherNegative * -1;
+  return *this + other * -1;
 }
 
-RealVector RealVector::operator*(const RealVector& other) {
+RealVector RealVector::operator*(const RealVector& other) const {
   assert(this->size() == other.size());
   std::vector<double> result;
   result.reserve(this->components.size());
@@ -35,6 +35,21 @@ RealVector RealVector::operator*(const RealVector& other) {
     result.push_back(this->components[i] * other.components[i]);
   }
   return RealVector(result);
+}
+
+RealVector RealVector::operator*(double scalar) const {
+  RealVector result = RealVector(this->components);
+  for (double& component : result.components) {
+    component = component * scalar;
+  }
+  return result;
+}
+
+RealVector RealVector::pow(double exponent) {
+  for (double& component : this->components) {
+    component = std::pow(component, exponent);
+  }
+  return *this;
 }
 
 double RealVector::operator[](size_t index) {
@@ -62,33 +77,21 @@ bool RealVector::operator!=(const RealVector& other) const {
   return !(*this == other);
 }
 
-RealVector RealVector::operator*(double scalar) {
-  for (double& component : this->components) {
-    component = component * scalar;
-  }
-  return *this;
-}
-
-RealVector RealVector::pow(double exponent) {
-  for (double& component : this->components) {
-    component = std::pow(component, exponent);
-  }
-  return *this;
-}
-
-std::string RealVector::to_string() {
-  std::string vectorStr = "<";
+std::string RealVector::to_string() const {
+  std::stringstream vectorStream;
+  vectorStream << "<";
   for (size_t i = 0; i < this->components.size(); ++i) {
-    vectorStr += std::to_string(this->components[i]);
+    vectorStream /*<< std::setprecision(8)*/ << std::defaultfloat
+      << this->components[i];
     if (i < this->components.size() - 1) {
-      vectorStr += ", ";
+      vectorStream << ", ";
     }
   }
-  vectorStr += ">";
-  return vectorStr;
+  vectorStream << ">";
+  return std::string(vectorStream.str());
 }
 
-double RealVector::get_magnitude() const {
+double RealVector::getMagnitude() const {
   double sum = 0;
   for (const auto& component : this->components) {
     sum += component * component;
