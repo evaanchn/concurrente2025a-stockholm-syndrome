@@ -4,6 +4,7 @@
 
 #include <string>
 #include <vector>
+
 #include "common.hpp"
 #include "Body.hpp"
 
@@ -74,6 +75,9 @@ class Universe {
   void updateVelocities(double deltaTime);
   /// @brief Update the velocities of the bodies in the simulation.
   void updatePositions(double deltaTime);
+  /// @brief Helper method to call an update function for body
+  void updateBodies(void (Body::*updateFunc)(double),
+    double deltaTime);
 
  public:
   std::vector<RealVector> getMyDistances(Mpi* mpi);
@@ -84,28 +88,30 @@ class Universe {
   /// @param serializedPositions positions to be processed
   void serializePositions(std::vector<double>& serializedPositions);
 
-  /// @brief calculates distances
+  /// @brief Computes distances between active bodies owned by this process.
   /// @param distances
   void aggregateOwnDistances(std::vector<RealVector>& distances);
 
-  /// @brief
+  /// @brief Computes distances between local bodies and serialized positions
+  /// from another process.
   /// @param distances
   /// @param serializedPositions
   void aggregateDistances(std::vector<RealVector>& distances,
     const std::vector<double>& serializedPositions);
 
  public:
-  /// @brief
+  /// @brief Get the size of the vector of the bodies
+  /// @return the amount of bodies
   size_t size() const {
     return this->bodies.size();
   }
 
-  /// @brief
+  /// @brief returns a body with index
   Body& operator[](size_t index) {
     return this->bodies[index];
   }
 
-  /// @brief
+  /// @brief returns a constant body with index
   const Body& operator[](size_t index) const {
     return this->bodies[index];
   }

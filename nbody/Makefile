@@ -1,5 +1,7 @@
 include ../common/Makefile
 
+FLAGS += -fopenmp
+
 INCLUDE += -Iinclude
 
 CC=mpicc

@@ -4,6 +4,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <omp.h>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -174,8 +175,6 @@ void Universe::saveBodiesFile(std::string universeFile,
 }
 
 void Universe::checkCollisions() {
-  // #pragma omp parallel for num_threads(this->threadCount) \
-  //   default(none) shared(this->bodies, this->activeBodiesCount)
   for (size_t index = 0; index < this->bodies.size(); ++index) {
     if (!this->bodies[index].isActive()) {
       continue;  // Skip inactive bodies
@@ -198,12 +197,17 @@ void Universe::checkCollisions() {
 
 void Universe::checkCollisions(std::vector<double>& serializedBodies,
     const int rank, const int otherRank) {
+  // Parallel for iterating through every local bodies
+  // omitting default(none) given no private data
+  #pragma omp parallel for num_threads(omp_get_max_threads())
   for (size_t index = 0; index < this->bodies.size(); ++index) {
     if (!this->bodies[index].isActive()) {
-      continue;
+      continue;  // Skip if current body is not active
     }
+    // Check collision for current body with every single serialized body sent
     for (size_t offset = 0; offset < serializedBodies.size();
-    offset += BODY_COLLISION_DATA_SIZE) {
+        offset += BODY_COLLISION_DATA_SIZE) {
+      // Build auxiliary vectors for position and velocity to check collision
       std::vector<double> auxPosition = {serializedBodies[offset +
         COLLISION_POSITION_X],  serializedBodies[offset + COLLISION_POSITION_Y],
         serializedBodies[offset +  COLLISION_POSITION_Z]};
@@ -211,23 +215,28 @@ void Universe::checkCollisions(std::vector<double>& serializedBodies,
         COLLISION_VELOCITY_X],  serializedBodies[offset + COLLISION_VELOCITY_Y],
         serializedBodies[offset + COLLISION_VELOCITY_Z]};
 
+      // If the current body collides
       if (this->bodies[index].checkCollision(
           serializedBodies[offset + COLLISION_RADIUS],
             RealVector(auxPosition))) {
+        // Get other body's mass
         double otherMass = serializedBodies[offset + COLLISION_MASS];
-        if (this->bodies[index].equalMasses(otherMass) &&
-            rank > otherRank) {
+        // If both have equal masses, the one from lower rank absorbs the one
+        // managed by a process with higher rank. Skip if my rank is lower
+        if (this->bodies[index].equalMasses(otherMass) && rank < otherRank) {
           this->bodies[index].deactivate();
+          #pragma omp atomic
           --this->activeBodiesCount;
-          continue;
+          break;  // The current body should no longer be evaluated
         }
+        // If this body could not absorb the other process's one, deactivate
         if (!this->bodies[index].absorb(otherMass,
             serializedBodies[offset + COLLISION_RADIUS],
             RealVector(auxVelocity))) {
           this->bodies[index].deactivate();
-          std::cout << "Deactivating body: " << this->bodies[index] <<
-            std::endl;
+          #pragma omp atomic
           --this->activeBodiesCount;
+          break;   // The current body should no longer be evaluated
         }
       }
     }
@@ -252,8 +261,13 @@ void Universe::updateAccelerations() {
 }
 
 void Universe::updateAccelerations(std::vector<double>& serializedBodies) {
-  for (size_t i = 0; i < this->bodies.size(); ++i) {
-    Body& body = this->bodies[i];
+  // Local alias so omp's shared can use inside parallel for
+  std::vector<Body>& localBodies = this->bodies;
+
+  #pragma omp parallel for num_threads(omp_get_max_threads()) \
+    default(none) shared(localBodies, serializedBodies)
+  for (size_t i = 0; i < localBodies.size(); ++i) {
+    Body& body = localBodies[i];
     if (!body.isActive()) {
       continue;  // Skip inactive bodies
     }
@@ -270,16 +284,25 @@ void Universe::updateAccelerations(std::vector<double>& serializedBodies) {
   }
 }
 
-void Universe::updateVelocities(double deltaTime) {
-  for (Body& body : this->bodies) {
-    body.updateVelocity(deltaTime);
+// MODULARIZED USING CHAT GPT
+void Universe::updateBodies(void (Body::*updateFunc)(double),
+    double deltaTime) {
+  // Local alias so omp's shared can use inside parallel for
+  std::vector<Body>& tempBodies = this->bodies;
+
+  #pragma omp parallel for num_threads(omp_get_max_threads()) \
+    default(none) shared(tempBodies, deltaTime, updateFunc)
+  for (size_t index = 0; index < tempBodies.size(); ++index) {
+    (tempBodies[index].*updateFunc)(deltaTime);  // Update using specified func
   }
 }
 
+void Universe::updateVelocities(double deltaTime) {
+  updateBodies(&Body::updateVelocity, deltaTime);
+}
+
 void Universe::updatePositions(double deltaTime) {
-  for (Body& body : this->bodies) {
-    body.updatePosition(deltaTime);
-  }
+  updateBodies(&Body::updatePosition, deltaTime);
 }
 
 std::vector<RealVector> Universe::getMyDistances(Mpi* mpi) {
@@ -348,13 +371,11 @@ void Universe::aggregateOwnDistances(std::vector<RealVector>& distances) {
 
 void Universe::aggregateDistances(std::vector<RealVector>& distances,
     const std::vector<double>& serializedPositions) {
-  // TODO(evan) add OMP for static map reduce
   // For every body in this process, evaluate distances from other bodies
   for (size_t myBodyIdx = 0; myBodyIdx < this->bodies.size(); ++myBodyIdx) {
     // Only add distance to sum if currentBody is active
     if (this->bodies[myBodyIdx].isActive()) {
       // Iterate through every serialized position
-      // TODO(evan) check if offset does start at 1
       for (size_t offset = 0; offset < serializedPositions.size();
           offset += BODY_DISTANCE_DATA_SIZE) {
         // Build auxiliary position
