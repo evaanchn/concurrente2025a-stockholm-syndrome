@@ -148,7 +148,7 @@ bool Body::isNotEqualTo(const double otherMass, const double otherRadius,
   return !this->isEqualTo(otherMass, otherRadius, otherPosition);
 }
 
-// Serializes body data for collision checking (mass, radius, position, velocity)
+// Serializes body data for collision checking (mass,radius,position,velocity)
 std::vector<double> Body::serializeCheckCollision() const {
   return {this->mass, this->radius, this->position[0], this->position[1],
     this->position[2], this->velocity[0], this->velocity[1], this->velocity[2]};

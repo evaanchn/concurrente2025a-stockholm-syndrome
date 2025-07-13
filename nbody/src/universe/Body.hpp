@@ -13,6 +13,9 @@
 const double G = 6.67e-11;  // Gravitational constant
 #define DIM 3
 
+/// @brief Class representing a body the universe
+/// @details Contains the properties of a body, such as mass, radius, position,
+// velocity, and acceleration.
 class Body {
  private:
   double mass;  // Body's mass
@@ -153,11 +156,14 @@ class Body {
   /// @brief Get the position of the body
   RealVector getPosition() const;
 
+  /// @brief String representation of the body
   std::string toString();
 
+  /// @brief Friend function to output the body properties
   friend std::ostream& operator<<(std::ostream& output, const Body& body);
 };
 
+/// @brief Overloaded output operator for Body class
 std::ostream& operator<<(std::ostream& output, const Body& body);
 
 #endif  // BODY_HPP

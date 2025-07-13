@@ -2,6 +2,7 @@
 
 #include "Universe.hpp"
 
+#include <cmath>
 #include <fstream>
 #include <iostream>
 #include <omp.h>  // NOLINT[BUILD-LACK_INCLUDE_SCORE_ORDER]
