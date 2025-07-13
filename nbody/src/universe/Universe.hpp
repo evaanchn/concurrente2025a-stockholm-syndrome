@@ -31,8 +31,7 @@ class Universe {
   ~Universe() = default;
 
  public:
-  bool analyzeRandomUniverseModeArguments(int argc, char* argv[], size_t rank,
-    size_t size);
+  bool analyzeRandomUniverseModeArguments(int argc, char* argv[]);
   /// @brief Load the universe from a file.
   size_t loadUniverse(std::string universeFile, size_t rank, size_t size);
   /// @brief create a random universe.

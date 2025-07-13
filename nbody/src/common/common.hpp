@@ -1,5 +1,8 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#ifndef COMMON_HPP
+#define COMMON_HPP
+
 /// Declare four of the rule-of-the-five methods
 #define DECLARE_RULE4(Class, action) \
   Class(const Class& other) = action; \
@@ -65,3 +68,5 @@ enum RandomUniverseModePositions {
 // MPI tags
 #define COLLISION_TAG 100
 #define ACCELERATION_TAG 101
+
+#endif  // COMMON_HPP

@@ -3,6 +3,7 @@
 #include "Universe.hpp"
 
 #include <fstream>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -11,8 +12,7 @@
 #include "Util.hpp"
 
 // Return true if arguments were set, false if default arguments are needed
-bool Universe::analyzeRandomUniverseModeArguments(int argc, char* argv[],
-    size_t rank, size_t size) {
+bool Universe::analyzeRandomUniverseModeArguments(int argc, char* argv[]) {
   if (argc < 12) {
     return false;
   }
@@ -26,7 +26,6 @@ bool Universe::analyzeRandomUniverseModeArguments(int argc, char* argv[],
     this->minVelocity = std::stod(argv[MIN_VEL]);
     this->maxVelocity = std::stod(argv[MAX_VEL]);
   } catch(const std::invalid_argument& error) {
-    // TODO(you): ensure only process 0 prints
     std::cerr << "Default minimums and maximums set" << std::endl;
     this->minMass = DEFAULT_MIN_MASS;
     this->maxMass = DEFAULT_MAX_MASS;
