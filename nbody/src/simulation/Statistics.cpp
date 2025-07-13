@@ -1,12 +1,21 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
+#include "Statistics.hpp"
 
+#include <omp.h>
 #include <vector>
 
-#include "Statistics.hpp"
 #include "common.hpp"
 #include "Mpi.hpp"
 #include "RealVector.hpp"
+
+// CREATED USING CHATGPT
+// This declaration defines a custom reduction for RealVector
+// The behavior for the reduction is omp_out = omp_out + omp_in
+// The private reduction variable is defined with initializer, where
+// It will start as a vector of DIM dimensions, full of zeroes
+#pragma omp declare reduction(vec_sum : RealVector : omp_out = omp_out + \
+    omp_in) initializer(omp_priv = RealVector(DIM))
 
 RealVector Statistics::realVectorMeanDistributed(Mpi* mpi,
     const std::vector<RealVector>& realVectors, const int total) {
@@ -25,9 +34,11 @@ RealVector Statistics::calculateVectorsSum(const std::vector<RealVector>&
     realVectors) {
   // First create a 3D real vector with 0s
   RealVector sum = RealVector(DIM);
-  // For each real vector in the collection sent, add to sum
-  for (const RealVector& realVector : realVectors) {
-    sum = sum + realVector;
+  // Parallel for to reduce the sum with custom reduction vec_sum
+  #pragma omp parallel for num_threads(omp_get_max_threads()) \
+    default(none) shared(realVectors) reduction(vec_sum:sum)
+  for (size_t index = 0; index < realVectors.size(); ++index) {
+    sum = sum + realVectors[index];
   }
   return sum;
 }
@@ -58,8 +69,11 @@ RealVector Statistics::calculateStDevSum(
   // First create a real vector of 0s
   RealVector sum = RealVector(DIM);
   // Sum each (value - mean)^2
-  for (const RealVector& realVector : realVectors) {
-    sum = sum + (realVector - mean).pow(2);
+  // Parallel for to reduce the sum with vec_sum
+  #pragma omp parallel for num_threads(omp_get_max_threads()) \
+    default(none) shared(realVectors, mean) reduction(vec_sum:sum)
+  for (size_t index = 0; index < realVectors.size(); ++index) {
+    sum = sum + (realVectors[index] - mean).pow(2);
   }
   return sum;
 }
