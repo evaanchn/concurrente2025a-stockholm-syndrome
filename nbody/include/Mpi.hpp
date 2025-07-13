@@ -114,7 +114,6 @@ class Mpi {
     return this->send(values.data(), values.size(), toProcess, tag, "vector");
   }
   /// Send a text to another process
-  template <typename Type>
   void send(const std::string& text, const int toProcess, const int tag = 0) {
     return this->send(text.data(), text.size() + 1, toProcess, tag, "string");
   }
@@ -142,7 +141,6 @@ class Mpi {
     this->receive(values.data(), capacity, fromProcess, tag, "vector");
   }
   /// Wait until it receives a text of at most length chars from another process
-  template <typename Type>
   void receive(std::string& text, const int capacity,
       const int fromProcess = MPI_ANY_SOURCE, const int tag = MPI_ANY_TAG) {
     std::vector<char> buffer(capacity, '\0');
@@ -172,6 +170,87 @@ class Mpi {
     if (MPI_Recv(values, capacity, Mpi::map(Type()), fromProcess,
         tag, MPI_COMM_WORLD, MPI_STATUS_IGNORE) != MPI_SUCCESS) {
       throw Mpi::Error("could not receive " + type, *this);
+    }
+  }
+
+ public:
+  void barrier() {
+    if (MPI_Barrier(MPI_COMM_WORLD) != MPI_SUCCESS) {
+      throw Mpi::Error("could not create barrier");
+    }
+  }
+
+  static inline double wtime() {
+    return MPI_Wtime();
+  }
+
+  public:
+  // Broadcast a scalar value to all other processes
+  template <typename Type>
+  void broadcast(Type& value, const int fromProcess) {
+    if (MPI_Bcast(&value, /*count*/ 1, Mpi::map(value), fromProcess,
+        MPI_COMM_WORLD) != MPI_SUCCESS) {
+      throw Mpi::Error("could not broadcast", *this);
+    }
+  }
+
+  template <typename Type>
+  void broadcast(std::vector<Type>& values, const int fromProcess) {
+    int count = static_cast<int>(values.size());
+    this->broadcast(&count, 1, fromProcess);
+    if (rank() != fromProcess) {
+      values.resize(count);
+    }
+    return this->broadcast(values.data(), values.size(), fromProcess);
+  }
+
+  template <typename Type>
+  void broadcast(Type* values, const int count, const int fromProcess) {
+    if (MPI_Bcast(values, count, Mpi::map(Type()), fromProcess,
+                  MPI_COMM_WORLD) != MPI_SUCCESS) {
+      throw Mpi::Error("could not broadcast vector data", *this);
+    }
+  }
+
+ public:
+  template <typename Type>
+  void reduce(const Type& value, Type& result, const int operation,
+      const int toProcess) {
+    if (MPI_Reduce(&value, &result, /*count*/ 1, Mpi::map(value),
+        operation, toProcess, MPI_COMM_WORLD) != MPI_SUCCESS) {
+      throw Mpi::Error("could not reduce", *this);
+    }   
+  }
+
+  template <typename Type>
+  void reduce(const std::vector<Type>& sendValues
+      , std::vector<Type>& receiveValues, const int operation, const int root) {
+    int count = static_cast<int>(sendValues.size());
+    if (rank() == root) {
+      receiveValues.resize(count);
+    }
+    if (MPI_Reduce(sendValues.data(), receiveValues.data(), count,
+      Mpi::map(sendValues[0]), operation, root,
+      MPI_COMM_WORLD) != MPI_SUCCESS) {
+      throw Error("could not reduce vector", *this);
+    }
+  }
+
+  template <typename Type>
+  void allReduce(const Type& value, Type& result, const MPI_Op operation) {
+    if (MPI_Allreduce(&value, &result, /*count*/ 1, Mpi::map(value),
+        operation, MPI_COMM_WORLD) != MPI_SUCCESS) {
+      throw Mpi::Error("could not all-reduce", *this);
+    }
+  }
+
+  template <typename Type>
+  void allReduce(std::vector<Type>& values, std::vector<Type>& receiveValues,
+      const MPI_Op operation) {
+    int count = static_cast<int>(values.size());
+    if (MPI_Allreduce(values.data(), receiveValues.data(), count
+        , Mpi::map(values[0]), operation, MPI_COMM_WORLD) != MPI_SUCCESS) {
+      throw Error("could not all-reduce vector", *this);
     }
   }
 };
