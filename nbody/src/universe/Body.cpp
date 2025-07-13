@@ -7,45 +7,57 @@
 #include <string>
 #include <vector>
 
+// Constructor - initializes body properties
 Body::Body(double mass, double radius, RealVector position,
     RealVector velocity)
   : mass(mass), radius(radius), position(position), velocity(velocity),
-    acceleration(RealVector(DIM)) {
+    acceleration(RealVector(DIM)) {  // Initialize acceleration to zero vector
 }
 
+// Combines two radii using volume conservation (r^3 addition)
 double Body::addRadiuses(double otherRadius) {
   return std::pow((std::pow(this->radius, 3) + std::pow(otherRadius, 3)),
     1.0 / 3);
 }
 
+// Updates acceleration based on gravitational force from another body
 void Body::updateAcceleration(double otherMass, RealVector otherPosition) {
   RealVector distance = otherPosition - this->position;
   double distanceMagnitude = distance.getMagnitude();
-  if (distanceMagnitude == 0) {
+  if (distanceMagnitude == 0) {  // Avoid division by zero
     return;
   }
+  // Newton's law of universal gravitation: F = G*(m1*m2)/r^2
   this->acceleration = this->acceleration + distance *
     (otherMass / std::pow(distanceMagnitude, 3));
 }
 
+// Overloaded version that takes another Body object
 void Body::updateAcceleration(const Body& other) {
   this->updateAcceleration(other.mass, other.position);
 }
 
+// Resets acceleration vector to zero
 void Body::resetAcceleration() {
   this->acceleration = this->acceleration * 0;
 }
 
+// Updates velocity based on current acceleration and time step
 void Body::updateVelocity(double deltaTime) {
+  // v = v0 + a*t (with gravitational constant G factored in)
   this->velocity = this->velocity + (this->acceleration * G) * deltaTime;
 }
 
+// Updates position based on current velocity and time step
 void Body::updatePosition(double deltaTime) {
+  // x = x0 + v*t
   this->position = this->position + this->velocity * deltaTime;
 }
 
+// Checks if this body collides with another body given its radius and position
 bool Body::checkCollision(double otherRadius,
     RealVector otherPosition) {
+  // Collision occurs if distance between centers < sum of radii
   RealVector distance = otherPosition - this->position;
   if (distance.getMagnitude() < this->radius + otherRadius) {
     return true;
@@ -53,19 +65,26 @@ bool Body::checkCollision(double otherRadius,
   return false;
 }
 
+// Overloaded version that takes another Body object
 bool Body::checkCollision(const Body& other) {
   return this->checkCollision(other.radius, other.position);
 }
 
+// Returns true if body is active (mass > 0)
 bool Body::isActive() const {
   return this->mass > 0;
 }
 
+// Merges velocities during collision using momentum conservation
 void Body::mergeVelocities(double otherMass, RealVector otherVelocity) {
+  // p = m1*v1 + m2*v2
   this->velocity = this->velocity * otherMass + otherVelocity * otherMass;
+  // v_combined = p / (m1 + m2)
   this->velocity = this->velocity * (1 / (this->mass + otherMass));
 }
 
+// Absorbs another body (combines mass, radius, and velocity)
+// Returns true if this body absorbed the other (this mass >= other mass)
 bool Body::absorb(double otherMass, double otherRadius,
   RealVector otherVelocity) {
   if (this->mass >= otherMass) {
@@ -77,74 +96,90 @@ bool Body::absorb(double otherMass, double otherRadius,
   return false;
 }
 
+// Overloaded version that takes another Body object and deactivates it
 bool Body::absorb(Body& other) {
   if (this->absorb(other.mass, other.radius, other.velocity)) {
-    other.deactivate();
+    other.deactivate();  // Mark other body as inactive
     return true;
   }
   return false;
 }
 
+// Deactivates body by making mass negative
 void Body::deactivate() {
   this->mass *= -1;
 }
 
+// Equality comparison operator
 bool Body::operator==(const Body& other) const {
   return this->isEqualTo(other.mass, other.radius, other.position);
 }
 
+// Compares masses only
 bool Body::equalMasses(const double otherMass) const {
   return this->mass == otherMass;
 }
 
+// Inequality comparison operator
 bool Body::operator!=(const Body& other) const {
   return !(*this == other);
 }
 
+// Less-than comparison (by mass)
 bool Body::operator<(const Body& other) const {
   return this->mass < other.mass;
 }
 
+// Greater-than comparison (by mass)
 bool Body::operator>(const Body& other) const {
   return this->mass > other.mass;
 }
 
+// Detailed equality comparison of all properties
 bool Body::isEqualTo(const double otherMass, const double otherRadius,
     const RealVector otherPosition) const {
   return this->mass == otherMass && this->radius == otherRadius &&
       this->position == otherPosition;
 }
 
+// Detailed inequality comparison of all properties
 bool Body::isNotEqualTo(const double otherMass, const double otherRadius,
     const RealVector otherPosition) const {
   return !this->isEqualTo(otherMass, otherRadius, otherPosition);
 }
 
+// Serializes body data for collision checking (mass,radius,position,velocity)
 std::vector<double> Body::serializeCheckCollision() const {
   return {this->mass, this->radius, this->position[0], this->position[1],
     this->position[2], this->velocity[0], this->velocity[1], this->velocity[2]};
 }
 
+// Serializes body data for acceleration calculations (mass and position)
 std::vector<double> Body::serializeAccelerationData() const {
   return {this->mass, this->position[0], this->position[1], this->position[2]};
 }
 
+// Serializes position data only
 std::vector<double> Body::serializePositionData() const {
   return {this->position[0], this->position[1], this->position[2]};
 }
 
+// Returns position vector
 RealVector Body::getPosition() const {
   return this->position;
 }
 
+// Serializes velocity data only
 std::vector<double> Body::serializeVelocityData() const {
   return {this->velocity[0], this->velocity[1], this->velocity[2]};
 }
 
+// Returns velocity vector
 RealVector Body::getVelocity() const {
   return this->velocity;
 }
 
+// Returns formatted string representation of body properties
 std::string Body::toString() {
   std::stringstream bodyStream;
   bodyStream << "\nMass: " << std::to_string(this->mass) <<
@@ -154,6 +189,7 @@ std::string Body::toString() {
   return bodyStream.str();
 }
 
+// Output stream operator for writing body data
 std::ostream& operator<<(std::ostream& output, const Body& body) {
   std::stringstream vectorsStream;
   vectorsStream << std::defaultfloat

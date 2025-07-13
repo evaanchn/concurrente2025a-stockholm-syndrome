@@ -1,0 +1,40 @@
+= Design of solution
+:experimental:
+:nofooter:
+:source-highlighter: highlightjs
+:stem:
+:toc:
+:xrefstyle: short
+
+
+[[object_design]]
+== Object-oriented design
+
+The class diagram for the program is presented in <<class_diagram>>, where:
+
+- *RealVector* is a class that represents a vector in 3D space, with methods for vector operations.
+- *Body* is a class that represents a perfectly spherical (often celestial) body, with properties such as mass, position, velocity, and acceleration.
+- *Universe* is a class that represents a container of bodies and methods for updating their states.
+- *Simulation* is a class that manages the simulation process, including the initialization of bodies, the simulation loop, and the generation of reports.
+- *Statistics* is a class that collects and processes simulation statistics, such as mean and standard deviation of RealVectors, adjusted for 3d vectors.
+
+[#class_diagram]
+.UML class diagram
+image::img/nbody_uml.svg["UML"]
+
+
+[[simulation_visualization]]
+== Simulation process
+
+The program simulation <<simul_visual>> emulates the process described in the general readme. Each stage or phase of a simulation state requires all processes to complete before continuing:
+
+[#simul_visual]
+.Simulation stages
+image::img/nbody_simul_visual.svg["SIMULATION"]
+
+After the simulation is completed, the program generates a report with the simulation statistics by doing reduction between processes, calculating mean and standard deviation for the distances and velocities involving the remaining bodies.
+
+[[reports_visulization]]
+[#reports_visual]
+.Report process
+image::img/nbody_report_process.svg["REPORT"]

@@ -10,11 +10,15 @@
 
 class Mpi;
 
+/// @class Universe
+/// @brief Represents a system containing multiple celestial bodies that
+// interact through gravitational forces, supporting simulation updates and MPI
+// communication.
 class Universe {
-  DISABLE_COPY(Universe);
+  DISABLE_COPY(Universe);  ///< Disable copy constructor and assignment operator
 
  private:
-  // default values for the universe bodies
+  // Default limits for random generation of universe bodies
   double minMass = 0.0;
   double maxMass = 0.0;
   double minRadius = 0.0;
@@ -23,121 +27,149 @@ class Universe {
   double maxPosition = 0.0;
   double minVelocity = 0.0;
   double maxVelocity = 0.0;
-  int activeBodiesCount = 0;
-  std::vector<Body> bodies;  // contains the bodies in the universe
+  int activeBodiesCount = 0;  ///< Number of currently active bodies
+  std::vector<Body> bodies;   ///< Vector containing all bodies in the universe
 
  public:
-  /// @brief Constructor for Universe.
+  /// @brief Default constructor.
   Universe() = default;
   ~Universe() = default;
 
- public:
+  /// @brief Parse and analyze command line arguments for random universe mode.
+  /// @param argc Argument count
+  /// @param argv Argument values
+  /// @return True if arguments are valid
   bool analyzeRandomUniverseModeArguments(int argc, char* argv[]);
-  /// @brief Load the universe from a file.
+
+  /// @brief Load universe data from a TSV file.
+  /// @param universeFile The input file containing universe data.
+  /// @param rank The process rank in MPI.
+  /// @param size The total number of processes.
+  /// @return Number of bodies loaded by this process.
   size_t loadUniverse(std::string universeFile, size_t rank, size_t size);
-  /// @brief create a random universe.
+
+  /// @brief Create a randomly generated universe.
+  /// @param rank The process rank.
+  /// @param size The total number of MPI processes.
+  /// @param totalBodiesCount Total number of bodies in the simulation.
   void createUniverse(size_t rank, size_t size, int totalBodiesCount);
-  /// @brief Save the bodies to a tsv file with the current state of the
-  // simulation.
-  /// @brief Serialize the collision data of the bodies in the simulation.
+
+  /// @brief Serialize the current state of the simulation for file output.
+  /// @param serializedBodies Vector to store the data.
   void serializeCollisionData(std::vector<double>& serializedBodies);
-  /// @brief Serialize the acceleration data of the bodies in the simulation.
-  /// @param serializedBodies A vector to store the serialized data.
+
+  /// @brief Serialize the acceleration vectors of each body.
+  /// @param serializedBodies Vector to store the acceleration data.
   void serializeAccelerationData(std::vector<double>& serializedBodies);
-  /// @brief Save the bodies to a tsv file
-  /// @param universeFile The file to save the bodies to.
-  /// @param currentTime The current time of the simulation.
-  /// @param rank The rank of the process saving the file.
-  /// @param totalBodyCount The total number of active bodies in the simulation.
+
+  /// @brief Save the state of the bodies to a file in TSV format.
+  /// @param universeFile Output file path.
+  /// @param currentTime Current simulation time.
+  /// @param rank Rank of the writing process.
+  /// @param totalBodyCount Total active bodies in the simulation.
   void saveBodiesFile(std::string universeFile, double currentTime, int rank,
     const int totalBodyCount) const;
 
- public:
-  /// @brief Check the collisions between bodies in the simulation.
+  /// @brief Perform collision detection among local bodies.
   void checkCollisions();
-  /// @brief Check the collisions between bodies in the simulation.
-  /// @param serializedBodies A vector containing the mass, radius, position,
-  //  and velocities
-  /// @param otherRank The rank of the other process to check for collisions.
-  /// velocity of other bodie.
-  /// @param rank The rank of the current process.
-  /// @details This method checks for collisions between bodies in the
-  // simulation by comparing their serialized data.
+
+  /// @brief Check for collisions between local and remote bodies.
+  /// @param serializedBodies Serialized data of external bodies.
+  /// @param rank Rank of the current process.
+  /// @param otherRank Rank of the other process to compare with.
   void checkCollisions(std::vector<double>& serializedBodies, const int rank,
       const int otherRank);
-  /// @brief Update the positions of the bodies in the simulation.
-  void updateAccelerations();
-  /// @brief Update the accelerations of the bodies in the simulation.
-  /// @param serializedBodies A vector containing the mass and position
-  // of other bodies.
-  void updateAccelerations(std::vector<double>& serializedBodies);
-  /// @brief Update the velocities of the bodies in the simulation.
-  void updateVelocities(double deltaTime);
-  /// @brief Update the velocities of the bodies in the simulation.
-  void updatePositions(double deltaTime);
-  /// @brief Helper method to call an update function for body
-  void updateBodies(void (Body::*updateFunc)(double),
-    double deltaTime);
 
- public:
+  /// @brief Update gravitational accelerations of all local bodies.
+  void updateAccelerations();
+
+  /// @brief Update accelerations using remote body data.
+  /// @param serializedBodies Serialized positions and masses of other bodies.
+  void updateAccelerations(std::vector<double>& serializedBodies);
+
+  /// @brief Update velocities of all active bodies.
+  /// @param deltaTime Time step for integration.
+  void updateVelocities(double deltaTime);
+
+  /// @brief Update positions of all active bodies.
+  /// @param deltaTime Time step for integration.
+  void updatePositions(double deltaTime);
+
+  /// @brief Apply a generic update function (velocity/position) to all bodies.
+  /// @param updateFunc Pointer to the update method.
+  /// @param deltaTime Time step used in update.
+  void updateBodies(void (Body::*updateFunc)(double), double deltaTime);
+
+  /// @brief Compute all pairwise distances between active local bodies.
+  /// @param mpi MPI interface object.
+  /// @return Vector of distance vectors.
   std::vector<RealVector> getMyDistances(Mpi* mpi);
+
+  /// @brief Get all local velocities of active bodies.
+  /// @return Vector of velocity vectors.
   std::vector<RealVector> getMyVelocities() const;
 
  private:
-  /// @brief converts positions into a linear sequence of numbers (serialize)
-  /// @param serializedPositions positions to be processed
+  /// @brief Serialize the position vectors of all bodies.
+  /// @param serializedPositions Vector to store serialized data.
   void serializePositions(std::vector<double>& serializedPositions);
 
-  /// @brief Computes distances between active bodies owned by this process.
-  /// @param distances
+  /// @brief Compute all pairwise distances among local active bodies.
+  /// @param distances Output vector of computed distances.
   void aggregateOwnDistances(std::vector<RealVector>& distances);
 
-  /// @brief Computes distances between local bodies and serialized positions
-  /// from another process.
-  /// @param distances
-  /// @param serializedPositions
+  /// @brief Distances between local bodies and remote serialized positions.
+  /// @param distances Output vector of computed distances.
+  /// @param serializedPositions Serialized positions from another process.
   void aggregateDistances(std::vector<RealVector>& distances,
     const std::vector<double>& serializedPositions);
 
  public:
-  /// @brief Get the size of the vector of the bodies
-  /// @return the amount of bodies
+  /// @brief Get the number of local bodies in this process.
+  /// @return Number of local bodies.
   size_t size() const {
     return this->bodies.size();
   }
 
-  /// @brief returns a body with index
+  /// @brief Access a body by index (non-const).
+  /// @param index Index of the body.
+  /// @return Reference to the body.
   Body& operator[](size_t index) {
     return this->bodies[index];
   }
 
-  /// @brief returns a constant body with index
+  /// @brief Access a body by index (const).
+  /// @param index Index of the body.
+  /// @return Constant reference to the body.
   const Body& operator[](size_t index) const {
     return this->bodies[index];
   }
 
-  /// @brief
+  /// @brief Get the number of active bodies.
+  /// @return Active body count.
   int activeCount() const {
     return this->activeBodiesCount;
   }
 
-  /// @brief Get Bodies
-  /// @return The number of active bodies in the simulation.
+  /// @brief Get all local bodies.
+  /// @return Const reference to the vector of bodies.
   const std::vector<Body>& getBodies() const {
     return this->bodies;
   }
 
  private:
-  /// @brief Implements static map by blocks formula, adapted for processes
-  /// @param rank Process number
-  /// @param workAmount Amount of work to distribute
-  /// @param workers Process count
-  /// @return Index of start
+  /// @brief Compute the start index for static block distribution.
+  /// @param rank Process rank.
+  /// @param workAmount Total amount of work.
+  /// @param workers Number of workers (processes).
+  /// @return Start index for the current process.
   size_t calculateStart(int rank, int workAmount, int workers);
 
-  /// @brief Calculates finish index with formula for static map by blocks
-  /// @see calculateStart
-  /// @return Index of finish (exclusive)
+  /// @brief Compute the exclusive end index for static block distribution.
+  /// @param rank Process rank.
+  /// @param workAmount Total amount of work.
+  /// @param workers Number of workers (processes).
+  /// @return End index (exclusive) for the current process.
   size_t calculateFinish(int rank, int workAmount, int workers);
 };
 

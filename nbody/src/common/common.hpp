@@ -20,7 +20,7 @@
 #define BODY_DISTANCE_DATA_SIZE 3
 #define BODY_VELOCITY_DATA_SIZE 3
 
-/// @brief Data structure to hold collision data indexes for bodies
+/// @brief Collision data indexes for serialized bodies
 enum CollisionData{
   COLLISION_MASS = 0,
   COLLISION_RADIUS = 1,
@@ -32,7 +32,7 @@ enum CollisionData{
   COLLISION_VELOCITY_Z = 7
 };
 
-/// @brief Data structure to hold acceleration data indexes for bodies
+/// @brief Acceleration data indexes for serialized bodies
 enum AccelerationData{
   ACCELERATION_MASS = 0,
   ACCELERATION_POSITION_X = 1,
@@ -40,22 +40,25 @@ enum AccelerationData{
   ACCELERATION_POSITION_Z = 3
 };
 
-
+// Excution modes for the simulation
 enum ExecutionMode {
   UNIVERSE_FILE_MODE, RANDOM_UNIVERSE_MODE
 };
 
+// Common arguments positions for indexing
 enum CommonArgumentsPositions {
   DELTA_T = 2, MAX_TIME
 };
 
 #define UNIVERSE_FILE 1
 
+// Random universe mode arguments positions for indexing
 enum RandomUniverseModePositions {
   BODIES_COUNT = 1, MIN_MASS = 4, MAX_MASS, MIN_RADIUS, MAX_RADIUS,
   MIN_POS, MAX_POS, MIN_VEL, MAX_VEL
 };
 
+// Default values for random universe mode
 #define DEFAULT_MIN_MASS 10.0
 #define DEFAULT_MAX_MASS 2000.0
 #define DEFAULT_MIN_RADIUS 1.0
