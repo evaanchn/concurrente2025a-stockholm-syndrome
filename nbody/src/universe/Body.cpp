@@ -1,8 +1,10 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
 #include "Body.hpp"
+
 #include <cmath>
 #include <sstream>
+#include <string>
 #include <vector>
 
 Body::Body(double mass, double radius, RealVector position,

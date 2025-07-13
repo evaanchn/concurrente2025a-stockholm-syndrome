@@ -1,9 +1,12 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
+
+#include "RealVector.hpp"
+
 #include <cmath>
 #include <iomanip>
 #include <sstream>
-
-#include "RealVector.hpp"
+#include <string>
+#include <vector>
 
 size_t RealVector::size() const {
     return this->components.size();
