@@ -1,15 +1,15 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
-#ifndef VECTOR_HPP
-#define VECTOR_HPP
+#ifndef REALVECTOR_HPP
+#define REALVECTOR_HPP
 
 #include <vector>
 #include <iostream>
 #include <cassert>
 #include <string>
 
-class RealVector {
- private:
+struct RealVector {
+ public:
   std::vector<double> components;  /// Container of elements
 
  public:  // Constructors
@@ -63,7 +63,7 @@ class RealVector {
 
  public:
   /// @brief Converts the vector to a string representation
-  std::string to_string() const;
+  std::string toString() const;
 };
 
-#endif  // VECTOR_HPP
+#endif  // REALVECTOR_HPP
