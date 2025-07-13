@@ -77,7 +77,7 @@ bool RealVector::operator!=(const RealVector& other) const {
   return !(*this == other);
 }
 
-std::string RealVector::to_string() const {
+std::string RealVector::toString() const {
   std::stringstream vectorStream;
   vectorStream << "<";
   for (size_t i = 0; i < this->components.size(); ++i) {
