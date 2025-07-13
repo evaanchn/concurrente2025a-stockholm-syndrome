@@ -1,16 +1,18 @@
 // Copyright 2025 Stockholm Syndrome. Universidad de Costa Rica. CC BY 4.0
 
-#include <assert.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include <iostream>
 
-/**
- * @brief Start program execution.
- *
- * @return Status code to the operating system, 0 means success.
- */
-int main(void) {
-  // return simulation.run();
+#include "RealVector.hpp"
+#include "Simulation.hpp"
+
+int main(int argc, char* argv[]) {
+  try {
+    Simulation simulation;
+    simulation.run(argc, argv);
+  } catch(const std::runtime_error& error) {
+    std::cerr << error.what() << '\n';
+    return EXIT_FAILURE;
+  }
+
   return EXIT_SUCCESS;
 }
