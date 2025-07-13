@@ -8,6 +8,7 @@
 #include <cassert>
 #include <string>
 
+/// @brief Struct representing a mathematical vector, with real values
 struct RealVector {
  public:
   std::vector<double> components;  /// Container of elements

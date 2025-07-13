@@ -22,14 +22,14 @@ The distance is the resulting vector of the subtraction between the bodies' posi
 
 [asciimath]
 ++++
-\vec{r_{i,j}} = \vec{x_i} - \vec{x_j}
+\vec{r_{j,i}} = \vec{x_j} - \vec{x_i}
 ++++
 
 - *Collision condition*: If the sum of the bodies' radiuses is greater than the distance vector's magnitude, a collision has occured betweeen the two.
 
 [asciimath]
 ++++
-r_i + r_j \gt |\vec{r_{i,j}}|
+r_i + r_j \gt |\vec{r_{j,i}}|
 ++++
 
 Upon collision, the body with greater mass absorbs the smaller one in an inelastic collision. Consequently, the velocity of the absorbing body is updated with the following formula:
@@ -40,14 +40,14 @@ Upon collision, the body with greater mass absorbs the smaller one in an inelast
 ++++
 
 === Velocity update
-- *Acceleration*: The acceleration of a body for each state is calculated as the sum of forces applied by the other bodies, multiplied by the negated gravitational constant.
+- *Acceleration*: The acceleration of a body for each state is calculated as the sum of forces applied by the other bodies, multiplied by the gravitational constant.
 
 [asciimath]
 ++++
-\vec{a_i} = -G \sum_{i \ne j}^{N} \frac{m_j}{|\vec{r_{i,j}}|^3} \vec{r_{i,j}}
+\vec{a_i} = G \sum_{i \ne j}^{N} \frac{m_j}{|\vec{r_{j,i}}|^3} \vec{r_{j,i}}
 ++++
 
-- *Velocity*: After updating the body's acceleration, it is used to calculate the new velocity vector, along with the established duration between each state.
+- *Velocity*: After updating the body's acceleration, it is used to calculate the new velocity vector, with the collaboration with the established duration between each state.
 
 [asciimath]
 ++++
@@ -62,10 +62,21 @@ After all bodies have calculated their velocity, their position is updated with 
 \vec{x_{i,t+1}} = \vec{x_{i,t}} + \vec{V_{i,t+1}} \Delta t
 ++++
 
+The formula can be interpreted as a sum of the previous velocity with the product of the new velocity and the duration since the last state, in order to obtain the new position.
+
+[[disclaimers]]
+== Disclaimers
+This simulation has some important limitations to consider, making it an imperfect representation of reality, as computational simulations often are. The known limitations are:
+
+1. For each state, the collisions are only checked once, meaning that, in the event of a collision caused by the size incrementation of another absortion, which involves a body that was previously evaluated as non-colliding, the new collision will not be registered, and thus will produce inaccurate results.
+
+2. The simulation can only accurately represent and handle collisions between two bodies at once, meaning any interactions involving more than 2 entities will result in unexpected behavior.
+
+[[users_]]
 == User’s manual
 
 === Prerequisites
-*Important:* A Unix/Linux variant is required as the operating system. Ej: debian, fedora.
+*Important:* A Unix/Linux variant is required as the operating system. Ej: Debian, Fedora.
 
 Clone the GitLab repository.
 
@@ -92,18 +103,20 @@ $ sudo apt-get install make
 ----
 
 Install Mpich, for processes distribution
+
 [source]
 ----
 $ sudo apt install mpich libmpich-dev
 ----
 
-For Fedora users, the mpich module must be loaded, using the next command
+For Fedora users, "dnf" is used instead of "apt", and the mpich module must be loaded, using the next command
+
 [source]
 ----
 $ module load mpi/mpich-$arch
 ----
 
-where $arch represents the machine's architecture, which can be obtained with the command
+where $arch represents the architecture of the device you're executing from. This information can be obtained with the command:
 [source]
 ----
 $ uname -p
@@ -119,40 +132,60 @@ $ make clean && make
 
 === Usage
 
+To locally run the program, use the following command:
+
+[source]
+----
+$ make run
+----
+This will compile the program and execute it with the default parameters, which are:
+
+[source]
+----
+bin/nbody universes/univ002.tsv 60 7200
+----
+You can modify them at the `Makefile`, by changing the `ARGS` variable.
+See the <<random_mode>> and <<file_mode>> sections for more information on the parameters.
+
 ==== Distribution
 The program must be executed in a distributed environment, like a cluster with Slurm system.
 Here you can access link:https://www.schedmd.com/[Slurm Documentation].
 
-To use the program in a Slurm system, a `.sh` file is required. You can modify the one given at “nbodies/simulation.sh”
+To use the program in a Slurm system, a `.sh` file is required. You can modify the ones give at the repository root.
 After the “prun” command, specify the required arguments for each mode, you can choose from <<file_mode>> or <<random_mode>>.
 
 
 [[file_mode]]
 ==== File mode
-To execute the program with a <<bodies_file>> run the command:
+To execute the program with a "universe file" (see <<univ_file>>), run the command:
 
 [source]
 ----
-bin/nbody bodies.tsv delta_t max_time
+bin/nbody univ###.tsv delta_t max_time
 ----
 
-Bodies.tsv: path of the file containing bodies information
-Delta_t: elapsed time to make a position update
-Max_time: amount of time that the simulation will take if no stop condition is reached before
+- univ###.tsv: path of the file containing bodies information
+- delta_t: elapsed time to make a position update
+- max_time: amount of time that the simulation will take if no stop condition is reached before
 
-[[bodies_file]]
-===== Bodies file
-Contains each body separated by a new line and their information separated by tabulators. The following is a `bodies.tsv` file example:
+[[univ_file]]
+===== Universe file
+Simply put, a universe file specifies the data, separated by tabulators (making it a tsv file) for a list of bodies, separated by lines. The following is a `univ###.tsv` file example, where simple labels for each column are added for clarity, as they are not directly part of the universe file format.
 
 [source]
-----
-2[bodies_count]
-m(kg)  	r(m)	xx	xy	xz	vx	vy	vz
-2000    	5	0	0	0 	0	0	0
-50    	1	12	0	2	1	1	0.2
-----
+-----
+3 (bodies_count)
+m       r   xx  xy xz   vx  vy  vz
+2500	5	0	0	0	0	0	0
+60	1	15	5	0	0	0	0
+10000	20	12	-30	0	-40	0	0
+-----
+
+Labels:
+
 - bodies_count: number of bodies in the universe
-- r: radius
+- m: body mass, in kilograms
+- r: radius, in meters
 - xx: initial position in x axis
 - xy: initial position in y axis
 - xz: initial position in z axis
@@ -161,13 +194,15 @@ m(kg)  	r(m)	xx	xy	xz	vx	vy	vz
 - vz: initial velocity in z axis
 
 [[random_mode]]
-==== Random generated mode
-The program can be executed generating a random population of bodies that will compose a simulation. For that purpose run the program with the following command:
+==== Random universe mode
+The program can be executed in a second modality: random universe mode. This implies the creation of a specified amount of bodies, each with initial mass, radius, position and velocity in predefined ranges, that the program will use to simulate. The command structure for the following mode is detailed below:
 
 [source]
-----
+-----
 bin/nbody body_count delta_t max_time min_mass max_mass min_radius max_radius min_pos max_pos min_vel max_vel
-----
+-----
+
+Labels:
 
 - body_count: number of bodies in the universe
 - delta_t: elapsed time to make a position update
@@ -181,9 +216,42 @@ bin/nbody body_count delta_t max_time min_mass max_mass min_radius max_radius mi
 - min_vel: Minimum value the initial velocity can take at x, y, or z
 - max_vel: Maximum value the initial velocity can take at x, y, or z
 
-*Note*: min and max values are only for bodies creation(initialization)
+*Note*: min and max values are only used for bodies creation (initialization)
 
+[[exec_example]]
+== Execution example
+This section demonstrates how to run the simulation, in universe file mode (using the example shown in <<univ_file>>), and interpret its output.
 
+=== Commands
+To run the program using MPI with 3 processes for the file `univ002.tsv`, specifying 60 seconds durations between each state and a maximum simulation time of 7200 seconds, execute the following command:
+
+[source, bash]
+----
+$ mpirun -np 3 bin/nbody universes/univ002.tsv 60 7200
+----
+
+=== TSV file
+The output is written to a `.tsv` file, with the original name of the file preceding the amount of seconds simulated until stopping. For example, the name in this example case would be `univ002-7200.tsv`, given the parameters of execution. The expected output in the created file should be:
+
+[source, tsv]
+----
+3
+2500	5	0.00049949	-0.000123904	0	1.23651e-07	8.83638e-10	0
+60	1	14.9834	4.99425	0	-4.56217e-06	-1.55212e-06	0
+10000	20	-287988	-29.9999	0	-40	9.0918e-09	0
+----
+
+=== Console output
+Moreover, the program prints statistical summaries like mean and standard deviation to the console for velocities and distances between the remaining bodies:
+[source, console]
+----
+Remaining bodies: 3
+Distance (mean): <191992, 19.9999, 0>
+Distance (stdev): <166283, 21.7892, 0>
+Velocity (mean): <-13.3333, -5.14048e-07, 0>
+Velocity (stdev): <23.094, 8.99005e-07, 0>
+----
 [[credits]]
 == Credits
-For further information click the link of the homework statement that this project comes from: https://jeisson.ecci.ucr.ac.cr/concurrente/2025a/proyectos/nbody/
+For more information, click the link for the specfiications of this project:
+https://jeisson.ecci.ucr.ac.cr/concurrente/2025a/proyectos/nbody/
