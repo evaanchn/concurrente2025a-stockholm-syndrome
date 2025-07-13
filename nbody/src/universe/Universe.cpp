@@ -4,7 +4,7 @@
 
 #include <fstream>
 #include <iostream>
-#include <omp.h>
+#include <omp.h>  // NOLINT[BUILD-LACK_INCLUDE_SCORE_ORDER]
 #include <sstream>
 #include <string>
 #include <vector>
@@ -15,9 +15,10 @@
 // Return true if arguments were set, false if default arguments are needed
 bool Universe::analyzeRandomUniverseModeArguments(int argc, char* argv[]) {
   if (argc < 12) {
-    return false;
+    return false;  // Not enough arguments for random mode
   }
   try {
+    // Parse all range parameters from command line
     this->minMass = std::stod(argv[MIN_MASS]);
     this->maxMass = std::stod(argv[MAX_MASS]);
     this->minRadius = std::stod(argv[MIN_RADIUS]);
@@ -27,6 +28,7 @@ bool Universe::analyzeRandomUniverseModeArguments(int argc, char* argv[]) {
     this->minVelocity = std::stod(argv[MIN_VEL]);
     this->maxVelocity = std::stod(argv[MAX_VEL]);
   } catch(const std::invalid_argument& error) {
+    // If parsing fails, use default values
     std::cerr << "Default minimums and maximums set" << std::endl;
     this->minMass = DEFAULT_MIN_MASS;
     this->maxMass = DEFAULT_MAX_MASS;
@@ -40,6 +42,7 @@ bool Universe::analyzeRandomUniverseModeArguments(int argc, char* argv[]) {
   return true;
 }
 
+// Loads universe state from file, distributing bodies across MPI processes
 size_t Universe::loadUniverse(std::string universeFile, size_t rank,
     size_t size) {
   size_t totalBodyCount = 0;
@@ -50,11 +53,14 @@ size_t Universe::loadUniverse(std::string universeFile, size_t rank,
   }
   try {
     std::string line;
+    // First line contains total body count
     std::getline(file, line);
     totalBodyCount = std::stoul(line);
+    // Validate we have enough bodies for all processes
     if (totalBodyCount < size) {
       throw std::runtime_error("insufficient bodies in universe");
     }
+    // Calculate which bodies this process should handle
     size_t process_bodies_start = this->calculateStart(rank,
         totalBodyCount, size);
     size_t process_bodies_end = this->calculateFinish(rank,
@@ -69,16 +75,19 @@ size_t Universe::loadUniverse(std::string universeFile, size_t rank,
       if (!std::getline(file, line)) {
         break;  // End of file reached
       }
+      // Parse tab-separated body data
       std::istringstream sstream(line);
       std::string cell;
       std::vector<std::string> row;
       while (std::getline(sstream, cell, '\t')) {
         row.push_back(cell);
       }
+      // Extract position and velocity vectors
       std::vector<double> auxPos = {std::stod(row[2]), std::stod(row[3]),
         std::stod(row[4])};
       std::vector<double> auxVelocity = {std::stod(row[5]), std::stod(row[6]),
         std::stod(row[7])};
+      // Create and store new body
       this->bodies.push_back(Body(
         std::stod(row[0]),  // mass
         std::stod(row[1]),  // radius
@@ -94,15 +103,19 @@ size_t Universe::loadUniverse(std::string universeFile, size_t rank,
   return totalBodyCount;
 }
 
+// Creates a random universe with bodies distributed across MPI processes
 void Universe::createUniverse(size_t rank, size_t size, int totalBodiesCount) {
+  // Calculate range of bodies this process should create
   int start = this->calculateStart(rank, totalBodiesCount, size);
   int finish =  this->calculateFinish(rank, totalBodiesCount, size);
   int myBodiesCount = finish - start;
+  // Generate random bodies within specified parameter ranges
   for (int index = 0; index < myBodiesCount; ++index) {
     double mass = Util::random(this->minMass, this->maxMass);
     double radius = Util::random(this->minRadius, this->maxRadius);
     std::vector<double> positionVector;
     std::vector<double> velocityVector;
+    // Generate random position and velocity components
     for (int i = 0; i < 3; ++i) {
       positionVector.push_back(Util::random(this->minPosition,
           this->maxPosition));
@@ -110,6 +123,7 @@ void Universe::createUniverse(size_t rank, size_t size, int totalBodiesCount) {
           this->maxVelocity));
     }
 
+    // Create and store new random body
     this->bodies.push_back(Body(
       mass,
       radius,
@@ -119,19 +133,23 @@ void Universe::createUniverse(size_t rank, size_t size, int totalBodiesCount) {
   this->activeBodiesCount = this->bodies.size();
 }
 
+// Calculates start index for work distribution among processes
 size_t Universe::calculateStart(int rank, int workAmount, int workers) {
   // Add the residue if the process number exceeds it
   size_t added = rank < workAmount % workers ? rank : workAmount % workers;
   return rank * (workAmount / workers) + added;
 }
 
+// Calculates end index for work distribution
 size_t Universe::calculateFinish(int rank, int workAmount, int workers) {
   return calculateStart(rank + 1, workAmount, workers);
 }
 
+// Serializes body data for collision detection
 void Universe::serializeCollisionData(std::vector<double>& serializedBodies) {
   for (const Body& body : this->bodies) {
     if (body.isActive()) {
+      // Append each active body's collision data to the vector
       std::vector<double> serializedBody = body.serializeCheckCollision();
       serializedBodies.insert(serializedBodies.end(), serializedBody.begin(),
         serializedBody.end());
@@ -139,10 +157,12 @@ void Universe::serializeCollisionData(std::vector<double>& serializedBodies) {
   }
 }
 
+// Serializes body data for acceleration calculations
 void Universe::serializeAccelerationData
   (std::vector<double>& serializedBodies) {
   for (const Body& body : this->bodies) {
     if (body.isActive()) {
+      // Append each active body's acceleration data to the vector
       std::vector<double> serializedBody = body.serializeAccelerationData();
       serializedBodies.insert(serializedBodies.end(), serializedBody.begin(),
         serializedBody.end());
@@ -150,6 +170,7 @@ void Universe::serializeAccelerationData
   }
 }
 
+// Saves current universe state to file (parallel version)
 void Universe::saveBodiesFile(std::string universeFile,
     double currentTime, const int rank, const int totalBodyCount) const {
   // remove the file extension from the universe file
@@ -168,17 +189,20 @@ void Universe::saveBodiesFile(std::string universeFile,
     std::cerr << "Cannot open file for writing: " << fileName << std::endl;
     throw std::runtime_error("cannot save bodies file");
   }
+  // Write all bodies managed by this process
   for (const Body& body : this->bodies) {
     file << body << std::endl;
   }
   file.close();
 }
 
+// Checks for collisions between local bodies
 void Universe::checkCollisions() {
   for (size_t index = 0; index < this->bodies.size(); ++index) {
     if (!this->bodies[index].isActive()) {
       continue;  // Skip inactive bodies
     }
+    // Check against all other bodies
     for (size_t other_index = 0; other_index < this->bodies.size();
         ++other_index) {
       if (index == other_index || !this->bodies[other_index].isActive()) {
@@ -187,6 +211,7 @@ void Universe::checkCollisions() {
       if (this->bodies[index].checkCollision(this->bodies[other_index])) {
         // #pragma omp critical
         --this->activeBodiesCount;
+        // Let the more massive body absorb the smaller one
         if (!this->bodies[index].absorb(this->bodies[other_index])) {
           this->bodies[other_index].absorb(this->bodies[index]);
         }
