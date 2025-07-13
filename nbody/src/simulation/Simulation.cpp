@@ -15,12 +15,14 @@
 #include "Statistics.hpp"
 #include "Util.hpp"
 
+// Usage message displayed when program runs in universe file mode
 const char* const usage_universe_file =
   "Universe file mode usage: nbody universe_file delta_t max_time\n\n"
   "  universe_file  File with bodies' initial information\n"
   "  delta_t        Duration between each state\n"
   "  max_time       Max time allowed for simulation\n";
 
+// Usage message displayed when program runs in random universe mode
 const char* const usage_random_universe =
 "Random universe mode usage: "
 "nbody bodies_count delta_t max_time min_pos max_pos min_vel max_vel\n\n"
@@ -36,12 +38,15 @@ const char* const usage_random_universe =
 "  min_vel      Minimum value the initial velocity can take at x, y, or z\n"
 "  max_vel      Maximum value the initial velocity can take at x, y, or z\n";
 
+// Destructor cleans up MPI resources
 Simulation::~Simulation() {
   delete this->mpi;
   this->mpi = nullptr;
 }
 
+// Analyzes command line arguments to determine execution mode
 ExecutionMode Simulation::analyzeArguments(int argc, char* argv[]) {
+  // Check minimum argument count
   if (argc < 4)  {
     throw std::invalid_argument("insufficient arguments");
   }
@@ -54,6 +59,7 @@ ExecutionMode Simulation::analyzeArguments(int argc, char* argv[]) {
     }
   }
 
+  // Parse time parameters from arguments
   try {
     this->deltaTime = std::stod(argv[DELTA_T]);
     this->maxTime = std::stod(argv[MAX_TIME]);
@@ -65,6 +71,7 @@ ExecutionMode Simulation::analyzeArguments(int argc, char* argv[]) {
   bool randomUniverseMode = true;
   try {
     this->totalBodiesCount = std::stoul(argv[BODIES_COUNT]);
+    // Validate we have enough bodies for all MPI processes
     if (this->totalBodiesCount < this->mpi->size()) {
       throw std::runtime_error("insufficient bodies in universe");
     }
@@ -75,31 +82,40 @@ ExecutionMode Simulation::analyzeArguments(int argc, char* argv[]) {
   }
 
   if (randomUniverseMode) {
+    // Parse remaining random universe parameters
     this->universe.analyzeRandomUniverseModeArguments(argc, argv);
     return RANDOM_UNIVERSE_MODE;
   }
   return UNIVERSE_FILE_MODE;
 }
 
+// Main simulation execution function
 int Simulation::run(int argc, char* argv[]) {
+  // Initialize MPI communication
   this->mpi = new Mpi(argc, argv);
   try {
+    // Load or create initial universe state
     if (this->analyzeArguments(argc, argv) == UNIVERSE_FILE_MODE) {
+      // Load universe from file (distributed across processes)
       this->totalBodiesCount = this->universe.loadUniverse(this->universeFile,
         this->mpi->rank(), this->mpi->size());
     } else {
+      // Create random universe (distributed across processes)
       this->universe.createUniverse(this->mpi->rank(), this->mpi->size(),
         this->totalBodiesCount);
     }
   } catch (const std::invalid_argument& error) {
+    // Handle argument errors
     std::cerr << "error: " << error.what() << std::endl;
     std::cout << usage_universe_file << std::endl;
     std::cout << usage_random_universe << std::endl;
     return EXIT_FAILURE;
   } catch (const std::runtime_error& error) {
+    // Handle runtime errors
     std::cerr << "error: " << error.what() << std::endl;
     return EXIT_FAILURE;
   }
+  // Main simulation loop
   double currentTime = 0.0;
   int totalActiveCount = this->totalBodiesCount;
   // Simulation loop until max time is reached or only one body remains
@@ -107,9 +123,10 @@ int Simulation::run(int argc, char* argv[]) {
     this->stateCollisions();
     this->stateAccelerations();
     this->statePositions();
+    // Synchronize active body count across all processes
     this->mpi->allReduce(this->universe.activeCount(), totalActiveCount,
       MPI_SUM);
-    currentTime += this->deltaTime;
+    currentTime += this->deltaTime;  // Advance simulation time
   }
   // Save the final state of the universe
   for (int rank = 0; rank < this->mpi->size(); ++rank) {
@@ -124,10 +141,12 @@ int Simulation::run(int argc, char* argv[]) {
   return EXIT_SUCCESS;
 }
 
+// Returns count of remaining active bodies on this process
 size_t Simulation::remaining() const {
   return this->universe.activeCount();
 }
 
+// Handles collision detection and resolution
 void Simulation::stateCollisions() {
   // check local collisions
   this->universe.checkCollisions();
@@ -162,17 +181,22 @@ void Simulation::stateAccelerations() {
   }
 }
 
+// Updates body positions based on velocities
 void Simulation::statePositions() {
+  // Update velocities based on current accelerations
   this->universe.updateVelocities(this->deltaTime);
+  // Update positions based on new velocities
   this->universe.updatePositions(this->deltaTime);
 }
 
+// Generates and displays final simulation statistics
 void Simulation::reportResults(const int totalActiveBodiesCount) {
   Statistics statistics;
+  // Gather distance and velocity data
   const std::vector<RealVector> distances =
       this->universe.getMyDistances(this->mpi);
   const std::vector<RealVector> velocities = this->universe.getMyVelocities();
-
+  // Calculate distributed statistics across all processes
   RealVector distanceMean = statistics.realVectorMeanDistributed(this->mpi,
       distances, totalActiveBodiesCount);
   RealVector distanceStdev = statistics.realVectorStDevDistributed(
@@ -182,10 +206,11 @@ void Simulation::reportResults(const int totalActiveBodiesCount) {
       velocities, totalActiveBodiesCount);
   RealVector velocityStdev = statistics.realVectorStDevDistributed(
     this->mpi, velocities, velocityMean, totalActiveBodiesCount);
-
+  // Only root process reports results
   if (this->mpi->rank() != 0) {
     return;  // Only process 0 should report results
   }
+  // Print final statistics
   printf("Simulation finished with %d active bodies.\n",
          totalActiveBodiesCount);
   printf("Mean distance: %s\n", distanceMean.toString().c_str());
