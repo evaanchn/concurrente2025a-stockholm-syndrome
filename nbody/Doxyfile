@@ -1,0 +1,4 @@
+@INCLUDE = ../common/Doxyfile
+PROJECT_NAME           = "N bodies simulation"
+PROJECT_NUMBER         = 1.0
+PROJECT_BRIEF          = "Distributed simulation of gravitational atraction betwen bodies in space"

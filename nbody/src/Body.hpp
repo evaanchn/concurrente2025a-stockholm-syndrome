@@ -86,6 +86,7 @@ class Body {
 
   /// @brief merge the velocity of two bodies and calculate the new velocity
   /// @param otherMass Mass of the other body
+  /// @param otherVelocity Velocity of the other body
   void mergeVelocities(double otherMass, RealVector otherVelocity);
 
  public:  // Comparison methods
