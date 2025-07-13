@@ -75,6 +75,8 @@ class Body {
   /// @see absorb(double otherMass, double otherRadius,
   /// RealVector otherVelocity)
   bool absorb(Body& other);
+  /// @brief deactivates the body, making it inactive in the simulation
+  void deactivate();
 
  private:  // Auxiliary methods for collision
   /// @brief merge the radius of two bodies and calculate the new radius
@@ -86,15 +88,17 @@ class Body {
   /// @param otherMass Mass of the other body
   void mergeVelocities(double otherMass, RealVector otherVelocity);
 
-  /// @brief deactivates the body, making it inactive in the simulation
-  void deactivate();
-
  public:  // Comparison methods
   /// @brief check if two bodies are equal based on their properties
   /// @param other Body to compare with
   /// @see isEqualTo(double otherMass, double otherRadius,
   /// RealVector otherPosition)
   bool operator==(const Body& other) const;
+
+  /// @brief check if the body is equal based on its mass
+  /// @param otherMass Mass of the other body
+  /// @return true if the body is equal, false otherwise
+  bool equalMasses(const double otherMass) const;
 
   /// @brief check if two bodies are not equal based on their properties
   /// @param other Body to compare with

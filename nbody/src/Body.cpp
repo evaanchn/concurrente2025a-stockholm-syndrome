@@ -12,7 +12,7 @@ Body::Body(double mass, double radius, RealVector position,
 }
 
 double Body::addRadiuses(double otherRadius) {
-  return std::pow((std::pow(this->radius, 3) +std::pow(otherRadius, 3)),
+  return std::pow((std::pow(this->radius, 3) + std::pow(otherRadius, 3)),
     1.0 / 3);
 }
 
@@ -35,8 +35,6 @@ void Body::resetAcceleration() {
 }
 
 void Body::updateVelocity(double deltaTime) {
-  // TODO(us): Negative G, ask proffessor
-  // this->velocity = this->velocity + (this->acceleration * -G) * deltaTime;
   this->velocity = this->velocity + (this->acceleration * G) * deltaTime;
 }
 
@@ -57,10 +55,6 @@ bool Body::checkCollision(const Body& other) {
   return this->checkCollision(other.radius, other.position);
 }
 
-void Body::deactivate() {
-  this->mass *= -1;
-}
-
 bool Body::isActive() const {
   return this->mass > 0;
 }
@@ -74,11 +68,10 @@ bool Body::absorb(double otherMass, double otherRadius,
   RealVector otherVelocity) {
   if (this->mass >= otherMass) {
     this->mass += otherMass;
-    this->addRadiuses(otherRadius);
+    this->radius = this->addRadiuses(otherRadius);
     this->mergeVelocities(otherMass, otherVelocity);
     return true;
   }
-  // this->deactivate();
   return false;
 }
 
@@ -90,8 +83,16 @@ bool Body::absorb(Body& other) {
   return false;
 }
 
+void Body::deactivate() {
+  this->mass *= -1;
+}
+
 bool Body::operator==(const Body& other) const {
   return this->isEqualTo(other.mass, other.radius, other.position);
+}
+
+bool Body::equalMasses(const double otherMass) const {
+  return this->mass == otherMass;
 }
 
 bool Body::operator!=(const Body& other) const {
@@ -146,8 +147,8 @@ std::string Body::toString() {
   std::stringstream bodyStream;
   bodyStream << "\nMass: " << std::to_string(this->mass) <<
     "\nRadius: " << std::to_string(this->radius) <<
-    "\nPosition: " << this->position.to_string() <<
-    "\nVelocity: " << this->velocity.to_string();
+    "\nPosition: " << this->position.toString() <<
+    "\nVelocity: " << this->velocity.toString();
   return bodyStream.str();
 }
 
