@@ -39,7 +39,7 @@ class ResponseClient : public TcpClient, public Consumer<DataUnit*> {
   /// @return A reference to the Socket object that can be used to send and
   /// receive information with the server
   /// @throw std::runtime_error if could not connect to the server
-  Socket& connect(const char* serverIP, const char* port);
+  Socket& connectToMaster(const char* serverIP, const char* port);
 
   /// @brief starts to consume all DataUnits completed
   int run() override;

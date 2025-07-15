@@ -7,21 +7,22 @@ WorkerConnections::~WorkerConnections() {
 }
 
 Socket WorkerConnections::getRandomWorkerConnection() {
-  std::lock_guard<std::mutex> lock(this->canAccessWorkerConnections);
-  Socket selectedSocket;
+  this->canAccessWorkerConnections.lock();
   // If no connections are left, throw error
   if (this->connections.empty()) {
+    this->canAccessWorkerConnections.unlock();
     throw std::runtime_error("no worker connections available");
   }
   // Generate random index
-  unsigned seed = time(NULL) + clock() + pthread_self();
-  size_t index = rand_r(&seed) % this->connections.size();
-  selectedSocket = this->connections[index];  // Obtain socket
+  const size_t index = Util::random(
+      0, static_cast<int>(this->connections.size()));
+  Socket selectedSocket = this->connections[index];  // Obtain socket
+  this->canAccessWorkerConnections.unlock();
   return selectedSocket;
 }
 
-void WorkerConnections::removeSocket(Socket socket) {
-  std::lock_guard<std::mutex> lock(this->canAccessWorkerConnections);
+void WorkerConnections::removeSocket(Socket& socket) {
+  this->canAccessWorkerConnections.lock();
   // Find the index of the socket to remove
   size_t index = 0;
   for (; index < this->connections.size(); ++index) {
@@ -30,15 +31,17 @@ void WorkerConnections::removeSocket(Socket socket) {
     }
   }
   this->connections.erase(this->connections.begin() + index);
+  this->canAccessWorkerConnections.unlock();
 }
 
 void WorkerConnections::addConnection(Socket& socket) {
-  std::lock_guard<std::mutex> lock(this->canAccessWorkerConnections);
+  this->canAccessWorkerConnections.lock();
   this->connections.push_back(socket);
+  this->canAccessWorkerConnections.unlock();
 }
 
 void WorkerConnections::stopWorkers() {
-  std::lock_guard<std::mutex> lock(this->canAccessWorkerConnections);
+  this->canAccessWorkerConnections.lock();
   for (Socket& socket : this->connections) {
     // Send stop condition to worker
     socket << "-1\n";  // -1 is a stop condition
@@ -46,12 +49,5 @@ void WorkerConnections::stopWorkers() {
     // Optionally, close the socket if needed
     // socket.close();
   }
-}
-
-bool WorkerConnections::hasConnections() const {
-  return !this->connections.empty();
-}
-
-size_t WorkerConnections::getConnectionCount() const {
-  return this->connections.size();
+  this->canAccessWorkerConnections.unlock();
 }

@@ -26,10 +26,16 @@ int WorkerConnectionHandler::run() {
 
 // Processes a single worker connection until it's closed
 void WorkerConnectionHandler::consume(Socket workerConnection) {
+  // Print IP and port from worker
+  const NetworkAddress& address = workerConnection.getNetworkAddress();
+  Log::append(Log::INFO, "connection",
+    std::string("connection established with worker ") + address.getIP()
+    + " port " + std::to_string(address.getPort()));
+
   // While the same client asks for HTTP requests in the same connection
   while (true) {
     // If the workerConnection is not connected, stop consuming
-    if (!route(workerConnection)) {
+    if (!this->route(workerConnection)) {
       // Clean up connection from worker pool before breaking
       this->workerConnections.removeSocket(workerConnection);
       break;
@@ -39,11 +45,6 @@ void WorkerConnectionHandler::consume(Socket workerConnection) {
 
 // Handles request routing for a single worker connection
 bool WorkerConnectionHandler::route(Socket& workerConnection) {
-  // Print IP and port from worker
-  const NetworkAddress& address = workerConnection.getNetworkAddress();
-  Log::append(Log::INFO, "connection",
-    std::string("connection established with worker ") + address.getIP()
-    + " port " + std::to_string(address.getPort()));
   // First read which application should handle this request
   std::string appIndexStr;
   if (!workerConnection.readLine(appIndexStr, '\n')) {

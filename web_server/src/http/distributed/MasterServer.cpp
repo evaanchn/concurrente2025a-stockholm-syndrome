@@ -46,10 +46,6 @@ int MasterServer::run() {
   return EXIT_SUCCESS;
 }
 
-void MasterServer::listenForever(const char* port) {
-  return TcpServer::listenForever(port);
-}
-
 void MasterServer::handleClientConnection(Socket& workerConnection) {
   // Handle the client connection by sending it to the worker connections
   std::string password;

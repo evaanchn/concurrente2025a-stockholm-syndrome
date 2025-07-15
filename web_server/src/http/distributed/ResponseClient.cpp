@@ -15,7 +15,7 @@ ResponseClient::ResponseClient(size_t pendingStopConditions) :
   pendingStopConditions(pendingStopConditions) {
 }
 
-Socket& ResponseClient::connect(const char* server, const char* port) {
+Socket& ResponseClient::connectToMaster(const char* server, const char* port) {
   this->TcpClient::connect(server, port);
   // give access password on success
   this->socket << WORKER_PASSWORD;
@@ -31,7 +31,11 @@ int ResponseClient::run() {
   for (size_t i = 0; i < this->pendingStopConditions; ++i) {
     this->consumeLoop();
   }
-  this->socket.close();
+  // send stop condtion to master server
+  this->socket << "-1\n";
+  this->socket.send();
+  Log::append(Log::INFO, "worker",
+    "ResponseClient finished consuming data units");
   return EXIT_SUCCESS;
 }
 
