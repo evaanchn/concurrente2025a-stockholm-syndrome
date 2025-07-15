@@ -21,9 +21,10 @@ struct DataUnit;
  * and reads work results from it to deserialize them into DataUnit objects.
  */
 class WorkerConnectionHandler : public Assembler <Socket, DataUnit*> {
-  /// Reference to app chain in server
  private:
+  /// Reference to app chain in server
   std::vector<HttpApp*>& applications;
+  /// Reference to worker connections momitor
   WorkerConnections& workerConnections;
 
  public:
@@ -46,4 +47,5 @@ class WorkerConnectionHandler : public Assembler <Socket, DataUnit*> {
   /// @return true if the request was routed successfully, false otherwise
   bool route(Socket& workerConnection);
 };
+
 #endif  // WORKERCONNECTIONHANDLER_HPP

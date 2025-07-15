@@ -471,15 +471,16 @@ bool HttpServer::startWorker() {
   this->responseClient = new ResponseClient(this->calculatorsAmount);
   // Attempt to connect to master, if fails, it will throw an exception
   this->responseClient->connectToMaster(this->masterIP, this->masterPort);
+  Log::append(Log::INFO, "worker",
+    "Connected to master server at " + std::to_string(*this->masterIP) + ":" +
+    this->masterPort);
 
   // Only create worker's thread objects and conenct their queues if connection
   // was successful
   this->createWorkerThreads();
   this->createWorkerQueues();
   this->connectWorkerQueues();
-  Log::append(Log::INFO, "worker",
-    "Connected to master server at " + std::to_string(*this->masterIP) + ":" +
-    this->masterPort);
+
   return true;
 }
 
@@ -565,7 +566,6 @@ void HttpServer::joinWorkerThreads() {
 
 void HttpServer::deleteWorkerThreads() {
   // Free memory allocated for handler thread objects
-
   if (this->requestServer) {
     delete this->requestServer;
     this->requestServer = nullptr;
