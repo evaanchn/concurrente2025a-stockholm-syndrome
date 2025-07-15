@@ -1,6 +1,9 @@
 // Copyright 2021,2024 Jeisson Hidalgo-Cespedes. ECCI-UCR. CC BY 4.0
 
 #include "HomeWebApp.hpp"
+
+#include <string>
+
 #include "HttpRequest.hpp"
 #include "HttpResponse.hpp"
 #include "Util.hpp"

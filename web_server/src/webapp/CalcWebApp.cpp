@@ -104,7 +104,7 @@ DataUnit* CalcWebApp::deserializeRequest(std::string requestData) {
   }
   // Classes that inherit from this one would know what type conc data to create
   Log::append(Log::INFO, "CalcWebApp",
-    "Processig query: " + std::to_string(query));
+    "Processing query: " + std::to_string(query));
   return this->createWorkUnit(appIndex, originalDataPtr, originalResultIdx,
       query);
 }

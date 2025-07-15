@@ -4,11 +4,11 @@
 #define WORKERCONNECTIONS_HPP
 
 #include <mutex>
-#include <random>
 #include <vector>
 
 #include "common.hpp"
 #include "Socket.hpp"
+#include "Util.hpp"
 
 /**
  * @class WorkerConnections
@@ -47,7 +47,7 @@ class WorkerConnections {
    * @param socket The socket connection to remove
    * @note This is a thread-safe operation
    */
-  void removeSocket(Socket socket);
+  void removeSocket(Socket& socket);
   /**
    * @brief Adds a new connection to the worker pool
    * @param socket The socket connection to add (passed by reference)
@@ -59,18 +59,6 @@ class WorkerConnections {
    * @note This is a thread-safe operation
    */
   void stopWorkers();
-  /**
-   * @brief Checks if any connections exist in the pool
-   * @return bool True if connections exist, false otherwise
-   * @note This is a thread-safe operation
-   */
-  bool hasConnections() const;
-  /**
-   * @brief Gets the current number of active connections
-   * @return size_t Count of connections in the pool
-   * @note This is a thread-safe operation
-   */
-  size_t getConnectionCount() const;
 };
 
 #endif
