@@ -19,7 +19,6 @@
 #include "Distributor.hpp"
 #include "HttpConnectionHandler.hpp"
 #include "ResponseAssembler.hpp"
-#include "RequestClient.hpp"
 #include "RequestServer.hpp"
 #include "ResponseClient.hpp"
 #include "WorkerConnectionHandler.hpp"
@@ -207,11 +206,9 @@ void HttpServer::createThreads() {
   this->decomposer = new Decomposer(
       /*pendindStopConditions*/ this->maxConnections);
 
-  this->distributor = new Distributor(this->workerConnections,
-      /*stopConditionsToSend*/ this->calculatorsAmount);
-
-  this->requestClient = new RequestClient(this->workerConnections,
-      this->applications);
+  this->distributor = new Distributor(this->applications,
+    this->workerConnections,
+    /*stopConditionsToSend*/ this->calculatorsAmount);
 
   // Reserve enough space for calculators
   this->calculators.reserve(this->calculatorsAmount);
@@ -247,13 +244,10 @@ void HttpServer::createQueues() {
   this->socketsQueue = new Queue<Socket>(this->queuesCapacity);
 
   // Decomposer consumes from its own queue
-  this->decomposer->createOwnQueue(SEM_VALUE_MAX);
+  this->decomposer->createOwnQueue(this->queuesCapacity);
 
   // Distributor has its own queue to consume from
-  this->distributor->createOwnQueue(SEM_VALUE_MAX);
-
-  // RequestClient has its own queue to consume from
-  this->requestClient->createOwnQueue(SEM_VALUE_MAX);
+  this->distributor->createOwnQueue(this->queuesCapacity);
 
   // Create queue between decomposers and data units handlers
   this->dataUnitsQueue
@@ -264,8 +258,8 @@ void HttpServer::createQueues() {
       = new Queue<Socket>(this->maxWorkerConnections);
 
   // Response assembler and client responder have their own queue
-  this->responseAssembler->createOwnQueue(SEM_VALUE_MAX);
-  this->clientResponder->createOwnQueue(SEM_VALUE_MAX);
+  this->responseAssembler->createOwnQueue(this->queuesCapacity);
+  this->clientResponder->createOwnQueue(this->queuesCapacity);
 }
 
 void HttpServer::connectQueues() {
@@ -279,14 +273,8 @@ void HttpServer::connectQueues() {
   // Decomposer produces to the unit's queue
   this->decomposer->setProducingQueue(this->distributor->getConsumingQueue());
 
-  // Distributor produces for requestClient and into dataUnits queue
-  this->distributor->registerRedirect(DISTRIBUTED,
-    this->requestClient->getConsumingQueue());
-  this->distributor->registerRedirect(!DISTRIBUTED, this->dataUnitsQueue);
-
-  // RequestClient consumes from its queue and produces to distributor's queue
-  this->requestClient->setProducingQueue(this->
-    distributor->getConsumingQueue());
+  // Distributor produces to the data units queue
+  this->distributor->setProducingQueue(this->dataUnitsQueue);
 
   // Each calculator consumes from the data units queue
   // And produces to the response assembler's queue
@@ -321,7 +309,6 @@ void HttpServer::startThreads() {
 
   this->distributor->startThread();
 
-  this->requestClient->startThread();
   // Calculators start to wait for concurrent units to process
   for (size_t index = 0; index < this->calculatorsAmount; ++index) {
     this->calculators[index]->startThread();
@@ -383,7 +370,6 @@ void HttpServer::joinThreads() {
   // Wait after decomposer and request client sent their stop conditions
   this->distributor->waitToFinish();
   // Wait since it receives a stop condition from distributor first
-  this->requestClient->waitToFinish();
 
   for (size_t index = 0; index < this->calculatorsAmount; ++index) {
     this->calculators[index]->waitToFinish();
@@ -414,9 +400,6 @@ void HttpServer::deleteThreads() {
 
   delete this->distributor;
   this->distributor = nullptr;
-
-  delete this->requestClient;
-  this->requestClient = nullptr;
 
   for (Calculator* calculator : this->calculators) {
     delete calculator;

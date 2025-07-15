@@ -23,7 +23,6 @@ class HttpApp;
 class HttpConnectionHandler;
 class ResponseAssembler;
 class Distributor;
-class RequestClient;
 class RequestServer;
 class ResponseClient;
 class WorkerConnectionHandler;
@@ -113,8 +112,6 @@ class HttpServer : public TcpServer {
   Queue<Socket>* workerConnectionsQueue = nullptr;
   /// Distributor: distributes data units to calculators or workers
   Distributor* distributor = nullptr;
-  /// Sends requests with queries to worker processes
-  RequestClient* requestClient = nullptr;
   /// Listens for worker connections
   MasterServer* masterServer;
   /// Thread team to handle worker connections
