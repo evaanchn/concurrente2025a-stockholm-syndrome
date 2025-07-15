@@ -51,7 +51,3 @@ void WorkerConnections::stopWorkers() {
   }
   this->canAccessWorkerConnections.unlock();
 }
-
-size_t WorkerConnections::getConnectionCount() const {
-  return this->connections.size();
-}

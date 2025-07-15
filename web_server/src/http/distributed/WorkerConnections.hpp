@@ -59,12 +59,6 @@ class WorkerConnections {
    * @note This is a thread-safe operation
    */
   void stopWorkers();
-  /**
-   * @brief Gets the current number of active connections
-   * @return size_t Count of connections in the pool
-   * @note This is a thread-safe operation
-   */
-  size_t getConnectionCount() const;
 };
 
 #endif
