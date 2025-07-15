@@ -367,9 +367,8 @@ void HttpServer::joinThreads() {
 
   // Wait for decomposer, who sends a stop condition to distributor before halt
   this->decomposer->waitToFinish();
-  // Wait after decomposer and request client sent their stop conditions
+  // Wait after decomposer sent its stop condition
   this->distributor->waitToFinish();
-  // Wait since it receives a stop condition from distributor first
 
   for (size_t index = 0; index < this->calculatorsAmount; ++index) {
     this->calculators[index]->waitToFinish();
@@ -468,21 +467,25 @@ bool HttpServer::startWorker() {
   // Start all web applications
   this->startApps();
 
-  // Create worker's thread objects and conenct their queues
+  // Create response client first to attempt a connection
+  this->responseClient = new ResponseClient(this->calculatorsAmount);
+  // Attempt to connect to master, if fails, it will throw an exception
+  this->responseClient->connectToMaster(this->masterIP, this->masterPort);
+
+  // Only create worker's thread objects and conenct their queues if connection
+  // was successful
   this->createWorkerThreads();
   this->createWorkerQueues();
   this->connectWorkerQueues();
-  this->responseClient->connect(this->masterIP, this->masterPort);
   Log::append(Log::INFO, "worker",
     "Connected to master server at " + std::to_string(*this->masterIP) + ":" +
     this->masterPort);
   return true;
 }
 
-
 void HttpServer::createWorkerThreads() {
   // Create response client to send responses to master server
-  this->responseClient = new ResponseClient(this->calculatorsAmount);
+  // this->responseClient = new ResponseClient(this->calculatorsAmount);
 
   // Reserve enough space for calculators
   this->calculators.reserve(this->calculatorsAmount);
@@ -563,14 +566,20 @@ void HttpServer::joinWorkerThreads() {
 void HttpServer::deleteWorkerThreads() {
   // Free memory allocated for handler thread objects
 
-  delete this->requestServer;
-  this->requestServer = nullptr;
+  if (this->requestServer) {
+    delete this->requestServer;
+    this->requestServer = nullptr;
+  }
 
   for (Calculator* calculator : this->calculators) {
-    delete calculator;
+    if (calculator) {
+      delete calculator;
+    }
   }
   this->calculators.clear();  // Clear pointers stored
 
-  delete this->responseClient;
-  this->responseClient = nullptr;
+  if (this->responseClient) {
+    delete this->responseClient;
+    this->responseClient = nullptr;
+  }
 }
