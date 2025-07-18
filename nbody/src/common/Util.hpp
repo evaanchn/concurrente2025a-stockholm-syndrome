@@ -119,6 +119,21 @@ class Util {
    * @return A new text with original chars, e.g: "38,44,-90"
    */
   static std::string decodeURI(const std::string& uri);
+
+ public:
+  /// @brief Compute the start index for static block distribution.
+  /// @param rank Process rank.
+  /// @param workAmount Total amount of work.
+  /// @param workers Number of workers (processes).
+  /// @return Start index for the current process.
+  static size_t calculateStart(int rank, int workAmount, int workers);
+
+  /// @brief Compute the exclusive end index for static block distribution.
+  /// @param rank Process rank.
+  /// @param workAmount Total amount of work.
+  /// @param workers Number of workers (processes).
+  /// @return End index (exclusive) for the current process.
+  static size_t calculateFinish(int rank, int workAmount, int workers);
 };
 
 #endif  // UTIL_HPP

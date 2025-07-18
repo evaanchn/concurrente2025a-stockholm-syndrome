@@ -80,3 +80,15 @@ std::string Util::decodeURI(const std::string& uri) {
   }
   return result.str();
 }
+
+// Calculates start index for work distribution among processes
+size_t Util::calculateStart(int rank, int workAmount, int workers) {
+  // Add the residue if the process number exceeds it
+  size_t added = rank < workAmount % workers ? rank : workAmount % workers;
+  return rank * (workAmount / workers) + added;
+}
+
+// Calculates end index for work distribution
+size_t Util::calculateFinish(int rank, int workAmount, int workers) {
+  return calculateStart(rank + 1, workAmount, workers);
+}
