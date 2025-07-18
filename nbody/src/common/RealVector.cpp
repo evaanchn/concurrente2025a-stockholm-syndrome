@@ -6,88 +6,57 @@
 #include <iomanip>
 #include <sstream>
 #include <string>
-#include <vector>
-
-// Returns the number of components in the vector
-size_t RealVector::size() const {
-    return this->components.size();
-}
 
 // Vector addition - adds corresponding components
 RealVector RealVector::operator+(const RealVector& other) const {
-  assert(this->size() == other.size());  // Vectors must be same size
-  std::vector<double> result;
-  result.reserve(this->components.size());  // Pre-allocate memory
-  // Append the sums to the new vector
-  for (size_t i = 0; i < this->components.size(); ++i) {
-    result.push_back(this->components[i] + other.components[i]);
-  }
+  // Sum corresponding components
+  double x = this->x + other.x;
+  double y = this->y + other.y;
+  double z = this->z + other.z;
   // Return a new RealVector containing the result
-  return RealVector(result);  // Return new vector with result
+  return RealVector(x, y, z);  // Return new vector with result
 }
 
 RealVector RealVector::operator-(const RealVector& other) const {
-  assert(this->size() == other.size());  // Vectors must be same size
   // Use the addition operator to perform subtraction
   return *this + other * -1;
 }
 
 RealVector RealVector::operator*(const RealVector& other) const {
-  assert(this->size() == other.size());  // Vectors must be same size
-  std::vector<double> result;
-  result.reserve(this->components.size());  // Pre-allocate memory
   // Multiply corresponding components
-  for (size_t i = 0; i < this->components.size(); ++i) {
-    result.push_back(this->components[i] * other.components[i]);
-  }
-  return RealVector(result);  // Return new vector with result
+  double productX = this->x * other.x;
+  double productY = this->y * other.y;
+  double productZ = this->z * other.z;
+  // Return new vector with result
+  return RealVector(productX, productY, productZ);
 }
 
 RealVector RealVector::operator*(double scalar) const {
-  // Create copy of current vector
-  RealVector result = RealVector(this->components);
-  // Multiply each component by the scalar
-  for (double& component : result.components) {
-    component = component * scalar;
-  }
-  return result;
+  double productX = this->x * scalar;  // Scale x component
+  double productY = this->y * scalar;  // Scale y component
+  double productZ = this->z * scalar;  // Scale z component
+  // Return new vector with scaled components
+  return RealVector(productX, productY, productZ);
 }
 
 // Raises each component to the given power
 RealVector RealVector::pow(double exponent) {
-  for (double& component : this->components) {
-    component = std::pow(component, exponent);
-  }
+  this->x = std::pow(this->x, exponent);  // Raise x to power
+  this->y = std::pow(this->y, exponent);  // Raise y to
+  this->z = std::pow(this->z, exponent);  // Raise z to power
   return *this;  // Return reference to modified vector
-}
-
-// Accessor for vector components
-double RealVector::operator[](size_t index) {
-  assert(index < this->size());  // Index must be valid
-  return this->components[index];
-}
-
-// Accessor for vector components (const version)
-double RealVector::operator[](size_t index) const {
-  assert(index < this->size());  // Index must be valid
-  return this->components[index];
 }
 
 // Equality comparison - checks if all components are equal
 bool RealVector::operator==(const RealVector& other) const {
-  assert(this->size() == other.size());  // Vectors must be same size
   // Compare each corresponding component
-  for (size_t i = 0; i < this->components.size(); ++i) {
-    if (this->components[i] != other.components[i]) {
-      return false;  // Found unequal components
-    }
-  }
-  return true;  // All components equal
+  return this->x == other.x &&  // Check x components
+         this->y == other.y &&  // Check y components
+         this->z == other.z;     // Check z components
 }
 
 // Inequality comparison - opposite of equality
 bool RealVector::operator!=(const RealVector& other) const {
-  assert(this->size() == other.size());  // Vectors must be same size
   return !(*this == other);  // Negate the equality check
 }
 
@@ -96,24 +65,16 @@ std::string RealVector::toString() const {
   std::stringstream vectorStream;
   vectorStream << "<";  // Start with opening angle bracket
   // Add each component to the string
-  for (size_t i = 0; i < this->components.size(); ++i) {
-    vectorStream /*<< std::setprecision(8)*/ << std::defaultfloat
-      << this->components[i];  // Add component value
-    // Add comma separator if not last component
-    if (i < this->components.size() - 1) {
-      vectorStream << ", ";
-    }
-  }
-  vectorStream << ">";  // Close with angle bracket
-  return std::string(vectorStream.str());  // Convert stream to string
+  vectorStream << std::defaultfloat << this->x << ", " <<
+    std::defaultfloat << this->y << ", " <<
+    std::defaultfloat << this->z << ">";
+  return vectorStream.str();  // Convert stream to string
 }
 
 // Calculates the Euclidean norm (magnitude) of the vector
 double RealVector::getMagnitude() const {
-  double sum = 0;
-  // Sum the squares of all components
-  for (const auto& component : this->components) {
-    sum += component * component;
-  }
+  double sum = this->x * this->x +  // Square x component
+               this->y * this->y +  // Square y component
+               this->z * this->z;   // Square z component
   return std::sqrt(sum);  // Return square root of sum of squares
 }

@@ -3,31 +3,41 @@
 #ifndef REALVECTOR_HPP
 #define REALVECTOR_HPP
 
-#include <vector>
 #include <iostream>
 #include <cassert>
 #include <string>
+#include <vector>
 
 /// @brief Struct representing a mathematical vector, with real values
 struct RealVector {
  public:
-  std::vector<double> components;  /// Container of elements
-
- public:  // Constructors
-  RealVector() = default;
-
-  explicit RealVector(const std::vector<double>& components) :
-    components(components) {
-  }
-
-  explicit RealVector(const size_t count) :
-    components(count, double()) {
-  }
+  /// x component
+  double x = 0.0;
+  /// y component
+  double y = 0.0;
+  /// z component
+  double z = 0.0;
 
  public:
-  /// @brief Returns the size of the real vector.
-  /// @return The size of the vector.
-  size_t size() const;
+  /// @brief Default constructor for RealVector
+  RealVector() = default;
+
+  /// @brief Constructor for RealVector with specified components
+  /// @param x X component of the vector
+  /// @param y Y component of the vector
+  /// @param z Z component of the vector
+  RealVector(double x, double y, double z) :
+    x(x), y(y), z(z) {
+  }
+
+  /// @brief Constructor for RealVector using vector
+  /// @param components Vector with x y z components
+  explicit RealVector(const std::vector<double>& components) {
+    assert(components.size() == 3);
+    this->x = components[0];
+    this->y = components[1];
+    this->z = components[2];
+  }
 
  public:  // Operators
   /// @brief Vector addition
@@ -48,10 +58,6 @@ struct RealVector {
   bool operator==(const RealVector& other) const;
   /// @see operator==
   bool operator!=(const RealVector& other) const;
-  /// @brief Access to vector components, modifiable
-  double operator[](size_t index);
-  /// @brief Access to vector components, not modifiable
-  double operator[](size_t index) const;
 
  public:
   /// @brief Elevates each component of the vector to the specified exponent
