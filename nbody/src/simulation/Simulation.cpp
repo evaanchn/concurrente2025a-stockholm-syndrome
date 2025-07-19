@@ -157,16 +157,16 @@ void Simulation::stateCollisions() {
   // check local collisions
   this->universe.checkCollisions();
   std::vector<double> serializedBodies;
-  serializedBodies.reserve(this->universe.activeCount() *
-    BODY_COLLISION_DATA_SIZE);
-  this->universe.serializeCollisionData(serializedBodies);
-  std::vector<double> receivedBodies;
   // broadcast cycle to check colllsions between all processes
   for (int rank  = 0; rank < this->mpi->size(); ++rank) {
     if (rank != mpi->rank()) {
-      mpi->broadcast(receivedBodies, rank);
-      this->universe.checkCollisions(receivedBodies, this->mpi->rank(), rank);
+      mpi->broadcast(serializedBodies, rank);
+      this->universe.checkCollisions(serializedBodies, this->mpi->rank(), rank);
     } else {
+      serializedBodies.clear();
+      serializedBodies.reserve(this->universe.activeCount() *
+        BODY_COLLISION_DATA_SIZE);
+      this->universe.serializeCollisionData(serializedBodies);
       mpi->broadcast(serializedBodies, rank);
     }
   }
@@ -176,16 +176,16 @@ void Simulation::stateAccelerations() {
   // check local accelerations
   this->universe.updateAccelerations();
   std::vector<double> serializedBodies;
-  serializedBodies.reserve(this->universe.activeCount() *
-    BODY_ACCELERATION_DATA_SIZE);
-  this->universe.serializeAccelerationData(serializedBodies);
-  std::vector<double> receivedBodies;
   // broadcast cycle to update acceleration between all processes
   for (int rank  = 0; rank < this->mpi->size(); ++rank) {
     if (rank != mpi->rank()) {
-      mpi->broadcast(receivedBodies, rank);
-      this->universe.updateAccelerations(receivedBodies);
+      mpi->broadcast(serializedBodies, rank);
+      this->universe.updateAccelerations(serializedBodies);
     } else {
+      serializedBodies.clear();
+      serializedBodies.reserve(this->universe.activeCount() *
+        BODY_ACCELERATION_DATA_SIZE);
+      this->universe.serializeAccelerationData(serializedBodies);
       mpi->broadcast(serializedBodies, rank);
     }
   }
