@@ -21,10 +21,8 @@ class Mpi;
  */
 class Statistics {
   DISABLE_COPY(Statistics);
-
- public:
-  Statistics() = default;
-  ~Statistics() = default;
+  Statistics() = delete;
+  ~Statistics() = delete;
 
  public:  // MEAN
   /**
@@ -34,16 +32,17 @@ class Statistics {
    * @param total The total number of elements across all processes
    * @return RealVector containing the mean values
    */
-  RealVector realVectorMeanDistributed(Mpi* mpi,
+  static RealVector realVectorMeanDistributed(Mpi* mpi,
       const std::vector<RealVector>& realVectors, const int total);
 
  private:  // MEAN HELPER
   /**
    * @brief Calculates the sum of all vectors in the local process
    * @param realVectors The vectors to sum
-   * @return RealVector containing the component-wise sum
+   * @return vector containing the component-wise sum
    */
-  RealVector calculateVectorsSum(const std::vector<RealVector>& realVectors);
+  static std::vector<double> calculateVectorsSum(
+      const std::vector<RealVector>& realVectors);
 
  public:  // STDEV
   /**
@@ -54,7 +53,7 @@ class Statistics {
    * @param total The total number of elements across all processes
    * @return RealVector containing the standard deviations
    */
-  RealVector realVectorStDevDistributed(Mpi* mpi,
+  static RealVector realVectorStDevDistributed(Mpi* mpi,
     const std::vector<RealVector>& realVectors, RealVector& mean,
     const int total);
 
@@ -65,8 +64,8 @@ class Statistics {
    * @param mean The mean vector to compare against
    * @return RealVector containing sum of squared differences
    */
-  RealVector calculateStDevSum(const std::vector<RealVector>& realVectors,
-      RealVector& mean);
+  static std::vector<double> calculateStDevSum(
+      const std::vector<RealVector>& realVectors, RealVector& mean);
 };
 
 #endif  // STATISTICS_HPP
