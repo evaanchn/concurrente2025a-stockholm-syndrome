@@ -48,6 +48,23 @@ class Universe {
   /// @return Number of bodies loaded by this process.
   size_t loadUniverse(std::string universeFile, size_t rank, size_t size);
 
+ private:  // HELPER METHODS FOR UNIVERSE LOADING
+  /// @brief Calculates the bodiees count assigned to a process and moves cursor
+  /// to the position in the file where reading starts.
+  /// @param file Input file stream
+  /// @param rank process rank
+  /// @param size total number of processes
+  /// @param totalBodyCount Total number of bodies(lines) in the file
+  /// @return Amount of bodies to load
+  size_t setUniverseFileLimits(std::ifstream& file, size_t rank, size_t size,
+     size_t totalBodyCount);
+
+  /// @brief Load a single body from a line in the file
+  /// @param file Input file stream
+  /// @param line Line buffer
+  void loadBody(std::ifstream& file, std::string& line);
+
+ public:
   /// @brief Create a randomly generated universe.
   /// @param rank The process rank.
   /// @param size The total number of MPI processes.
@@ -80,26 +97,41 @@ class Universe {
   void checkCollisions(std::vector<double>& serializedBodies, const int rank,
       const int otherRank);
 
+ private:
+  /// @brief Handles the collision between two bodies
+  /// @param body current body that has collided
+  /// @param serializedBodies Serialized data of other bodies
+  /// @param otherVelocity Velocity vector of the other body
+  /// @param offset to index in the serialized data for the other body
+  /// @param rank Rank of the current process
+  /// @param otherRank Rank of the process sending the serialized data
+  void collideBodies(Body& body, std::vector<double>& serializedBodies,
+    const RealVector& otherVelocity, const size_t offset, const int rank,
+    const int otherRank);
+
+ public:
   /// @brief Update gravitational accelerations of all local bodies.
   void updateAccelerations();
 
-  /// @brief Update accelerations using remote body data.
+ private:  // HELPER METHODS FOR UPDATE ACCELERATION
+  /// @brief Resets bodies' accelerations to zeroes
+  /// @param tempBodies Temporary vector of bodies passed for omp
+  void resetAccelerations(std::vector<Body>& tempBodies);
+
+  /// @brief Updates accelerations of bodies in local collection
+  /// @see resetAccelerations
+  void updateLocalAccelerations(std::vector<Body>& tempBodies);
+
+ public:
+  /// @brief Update accelerations using remote body data
   /// @param serializedBodies Serialized positions and masses of other bodies.
   void updateAccelerations(std::vector<double>& serializedBodies);
 
-  /// @brief Update velocities of all active bodies.
-  /// @param deltaTime Time step for integration.
-  void updateVelocities(double deltaTime);
+  /// @brief update velocities and positions for local bodies
+  /// @param deltaTime duration between updates
+  void updateVelocitiesAndPositions(double deltaTime);
 
-  /// @brief Update positions of all active bodies.
-  /// @param deltaTime Time step for integration.
-  void updatePositions(double deltaTime);
-
-  /// @brief Apply a generic update function (velocity/position) to all bodies.
-  /// @param updateFunc Pointer to the update method.
-  /// @param deltaTime Time step used in update.
-  void updateBodies(void (Body::*updateFunc)(double), double deltaTime);
-
+ public:
   /// @brief Compute all pairwise distances between active local bodies.
   /// @param mpi MPI interface object.
   /// @return Vector of distance vectors.
@@ -156,21 +188,6 @@ class Universe {
   const std::vector<Body>& getBodies() const {
     return this->bodies;
   }
-
- private:
-  /// @brief Compute the start index for static block distribution.
-  /// @param rank Process rank.
-  /// @param workAmount Total amount of work.
-  /// @param workers Number of workers (processes).
-  /// @return Start index for the current process.
-  size_t calculateStart(int rank, int workAmount, int workers);
-
-  /// @brief Compute the exclusive end index for static block distribution.
-  /// @param rank Process rank.
-  /// @param workAmount Total amount of work.
-  /// @param workers Number of workers (processes).
-  /// @return End index (exclusive) for the current process.
-  size_t calculateFinish(int rank, int workAmount, int workers);
 };
 
 #endif  // UNIVERSE_HPP
