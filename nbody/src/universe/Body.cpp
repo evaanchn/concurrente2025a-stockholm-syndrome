@@ -5,13 +5,12 @@
 #include <cmath>
 #include <sstream>
 #include <string>
-#include <vector>
 
 // Constructor - initializes body properties
-Body::Body(double mass, double radius, RealVector position,
-    RealVector velocity)
-  : mass(mass), radius(radius), position(position), velocity(velocity),
-    acceleration(RealVector(DIM)) {  // Initialize acceleration to zero vector
+Body::Body(const double mass, const double radius, const RealVector& position,
+    const RealVector& velocity):
+  mass(mass), radius(radius), position(position), velocity(velocity),
+    acceleration() {
 }
 
 // Combines two radii using volume conservation (r^3 addition)
@@ -21,7 +20,8 @@ double Body::addRadiuses(double otherRadius) {
 }
 
 // Updates acceleration based on gravitational force from another body
-void Body::updateAcceleration(double otherMass, RealVector otherPosition) {
+void Body::updateAcceleration(double otherMass,
+    const RealVector& otherPosition) {
   RealVector distance = otherPosition - this->position;
   double distanceMagnitude = distance.getMagnitude();
   if (distanceMagnitude == 0) {  // Avoid division by zero
@@ -56,7 +56,7 @@ void Body::updatePosition(double deltaTime) {
 
 // Checks if this body collides with another body given its radius and position
 bool Body::checkCollision(double otherRadius,
-    RealVector otherPosition) {
+    const RealVector& otherPosition) {
   // Collision occurs if distance between centers < sum of radii
   RealVector distance = otherPosition - this->position;
   if (distance.getMagnitude() < this->radius + otherRadius) {
@@ -76,7 +76,7 @@ bool Body::isActive() const {
 }
 
 // Merges velocities during collision using momentum conservation
-void Body::mergeVelocities(double otherMass, RealVector otherVelocity) {
+void Body::mergeVelocities(double otherMass, const RealVector& otherVelocity) {
   // p = m1*v1 + m2*v2
   this->velocity = this->velocity * otherMass + otherVelocity * otherMass;
   // v_combined = p / (m1 + m2)
@@ -86,7 +86,7 @@ void Body::mergeVelocities(double otherMass, RealVector otherVelocity) {
 // Absorbs another body (combines mass, radius, and velocity)
 // Returns true if this body absorbed the other (this mass >= other mass)
 bool Body::absorb(double otherMass, double otherRadius,
-  RealVector otherVelocity) {
+  const RealVector& otherVelocity) {
   if (this->mass >= otherMass) {
     this->mass += otherMass;
     this->radius = this->addRadiuses(otherRadius);
@@ -137,45 +137,52 @@ bool Body::operator>(const Body& other) const {
 
 // Detailed equality comparison of all properties
 bool Body::isEqualTo(const double otherMass, const double otherRadius,
-    const RealVector otherPosition) const {
+    const RealVector& otherPosition) const {
   return this->mass == otherMass && this->radius == otherRadius &&
       this->position == otherPosition;
 }
 
 // Detailed inequality comparison of all properties
 bool Body::isNotEqualTo(const double otherMass, const double otherRadius,
-    const RealVector otherPosition) const {
+    const RealVector& otherPosition) const {
   return !this->isEqualTo(otherMass, otherRadius, otherPosition);
 }
 
 // Serializes body data for collision checking (mass,radius,position,velocity)
-std::vector<double> Body::serializeCheckCollision() const {
-  return {this->mass, this->radius, this->position[0], this->position[1],
-    this->position[2], this->velocity[0], this->velocity[1], this->velocity[2]};
+void Body::serializeCheckCollision(std::vector<double>& serialized) const {
+  serialized.push_back(this->mass);
+  serialized.push_back(this->radius);
+  this->serializePositionData(serialized);
+  this->serializeVelocityData(serialized);
 }
 
 // Serializes body data for acceleration calculations (mass and position)
-std::vector<double> Body::serializeAccelerationData() const {
-  return {this->mass, this->position[0], this->position[1], this->position[2]};
+void Body::serializeAccelerationData(std::vector<double>& serialized) const {
+  serialized.push_back(this->mass);
+  this->serializePositionData(serialized);
 }
 
 // Serializes position data only
-std::vector<double> Body::serializePositionData() const {
-  return {this->position[0], this->position[1], this->position[2]};
+void Body::serializePositionData(std::vector<double>& serialized) const {
+  serialized.push_back(this->position.x);
+  serialized.push_back(this->position.y);
+  serialized.push_back(this->position.z);
 }
 
 // Returns position vector
-RealVector Body::getPosition() const {
+const RealVector& Body::getPosition() const {
   return this->position;
 }
 
 // Serializes velocity data only
-std::vector<double> Body::serializeVelocityData() const {
-  return {this->velocity[0], this->velocity[1], this->velocity[2]};
+void Body::serializeVelocityData(std::vector<double>& serialized) const {
+  serialized.push_back(this->velocity.x);
+  serialized.push_back(this->velocity.y);
+  serialized.push_back(this->velocity.z);
 }
 
 // Returns velocity vector
-RealVector Body::getVelocity() const {
+const RealVector& Body::getVelocity() const {
   return this->velocity;
 }
 
@@ -193,10 +200,10 @@ std::string Body::toString() {
 std::ostream& operator<<(std::ostream& output, const Body& body) {
   std::stringstream vectorsStream;
   vectorsStream << std::defaultfloat
-      << body.position[0] << "\t" << body.position[1] << "\t"
-      << body.position[2] << "\t"
-      << body.velocity[0] << "\t" << body.velocity[1] << "\t"
-      << body.velocity[2];
+      << body.position.x << "\t" << body.position.y << "\t"
+      << body.position.z << "\t"
+      << body.velocity.x << "\t" << body.velocity.y << "\t"
+      << body.velocity.z;
   output << body.mass << "\t" << body.radius << "\t" << vectorsStream.str();
   return output;
 }

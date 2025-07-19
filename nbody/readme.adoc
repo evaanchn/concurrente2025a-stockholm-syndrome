@@ -3,7 +3,7 @@
 :nofooter:
 :source-highlighter: highlightjs
 :sectnums:
-:stem: asciimath
+:stem: latexmath
 :toc:
 :xrefstyle: short
 
@@ -20,21 +20,21 @@ In order to evaluate if there is a collision between two bodies, the sum of radi
 - *Distance*:
 The distance is the resulting vector of the subtraction between the bodies' position vectors, as shown in the formula below.
 
-[asciimath]
+[latexmath]
 ++++
 \vec{r_{j,i}} = \vec{x_j} - \vec{x_i}
 ++++
 
 - *Collision condition*: If the sum of the bodies' radiuses is greater than the distance vector's magnitude, a collision has occured betweeen the two.
 
-[asciimath]
+[latexmath]
 ++++
-r_i + r_j \gt |\vec{r_{j,i}}|
+r_i + r_j > |\vec{r_{j,i}}|
 ++++
 
 Upon collision, the body with greater mass absorbs the smaller one in an inelastic collision. Consequently, the velocity of the absorbing body is updated with the following formula:
 
-[asciimath]
+[latexmath]
 ++++
 \vec{V} = \frac{m_a \vec{V_a} + m_b \vec{V_b}} {m_a + m_b}
 ++++
@@ -42,14 +42,14 @@ Upon collision, the body with greater mass absorbs the smaller one in an inelast
 === Velocity update
 - *Acceleration*: The acceleration of a body for each state is calculated as the sum of forces applied by the other bodies, multiplied by the gravitational constant.
 
-[asciimath]
+[latexmath]
 ++++
 \vec{a_i} = G \sum_{i \ne j}^{N} \frac{m_j}{|\vec{r_{j,i}}|^3} \vec{r_{j,i}}
 ++++
 
 - *Velocity*: After updating the body's acceleration, it is used to calculate the new velocity vector, with the collaboration with the established duration between each state.
 
-[asciimath]
+[latexmath]
 ++++
 \vec{V_{i,t+1}} = \vec{V_{i,t}} + \vec{a_i} \Delta t
 ++++
@@ -57,7 +57,7 @@ Upon collision, the body with greater mass absorbs the smaller one in an inelast
 === Position update
 After all bodies have calculated their velocity, their position is updated with the formula:
 
-[asciimath]
+[latexmath]
 ++++
 \vec{x_{i,t+1}} = \vec{x_{i,t}} + \vec{V_{i,t+1}} \Delta t
 ++++

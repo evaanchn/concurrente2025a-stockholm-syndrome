@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "common.hpp"
 #include "Mpi.hpp"
 #include "Util.hpp"
 
@@ -61,39 +62,12 @@ size_t Universe::loadUniverse(std::string universeFile, size_t rank,
     if (totalBodyCount < size) {
       throw std::runtime_error("insufficient bodies in universe");
     }
-    // Calculate which bodies this process should handle
-    size_t process_bodies_start = this->calculateStart(rank,
-        totalBodyCount, size);
-    size_t process_bodies_end = this->calculateFinish(rank,
-        totalBodyCount, size);
-    // Skip bodies not assigned to this process
-    for (size_t index = 0; index < process_bodies_start; ++index) {
-      std::getline(file, line);
-    }
+
+    size_t processBodiesCount = this->setUniverseFileLimits(file, rank, size,
+        totalBodyCount);
     // Read only the bodies assigned to this process
-    for (size_t index = process_bodies_start; index < process_bodies_end;
-        ++index) {
-      if (!std::getline(file, line)) {
-        break;  // End of file reached
-      }
-      // Parse tab-separated body data
-      std::istringstream sstream(line);
-      std::string cell;
-      std::vector<std::string> row;
-      while (std::getline(sstream, cell, '\t')) {
-        row.push_back(cell);
-      }
-      // Extract position and velocity vectors
-      std::vector<double> auxPos = {std::stod(row[2]), std::stod(row[3]),
-        std::stod(row[4])};
-      std::vector<double> auxVelocity = {std::stod(row[5]), std::stod(row[6]),
-        std::stod(row[7])};
-      // Create and store new body
-      this->bodies.push_back(Body(
-        std::stod(row[0]),  // mass
-        std::stod(row[1]),  // radius
-        RealVector(auxPos),  // position
-        RealVector(auxVelocity)));  // velocity
+    for (size_t index = 0; index < processBodiesCount; ++index) {
+      this->loadBody(file, line);
     }
   } catch (const std::invalid_argument& error) {
     file.close();
@@ -104,56 +78,86 @@ size_t Universe::loadUniverse(std::string universeFile, size_t rank,
   return totalBodyCount;
 }
 
+size_t Universe::setUniverseFileLimits(std::ifstream& file, size_t rank,
+    size_t size, size_t totalBodyCount) {
+  std::string line;
+  // Calculate which bodies this process should handle
+  size_t processBodiesStart = Util::calculateStart(rank,
+    totalBodyCount, size);
+  size_t processBodiesEnd = Util::calculateFinish(rank,
+    totalBodyCount, size);
+  // Skip bodies not assigned to this process
+  for (size_t index = 0; index < processBodiesStart; ++index) {
+    std::getline(file, line);
+  }
+  return processBodiesEnd - processBodiesStart;
+}
+
+void Universe::loadBody(std::ifstream& file, std::string& line) {
+  if (!std::getline(file, line)) {
+    return;  // End of file reached
+  }
+
+  // Parse tab-separated body data
+  std::istringstream sstream(line);
+  std::string cell;
+  std::vector<std::string> row;
+  while (std::getline(sstream, cell, '\t')) {
+    row.push_back(cell);
+  }
+  // Util::split(row, "\t", true);
+  // Create and store new body
+  this->bodies.push_back(Body(
+    std::stod(row[0]),  // mass
+    std::stod(row[1]),  // radius
+    // position (x, y, z)
+    RealVector(std::stod(row[2]), std::stod(row[3]), std::stod(row[4])),
+    // velocity(x, y, z)
+    RealVector(std::stod(row[5]), std::stod(row[6]), std::stod(row[7]))));
+}
+
 // Creates a random universe with bodies distributed across MPI processes
 void Universe::createUniverse(size_t rank, size_t size, int totalBodiesCount) {
   // Calculate range of bodies this process should create
-  int start = this->calculateStart(rank, totalBodiesCount, size);
-  int finish =  this->calculateFinish(rank, totalBodiesCount, size);
+  int start = Util::calculateStart(rank, totalBodiesCount, size);
+  int finish =  Util::calculateFinish(rank, totalBodiesCount, size);
   int myBodiesCount = finish - start;
   // Generate random bodies within specified parameter ranges
   for (int index = 0; index < myBodiesCount; ++index) {
+    // Generate random values for new body, between specified ranges
     double mass = Util::random(this->minMass, this->maxMass);
     double radius = Util::random(this->minRadius, this->maxRadius);
-    std::vector<double> positionVector;
-    std::vector<double> velocityVector;
-    // Generate random position and velocity components
-    for (int i = 0; i < 3; ++i) {
-      positionVector.push_back(Util::random(this->minPosition,
-          this->maxPosition));
-      velocityVector.push_back(Util::random(this->minVelocity,
-          this->maxVelocity));
-    }
-
+    // Randdom position
+    double positionX = Util::random(this->minPosition,
+        this->maxPosition);
+    double positionY = Util::random(this->minPosition,
+        this->maxPosition);
+    double positionZ = Util::random(this->minPosition,
+        this->maxPosition);
+    // Random velocity
+    double velocityX = Util::random(this->minVelocity,
+        this->maxVelocity);
+    double velocityY = Util::random(this->minVelocity,
+        this->maxVelocity);
+    double velocityZ = Util::random(this->minVelocity,
+        this->maxVelocity);
     // Create and store new random body
     this->bodies.push_back(Body(
       mass,
       radius,
-      RealVector(positionVector),
-      RealVector(velocityVector)));
+      RealVector(positionX, positionY, positionZ),
+      RealVector(velocityX, velocityY, velocityZ)));
   }
+  // Set current active bodies count as amount of bodies created
   this->activeBodiesCount = this->bodies.size();
 }
 
-// Calculates start index for work distribution among processes
-size_t Universe::calculateStart(int rank, int workAmount, int workers) {
-  // Add the residue if the process number exceeds it
-  size_t added = rank < workAmount % workers ? rank : workAmount % workers;
-  return rank * (workAmount / workers) + added;
-}
-
-// Calculates end index for work distribution
-size_t Universe::calculateFinish(int rank, int workAmount, int workers) {
-  return calculateStart(rank + 1, workAmount, workers);
-}
 
 // Serializes body data for collision detection
 void Universe::serializeCollisionData(std::vector<double>& serializedBodies) {
   for (const Body& body : this->bodies) {
     if (body.isActive()) {
-      // Append each active body's collision data to the vector
-      std::vector<double> serializedBody = body.serializeCheckCollision();
-      serializedBodies.insert(serializedBodies.end(), serializedBody.begin(),
-        serializedBody.end());
+      body.serializeCheckCollision(serializedBodies);
     }
   }
 }
@@ -163,10 +167,7 @@ void Universe::serializeAccelerationData
   (std::vector<double>& serializedBodies) {
   for (const Body& body : this->bodies) {
     if (body.isActive()) {
-      // Append each active body's acceleration data to the vector
-      std::vector<double> serializedBody = body.serializeAccelerationData();
-      serializedBodies.insert(serializedBodies.end(), serializedBody.begin(),
-        serializedBody.end());
+      body.serializeAccelerationData(serializedBodies);
     }
   }
 }
@@ -225,7 +226,8 @@ void Universe::checkCollisions(std::vector<double>& serializedBodies,
     const int rank, const int otherRank) {
   // Parallel for iterating through every local bodies
   // omitting default(none) given no private data
-  #pragma omp parallel for num_threads(omp_get_max_threads())
+  // No race conditions given bodies from other processes are not modified.
+  #pragma omp parallel for num_threads(omp_get_max_threads()) schedule(dynamic)
   for (size_t index = 0; index < this->bodies.size(); ++index) {
     if (!this->bodies[index].isActive()) {
       continue;  // Skip if current body is not active
@@ -234,54 +236,84 @@ void Universe::checkCollisions(std::vector<double>& serializedBodies,
     for (size_t offset = 0; offset < serializedBodies.size();
         offset += BODY_COLLISION_DATA_SIZE) {
       // Build auxiliary vectors for position and velocity to check collision
-      std::vector<double> auxPosition = {serializedBodies[offset +
+      RealVector otherPosition = RealVector(serializedBodies[offset +
         COLLISION_POSITION_X],  serializedBodies[offset + COLLISION_POSITION_Y],
-        serializedBodies[offset +  COLLISION_POSITION_Z]};
-      std::vector<double> auxVelocity = {serializedBodies[offset +
+        serializedBodies[offset +  COLLISION_POSITION_Z]);
+      RealVector otherVelocity = RealVector(serializedBodies[offset +
         COLLISION_VELOCITY_X],  serializedBodies[offset + COLLISION_VELOCITY_Y],
-        serializedBodies[offset + COLLISION_VELOCITY_Z]};
+        serializedBodies[offset + COLLISION_VELOCITY_Z]);
 
       // If the current body collides
       if (this->bodies[index].checkCollision(
-          serializedBodies[offset + COLLISION_RADIUS],
-            RealVector(auxPosition))) {
-        // Get other body's mass
-        double otherMass = serializedBodies[offset + COLLISION_MASS];
-        // If both have equal masses, the one from lower rank absorbs the one
-        // managed by a process with higher rank. Skip if my rank is lower
-        if (this->bodies[index].equalMasses(otherMass) && rank < otherRank) {
-          this->bodies[index].deactivate();
-          #pragma omp atomic
-          --this->activeBodiesCount;
-          break;  // The current body should no longer be evaluated
-        }
-        // If this body could not absorb the other process's one, deactivate
-        if (!this->bodies[index].absorb(otherMass,
-            serializedBodies[offset + COLLISION_RADIUS],
-            RealVector(auxVelocity))) {
-          this->bodies[index].deactivate();
-          #pragma omp atomic
-          --this->activeBodiesCount;
-          break;   // The current body should no longer be evaluated
-        }
+          serializedBodies[offset + COLLISION_RADIUS], otherPosition)) {
+        this->collideBodies(this->bodies[index], serializedBodies,
+            otherVelocity, offset, rank, otherRank);
+        break;
       }
     }
   }
 }
 
+void Universe::collideBodies(Body& body, std::vector<double>& serializedBodies
+    , const RealVector& otherVelocity, const size_t offset, const int rank,
+    const int otherRank) {
+  // Get other body's mass
+  double otherMass = serializedBodies[offset + COLLISION_MASS];
+  // If both have equal masses, the one from lower rank absorbs the one
+  // managed by a process with higher rank. Skip if my rank is lower
+  if (body.equalMasses(otherMass) && rank < otherRank) {
+    body.deactivate();
+    #pragma omp atomic
+    --this->activeBodiesCount;
+    return;  // Skip the absorb attempt
+  }
+
+  // If this body could not absorb the other process's one, deactivate
+  if (!body.absorb(otherMass,
+      serializedBodies[offset + COLLISION_RADIUS], otherVelocity)) {
+    body.deactivate();
+    #pragma omp atomic
+    --this->activeBodiesCount;
+  }
+}
+
 void Universe::updateAccelerations() {
-  for (size_t i = 0; i < this->bodies.size(); ++i) {
-    Body& body = this->bodies[i];
+  std::vector<Body>& tempBodies = this->bodies;
+  #pragma omp parallel num_threads(omp_get_max_threads()) \
+    default(none) shared(tempBodies)
+  {
+    // Must reset accelerations separately first
+    this->resetAccelerations(tempBodies);
+    #pragma omp barrier
+    // After ensuring all accelerations have been reset, update
+    this->updateLocalAccelerations(tempBodies);
+  }
+}
+
+void Universe::resetAccelerations(std::vector<Body>& tempBodies) {
+  // First reset every body's acceleration
+  #pragma omp for schedule(dynamic)
+  for (Body& body : tempBodies) {
+    // Only do so if body is active
+    if (body.isActive()) {
+      body.resetAcceleration();
+    }
+  }
+}
+
+void Universe::updateLocalAccelerations(std::vector<Body>& tempBodies) {
+  #pragma omp for schedule(dynamic)
+  for (size_t i = 0; i < tempBodies.size(); ++i) {
+    Body& body = tempBodies[i];
     if (!body.isActive()) {
       continue;  // Skip inactive bodies
     }
-    // Reset acceleration to zero before recalculating
-    body.resetAcceleration();
-    for (size_t j = 0; j < this->bodies.size(); ++j) {
-      if (i == j || !this->bodies[j].isActive()) {
+
+    for (size_t j = 0; j < tempBodies.size(); ++j) {
+      if (i == j || !tempBodies[j].isActive()) {
         continue;  // Skip self-comparison and inactive bodies
       }
-      body.updateAcceleration(this->bodies[j]);
+      body.updateAcceleration(tempBodies[j]);
     }
   }
 }
@@ -289,46 +321,45 @@ void Universe::updateAccelerations() {
 void Universe::updateAccelerations(std::vector<double>& serializedBodies) {
   // Local alias so omp's shared can use inside parallel for
   std::vector<Body>& localBodies = this->bodies;
-
+  // Dynamic map distribution between threads given some bodies don't need to be
+  // evaluated if inactive
   #pragma omp parallel for num_threads(omp_get_max_threads()) \
-    default(none) shared(localBodies, serializedBodies)
+    default(none) shared(localBodies, serializedBodies) schedule(dynamic)
   for (size_t i = 0; i < localBodies.size(); ++i) {
-    Body& body = localBodies[i];
+    Body& body = localBodies[i];  // Represents current body
     if (!body.isActive()) {
       continue;  // Skip inactive bodies
     }
+
+    // Evaluate with data from every body from other process
     for (size_t offset = 0; offset < serializedBodies.size();
         offset += BODY_ACCELERATION_DATA_SIZE) {
-      std::vector<double> auxPosition =
-        {serializedBodies[offset + ACCELERATION_POSITION_X],
+      // Create a real vector to represent other body's acceleration
+      RealVector otherPosition =
+        RealVector(serializedBodies[offset + ACCELERATION_POSITION_X],
           serializedBodies[offset + ACCELERATION_POSITION_Y],
-          serializedBodies[offset + ACCELERATION_POSITION_Z]};
+          serializedBodies[offset + ACCELERATION_POSITION_Z]);
 
       body.updateAcceleration(serializedBodies[offset + ACCELERATION_MASS],
-        RealVector(auxPosition));
+        otherPosition);
     }
   }
 }
 
-// MODULARIZED USING CHAT GPT
-void Universe::updateBodies(void (Body::*updateFunc)(double),
-    double deltaTime) {
+
+void Universe::updateVelocitiesAndPositions(double deltaTime) {
   // Local alias so omp's shared can use inside parallel for
   std::vector<Body>& tempBodies = this->bodies;
-
   #pragma omp parallel for num_threads(omp_get_max_threads()) \
-    default(none) shared(tempBodies, deltaTime, updateFunc)
+    default(none) shared(tempBodies, deltaTime) schedule(dynamic)
   for (size_t index = 0; index < tempBodies.size(); ++index) {
-    (tempBodies[index].*updateFunc)(deltaTime);  // Update using specified func
+    Body& currentBody = tempBodies[index];
+    if (!currentBody.isActive()) {
+      continue;  // Skip inactive bodies
+    }
+    currentBody.updateVelocity(deltaTime);  // Update velocity first
+    currentBody.updatePosition(deltaTime);  // Update position accordingly
   }
-}
-
-void Universe::updateVelocities(double deltaTime) {
-  updateBodies(&Body::updateVelocity, deltaTime);
-}
-
-void Universe::updatePositions(double deltaTime) {
-  updateBodies(&Body::updatePosition, deltaTime);
 }
 
 std::vector<RealVector> Universe::getMyDistances(Mpi* mpi) {
@@ -357,16 +388,12 @@ std::vector<RealVector> Universe::getMyDistances(Mpi* mpi) {
   return distances;
 }
 
-
 void Universe::serializePositions(std::vector<double>& serializedPositions) {
   for (const Body& body : this->bodies) {
     // Only serialize active bodies' positions
     if (body.isActive()) {
       // Serialize position data
-      std::vector<double> serializedPosition = body.serializePositionData();
-      // Insert into vector of serialized positions
-      serializedPositions.insert(serializedPositions.end(),
-        serializedPosition.begin(), serializedPosition.end());
+      body.serializePositionData(serializedPositions);
     }
   }
 }
@@ -416,8 +443,12 @@ void Universe::aggregateDistances(std::vector<RealVector>& distances,
 }
 
 std::vector<RealVector> Universe::getMyVelocities() const {
-  std::vector<RealVector> velocities = {};
+  std::vector<RealVector> velocities;
+  // Allocate space needed for the vector to return
+  velocities.reserve(this->activeBodiesCount);
+  // Iterate through every body stored
   for (const Body& body : this->bodies) {
+    // Add body's velocity vector to collection
     velocities.push_back(body.getVelocity());
   }
   return velocities;
