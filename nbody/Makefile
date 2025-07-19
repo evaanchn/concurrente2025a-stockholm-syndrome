@@ -15,7 +15,7 @@ ARGS=universes/univ002.tsv 60 7200
 .PHONY:random_mode file_mode
 
 random_mode:
-	$(MAKE) run ARGS='1000 1 1000.0 1 10 1 5 -100 100 0 0'
+	$(MAKE) run ARGS='100 1 1000.0 1 10 1 5 -100 100 0 0'
 
 file_mode:
 	$(MAKE) run ARGS='universes/univ002.tsv 60 7200'

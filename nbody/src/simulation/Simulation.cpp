@@ -157,14 +157,16 @@ void Simulation::stateCollisions() {
   // check local collisions
   this->universe.checkCollisions();
   std::vector<double> serializedBodies;
-  this->universe.serializeCollisionData(serializedBodies);
-  std::vector<double> receivedBodies;
   // broadcast cycle to check colllsions between all processes
   for (int rank  = 0; rank < this->mpi->size(); ++rank) {
     if (rank != mpi->rank()) {
-      mpi->broadcast(receivedBodies, rank);
-      this->universe.checkCollisions(receivedBodies, this->mpi->rank(), rank);
+      mpi->broadcast(serializedBodies, rank);
+      this->universe.checkCollisions(serializedBodies, this->mpi->rank(), rank);
     } else {
+      serializedBodies.clear();
+      serializedBodies.reserve(this->universe.activeCount() *
+        BODY_COLLISION_DATA_SIZE);
+      this->universe.serializeCollisionData(serializedBodies);
       mpi->broadcast(serializedBodies, rank);
     }
   }
@@ -174,14 +176,16 @@ void Simulation::stateAccelerations() {
   // check local accelerations
   this->universe.updateAccelerations();
   std::vector<double> serializedBodies;
-  this->universe.serializeAccelerationData(serializedBodies);
-  std::vector<double> receivedBodies;
   // broadcast cycle to update acceleration between all processes
   for (int rank  = 0; rank < this->mpi->size(); ++rank) {
     if (rank != mpi->rank()) {
-      mpi->broadcast(receivedBodies, rank);
-      this->universe.updateAccelerations(receivedBodies);
+      mpi->broadcast(serializedBodies, rank);
+      this->universe.updateAccelerations(serializedBodies);
     } else {
+      serializedBodies.clear();
+      serializedBodies.reserve(this->universe.activeCount() *
+        BODY_ACCELERATION_DATA_SIZE);
+      this->universe.serializeAccelerationData(serializedBodies);
       mpi->broadcast(serializedBodies, rank);
     }
   }
@@ -190,9 +194,7 @@ void Simulation::stateAccelerations() {
 // Updates body positions based on velocities
 void Simulation::statePositions() {
   // Update velocities based on current accelerations
-  this->universe.updateVelocities(this->deltaTime);
-  // Update positions based on new velocities
-  this->universe.updatePositions(this->deltaTime);
+  this->universe.updateVelocitiesAndPositions(this->deltaTime);
 }
 
 void Simulation::saveFinalState(double simulatedTime) {
@@ -212,20 +214,19 @@ void Simulation::saveFinalState(double simulatedTime) {
 
 // Generates and displays final simulation statistics
 void Simulation::reportResults(const int totalActiveBodiesCount) {
-  Statistics statistics;
   // Gather distance and velocity data
   const std::vector<RealVector> distances =
       this->universe.getMyDistances(this->mpi);
   const std::vector<RealVector> velocities = this->universe.getMyVelocities();
   // Calculate distributed statistics across all processes
-  RealVector distanceMean = statistics.realVectorMeanDistributed(this->mpi,
+  RealVector distanceMean = Statistics::realVectorMeanDistributed(this->mpi,
       distances, totalActiveBodiesCount);
-  RealVector distanceStdev = statistics.realVectorStDevDistributed(
+  RealVector distanceStdev = Statistics::realVectorStDevDistributed(
     this->mpi, distances, distanceMean, totalActiveBodiesCount);
 
-  RealVector velocityMean = statistics.realVectorMeanDistributed(this->mpi,
+  RealVector velocityMean = Statistics::realVectorMeanDistributed(this->mpi,
       velocities, totalActiveBodiesCount);
-  RealVector velocityStdev = statistics.realVectorStDevDistributed(
+  RealVector velocityStdev = Statistics::realVectorStDevDistributed(
     this->mpi, velocities, velocityMean, totalActiveBodiesCount);
   // Only first process reports results
   if (this->mpi->rank() != 0) {
