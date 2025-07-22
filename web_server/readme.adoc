@@ -59,7 +59,7 @@ Visit https://jeisson.ecci.ucr.ac.cr/concurrente/2022b/tareas/#problem_statement
 
 *Important:* A Unix/Linux variant is required as the operating system. Ej: debian, fedora.
 
-Clone the GitLab repository.
+Clone the repository.
 
 [source]
 ----
