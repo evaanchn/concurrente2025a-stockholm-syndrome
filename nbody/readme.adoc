@@ -82,7 +82,7 @@ Clone the GitLab repository.
 
 [source]
 ----
-$ git clone https://git.ucr.ac.cr/AXEL.ROJASRETANA/paralela25a-stockholm_syndrome.git
+$ git clone https://github.com/evaanchn/concurrente2025a-stockholm-syndrome.git
 ----
 
 Install a C++ compiler with C++17 support (e.g., g++ or clang).
