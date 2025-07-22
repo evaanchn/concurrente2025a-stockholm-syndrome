@@ -78,7 +78,7 @@ This simulation has some important limitations to consider, making it an imperfe
 === Prerequisites
 *Important:* A Unix/Linux variant is required as the operating system. Ej: Debian, Fedora.
 
-Clone the GitLab repository.
+Clone the repository.
 
 [source]
 ----
